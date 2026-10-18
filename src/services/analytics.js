@@ -1,33 +1,34 @@
 // Аналитика: каждое событие уходит в PostHog и дублируется в Supabase (таблица analytics_events).
-// Словарь событий — docs/ANALYTICS.md
+// Словарь событий — docs/ANALYTICS.md. Добавляя событие, допишите его туда.
+
 import posthog from 'posthog-js';
 import { POSTHOG_KEY, POSTHOG_HOST, APP_VERSION, IS_DEMO } from '../config.js';
 import { supabase, getUser } from './supabase.js';
+import { newId } from '../core/id.js';
 
-let phReady = false;
-let userId = null;
+const BATCH_SIZE = 20;
+const FLUSH_DELAY_MS = 4000;
+
+let posthogReady = false;
 let currentScreen = '';
-const queue = [];
 let flushTimer = null;
+const queue = [];
+
 const sessionId = (() => {
   try {
-    let s = sessionStorage.getItem('gt_sid');
-    if (!s) { s = uid(); sessionStorage.setItem('gt_sid', s); }
-    return s;
-  } catch (_) { return uid(); }
+    let id = sessionStorage.getItem('gt_sid');
+    if (!id) { id = newId(); sessionStorage.setItem('gt_sid', id); }
+    return id;
+  } catch (_) { return newId(); }
 })();
 
-function uid() {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); });
-}
-
-export function localId() {
+/** Постоянный id устройства — если нет Supabase */
+function deviceId() {
   try {
-    let id = localStorage.getItem('gt_local_id');
-    if (!id) { id = uid(); localStorage.setItem('gt_local_id', id); }
+    let id = localStorage.getItem('gt_device_id');
+    if (!id) { id = newId(); localStorage.setItem('gt_device_id', id); }
     return id;
-  } catch (_) { return uid(); }
+  } catch (_) { return newId(); }
 }
 
 export function initAnalytics() {
@@ -35,60 +36,62 @@ export function initAnalytics() {
     posthog.init(POSTHOG_KEY, {
       api_host: POSTHOG_HOST,
       person_profiles: 'identified_only',
-      capture_pageview: false,          // экраны шлём сами (SPA)
+      capture_pageview: false, // экраны SPA отправляем сами через pageview()
       capture_pageleave: true,
       autocapture: true,
-      session_recording: { maskAllInputs: true, maskTextSelector: '[data-ph-mask]' },
+      session_recording: { maskAllInputs: true },
       persistence: 'localStorage+cookie'
     });
     posthog.register({ app_version: APP_VERSION, is_demo: IS_DEMO, platform: 'web' });
-    phReady = true;
+    posthogReady = true;
   }
-  // flush в Supabase при уходе со страницы
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flush();
+  });
 }
 
-// Привязываем события к пользователю (id из Supabase или локальный id)
-export async function identifyUser(extraProps) {
-  const u = await getUser();
-  userId = u ? u.id : localId();
-  if (phReady && !IS_DEMO) posthog.identify(userId, extraProps || {});
-  return userId;
+/** Привязывает события к пользователю: id из Supabase или id устройства */
+export async function identifyUser(traits) {
+  const user = await getUser();
+  const id = user ? user.id : deviceId();
+  if (posthogReady && !IS_DEMO) posthog.identify(id, traits || {});
+  return id;
 }
 
-export function setPersonProps(props) {
-  if (phReady && !IS_DEMO) posthog.setPersonProperties(props);
+export function setPersonProps(traits) {
+  if (posthogReady && !IS_DEMO) posthog.setPersonProperties(traits);
 }
 
-export function setScreen(screen) { currentScreen = screen; }
-
-// Виртуальный pageview для веб-аналитики PostHog (экраны SPA)
-export function pageview(screen) {
-  if (!phReady) return;
-  posthog.capture('$pageview', { $current_url: location.origin + location.pathname + '#' + screen, screen });
+/** Текущий экран: добавляется ко всем событиям и шлётся как $pageview */
+export function setScreen(screen) {
+  currentScreen = screen;
+  if (posthogReady) posthog.capture('$pageview', { $current_url: location.origin + location.pathname + '#' + screen, screen });
 }
 
 export function track(event, props) {
-  const p = Object.assign({ screen: currentScreen }, props || {});
-  if (phReady) posthog.capture(event, p);
-  if (import.meta.env.DEV) console.debug('[track]', event, p);
+  const properties = { screen: currentScreen, ...(props || {}) };
+  if (posthogReady) posthog.capture(event, properties);
+  if (import.meta.env.DEV) console.debug('[track]', event, properties);
   if (!supabase || IS_DEMO) return;
-  queue.push({ event, properties: p, screen: currentScreen, session_id: sessionId, client_ts: new Date().toISOString(), app_version: APP_VERSION });
-  if (queue.length >= 20) flush();
-  else if (!flushTimer) flushTimer = setTimeout(flush, 4000);
+  queue.push({ event, properties, screen: currentScreen, session_id: sessionId, client_ts: new Date().toISOString(), app_version: APP_VERSION });
+  if (queue.length >= BATCH_SIZE) flush();
+  else if (!flushTimer) flushTimer = setTimeout(flush, FLUSH_DELAY_MS);
 }
 
+/** Отправляет накопленные события в Supabase */
 export async function flush() {
-  clearTimeout(flushTimer); flushTimer = null;
+  clearTimeout(flushTimer);
+  flushTimer = null;
   if (!supabase || !queue.length) return;
-  const u = await getUser();
-  if (!u) return;
-  const batch = queue.splice(0, queue.length).map((r) => ({ ...r, user_id: u.id }));
+  const user = await getUser();
+  if (!user) return;
+  const batch = queue.splice(0).map((r) => ({ ...r, user_id: user.id }));
   const { error } = await supabase.from('analytics_events').insert(batch);
   if (error) console.warn('[analytics] supabase insert failed:', error.message);
 }
 
+/** После удаления данных: очередь очищается, PostHog начинает нового анонимного пользователя */
 export function resetAnalytics() {
   queue.length = 0;
-  if (phReady) posthog.reset();
+  if (posthogReady) posthog.reset();
 }

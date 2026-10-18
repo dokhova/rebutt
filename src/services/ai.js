@@ -1,10 +1,12 @@
-// Клиент к серверным функциям /api/* (Vercel). Токен OpenAI живёт только на сервере.
+// Клиент серверных функций /api/* (Vercel). Ключ OpenAI живёт только на сервере.
 import { API_BASE } from '../config.js';
 import { getAccessToken } from './supabase.js';
 
-async function call(path, body, timeoutMs = 45000) {
+const TIMEOUT_MS = 45000;
+
+async function post(path, body) {
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
     const token = await getAccessToken();
     const res = await fetch(API_BASE + path, {
@@ -14,14 +16,18 @@ async function call(path, body, timeoutMs = 45000) {
       signal: ctrl.signal
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
     return data;
-  } finally { clearTimeout(t); }
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-// Фото блюда → { name, kcal, fiber, verdict, tone, tip }
-export const analyzeFood = (image, context) => call('/api/food', { image, context });
-// Вопрос → { answer }
-export const askAI = (question, context) => call('/api/ask', { question, context });
-// Совет на сегодня + наблюдение за неделю → { tip_title, tip_text, noticed }
-export const getInsights = (context) => call('/api/insights', { context });
+/** Фото блюда (data URL) → { is_food, name, kcal, fiber, verdict, tone, tip } */
+export const analyzeFood = (image, goals) => post('/api/food', { image, goals });
+
+/** Вопрос + сводка записей → { answer } */
+export const askAI = (question, context) => post('/api/ask', { question, context });
+
+/** Сводка записей → { tip_title, tip_text, noticed } */
+export const getInsights = (context) => post('/api/insights', { context });

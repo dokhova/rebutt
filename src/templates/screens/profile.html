@@ -1,0 +1,63 @@
+<!-- «Профиль». Значения: src/views/profile.js -->
+<div class="topbar">
+  <button class="icon-btn glass" onClick="{{back}}" aria-label="Назад"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
+  <div class="topbar-title">Профиль</div>
+  <span class="topbar-spacer"></span>
+</div>
+
+<div class="profile-head">
+  <div class="avatar-lg">{{initial}}</div>
+  <div class="profile-name nowrap">{{displayName}}</div>
+  <div class="profile-meta nowrap">{{meta}}</div>
+</div>
+
+<div class="settings">
+  <div class="caption">Данные</div>
+  <div class="list-row"><label class="muted" for="profName">Имя</label><input id="profName" class="inline-input" type="text" autocapitalize="words" value="{{name}}" onChange="{{setName}}"></div>
+  <div class="list-row"><span class="muted">Возраст</span><div class="controls"><button class="round-btn" onClick="{{ageMinus}}" aria-label="Меньше">−</button><span class="control-value num">{{age}}</span><button class="round-btn" onClick="{{agePlus}}" aria-label="Больше">+</button></div></div>
+  <div class="list-row"><span class="muted">Пол</span><div class="controls"><button class="{{sexF}}" onClick="{{pickF}}">Жен</button><button class="{{sexM}}" onClick="{{pickM}}">Муж</button></div></div>
+</div>
+
+<div class="settings">
+  <div class="caption">Цели</div>
+  <div class="chips"><sc-for list="{{goals}}" as="g"><button class="{{g.cls}}" aria-pressed="{{g.on}}" onClick="{{g.pick}}">{{g.label}}</button></sc-for></div>
+</div>
+
+<sc-if value="{{isFemale}}">
+  <div class="settings">
+    <div class="caption">Цикл</div>
+    <div class="list-row"><span>Учитывать цикл</span><button class="{{cycleSwitch}}" onClick="{{toggleCycle}}" role="switch" aria-checked="{{cycleOn}}" aria-label="Учитывать цикл"></button></div>
+    <sc-if value="{{cycleOn}}">
+      <div class="list-row"><span class="muted">Начало месячных</span><div class="controls"><button class="round-btn" onClick="{{lastEarlier}}" aria-label="Раньше">−</button><span class="control-value wide num">{{lastPeriod}}</span><button class="round-btn" onClick="{{lastLater}}" aria-label="Позже">+</button></div></div>
+      <div class="list-row"><span class="muted">Длина цикла</span><div class="controls"><button class="round-btn" onClick="{{lenMinus}}" aria-label="Короче">−</button><span class="control-value wide num">{{cycleLen}} дн.</span><button class="round-btn" onClick="{{lenPlus}}" aria-label="Длиннее">+</button></div></div>
+    </sc-if>
+  </div>
+</sc-if>
+
+<!-- Напоминания пока только сохраняются в профиль, отправки нет (см. README → «Что не сделано») -->
+<div class="settings">
+  <div class="caption">Напоминания</div>
+  <div class="list-row"><span>Утром <span class="muted num">· 09:00</span></span><button class="{{remAmSwitch}}" onClick="{{toggleAm}}" role="switch" aria-checked="{{remAm}}" aria-label="Утреннее напоминание"></button></div>
+  <div class="list-row"><span>Вечером <span class="muted num">· 21:00</span></span><button class="{{remPmSwitch}}" onClick="{{togglePm}}" role="switch" aria-checked="{{remPm}}" aria-label="Вечернее напоминание"></button></div>
+</div>
+
+<div class="settings">
+  <div class="caption">Экспорт</div>
+  <button class="list-row link" onClick="{{exportReport}}"><span>Отчёт для врача <span class="muted">· PDF</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A3B3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+  <button class="list-row link" onClick="{{exportCsv}}"><span>Все данные <span class="muted">· CSV</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A3B3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+</div>
+
+<div class="settings">
+  <div class="caption">Поддержка</div>
+  <a class="list-row link" href="{{supportUrl}}" target="_blank" rel="noopener" onClick="{{openSupport}}"><span>Написать в Telegram <span class="muted">· {{supportHandle}}</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A3B3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"></path></svg></a>
+</div>
+
+<div class="settings">
+  <div class="caption">Документы</div>
+  <sc-for list="{{docs}}" as="d">
+    <a class="list-row link" href="{{d.url}}" target="_blank" rel="noopener" onClick="{{d.open}}"><span>{{d.title}}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A3B3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+  </sc-for>
+</div>
+
+<button class="danger-btn" onClick="{{deleteAll}}">Удалить все данные</button>
+<div class="version">{{appName}} · версия {{version}}</div>

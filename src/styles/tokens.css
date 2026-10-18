@@ -1,0 +1,48 @@
+/* Дизайн-токены. Цвета тонов продублированы в src/domain/score.js (TONE_COLOR) — менять вместе. */
+:root {
+  color-scheme: dark;
+
+  /* фон */
+  --bg: #141318;
+  --bg-top: #26232D;
+  --bg-mid: #1C1A22;
+
+  /* поверхности, от тёмной к светлой */
+  --surface-1: #24212B;   /* карточки, поля */
+  --surface-2: #27242E;   /* карточки типов стула, зона загрузки фото */
+  --surface-3: #2B2833;   /* сегменты, иконки, аватар */
+  --surface-4: #34303D;   /* неактивная кнопка, выбранная карточка, пузырь вопроса */
+
+  /* текст */
+  --ink: #F8F7F2;
+  --muted: #A8A3B3;
+  --faint: #78737F;
+  --dim: #5F5A67;
+
+  /* акцент */
+  --accent: #D3FA9D;      /* основная кнопка, «+», переключатели */
+  --accent-ink: #183A1B;  /* текст на акценте */
+  --selected: #DDE5CF;    /* выбранный чип / сегмент */
+  --danger: #FF8F80;
+
+  /* тоны состояния кишечника */
+  --tone-calm: #D3FA9D;
+  --tone-mild: #7FA866;
+  --tone-sens: #A78BFA;
+  --tone-cycle: #7954C8;
+
+  /* линии */
+  --line: rgba(255, 255, 255, .07);
+  --line-2: rgba(255, 255, 255, .1);
+  --line-3: rgba(255, 255, 255, .14);
+
+  /* приветственный экран (светлый) */
+  --welcome-ink: #1C1A22;
+  --welcome-text: #4B4753;
+
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-serif: 'Noto Serif Display', 'Noto Serif', Georgia, serif;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}

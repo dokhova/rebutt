@@ -1,0 +1,114 @@
+# Архитектура
+
+## Структура
+
+```
+index.html                     оболочка страницы, подключает src/main.js
+src/
+  main.js                      точка входа: стили, аналитика, регистрация шаблонов, mount
+  config.js                    название, версия, поддержка, документы, переменные окружения
+  core/
+    runtime.js                 мини-рантайм: шаблоны + morphdom (см. ниже)
+    id.js                      UUID
+  domain/                      чистая логика, без DOM и сети — покрыта тестами
+    dates.js                   ключи дней 'YYYY-MM-DD', сдвиги, русские названия
+    catalog.js                 справочники: типы стула, цели, симптомы, блюда-примеры
+    score.js                   «работа кишечника» %, тоны состояния
+    cycle.js                   день и фаза цикла
+    profile.js                 модель профиля, шаги онбординга, свойства для аналитики
+    ai-context.js              сводка за 14 дней для ИИ
+    demo.js                    данные демо-режима
+  app/
+    App.js                     корневой компонент: состояние + все действия пользователя
+  views/                       view-функции: состояние → значения для шаблона экрана
+    index.js                   экран → view
+    shell.js                   общее: нижнее меню, тост, фон
+    onboarding.js today.js add-entry.js insights.js profile.js
+  templates/
+    app.html                   оболочка: фон, контейнер экрана, меню, тост
+    screens/*.html             разметка экранов
+    components/*.html          разметка компонентов Gut и Pebble
+  components/                  Gut.js (иллюстрация кишечника), Pebble.js (иконка типа стула)
+  services/                    всё, что ходит наружу
+    supabase.js                клиент и анонимный вход
+    store.js                   профиль и записи: localStorage + Supabase
+    analytics.js               PostHog + дубль событий в Supabase
+    ai.js                      запросы к /api
+    image.js                   сжатие фото перед отправкой в ИИ
+    export.js                  CSV и отчёт для врача
+  styles/
+    tokens.css                 цвета, шрифты (CSS-переменные)
+    base.css                   сброс, утилиты, анимации
+    components.css             общие элементы: кнопки, карточки, чипы, меню
+    screens.css                элементы конкретных экранов
+api/                           серверные функции Vercel (Node)
+  _lib/openai.js               вызов OpenAI со structured output, проверка JWT Supabase, лимит запросов
+  food.js ask.js insights.js
+public/
+  img/                         иллюстрации кишечника по состояниям
+  legal/                       документы (статичные страницы)
+supabase/migrations/           SQL-схема с RLS
+tests/                         тесты domain/
+```
+
+## Поток данных
+
+```
+действие пользователя
+  → обработчик из view (onClick="{{…}}")
+  → метод App (src/app/App.js): меняет state, отправляет событие аналитики, пишет в store
+  → setState → перерисовка в следующем микротаске
+  → App.view() = shellView + view текущего экрана
+  → шаблон экрана → DOM (morphdom обновляет только изменившееся)
+```
+
+Правила, которые держат код в порядке:
+
+- **domain** не знает про DOM, state и сеть. Всё, что можно посчитать, считается там.
+- **views** только готовят значения для шаблона: форматируют, выбирают классы, привязывают обработчики к методам App. Состояние не меняют.
+- **App** — единственное место, где меняется состояние и отправляются события аналитики.
+- **services** — единственное место, где есть `fetch`, Supabase, PostHog и `localStorage` (кроме кэша инсайтов в App).
+- **Стили** — только классы из `src/styles`. Инлайн-стили в шаблонах — только для значений, вычисляемых на лету (высота столбика, цвет фона, размер компонента).
+
+## Мини-рантайм шаблонов
+
+`src/core/runtime.js` — около 200 строк, описание синтаксиса в шапке файла. Коротко:
+
+```html
+<div class="{{cls}}">{{text}}</div>
+<button onClick="{{save}}">Сохранить</button>
+<sc-if value="{{hasScore}}">…</sc-if>
+<sc-for list="{{rings}}" as="r">{{r.label}}</sc-for>
+<sc-include name="today"></sc-include>                  <!-- фрагмент из templates/screens -->
+<sc-component name="Gut" tone="calm" size="260"></sc-component>
+```
+
+В шаблоне только подстановки путей (`a.b.c`), без выражений: всю логику держим во view.
+Каждый `setState` перестраивает виртуальное дерево и сравнивает его с DOM через morphdom. Для приложения такого размера этого достаточно; при росте можно перейти на Preact или Lit, а view-функции перенести почти без изменений.
+
+## Хранение данных
+
+- Записи дня (`log`) — объект `{ 'YYYY-MM-DD': { gut: [], meals: [], period } }`, формат описан в `src/domain/score.js`.
+- После онбординга всё сохраняется в `localStorage` (`gt_state_v1`) и параллельно в Supabase: каждая запись — отдельной строкой, профиль — upsert с задержкой 0,7 с.
+- При запуске локальные и серверные записи объединяются по `id` (`store.mergeLogs`).
+- Фото еды в базу не сохраняются: только результат разбора.
+- Без Supabase или в демо-режиме `supabase === null`, все функции store молча работают только локально.
+
+## Серверные функции
+
+| Эндпоинт | Вход | Выход |
+|---|---|---|
+| `POST /api/food` | `{ image: dataURL, goals }` | `{ is_food, name, kcal, fiber, verdict, tone, tip }` |
+| `POST /api/ask` | `{ question, context }` | `{ answer }` |
+| `POST /api/insights` | `{ context }` | `{ tip_title, tip_text, noticed }` |
+
+`context` строит `domain/ai-context.js`. Ответы модели приходят строго по JSON-схеме (structured outputs).
+Если Supabase настроен, запрос без валидного JWT пользователя получит 401. Лимит — `AI_RATE_LIMIT_PER_MIN` запросов в минуту на пользователя.
+
+## Как добавить…
+
+**Экран:** шаблон `templates/screens/x.html` → `views/x.js` → строка в `views/index.js` → `registerPartial('x', …)` в `main.js` → `<sc-if value="{{is.x}}">` в `templates/app.html` и флаг в `views/shell.js` → имя для аналитики в `SCREEN_EVENT_NAME` в `App.js`.
+
+**Событие аналитики:** вызвать `track('name', {…})` в методе App и дописать строку в `docs/ANALYTICS.md`.
+
+**Поле профиля:** `domain/profile.js` (`blankProfile`) → колонка в новой миграции `supabase/migrations/` → `profileToRow` и `rowToProfile` в `services/store.js`.

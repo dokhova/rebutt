@@ -1,15 +1,34 @@
-import './styles.css';
-import { register, boot } from './runtime.js';
-import App from './components/App.js';
+// Точка входа: стили, аналитика, регистрация шаблонов и запуск приложения.
+import './styles/tokens.css';
+import './styles/base.css';
+import './styles/components.css';
+import './styles/screens.css';
+
+import { registerComponent, registerPartial, mount } from './core/runtime.js';
+import { initAnalytics } from './services/analytics.js';
+import App from './app/App.js';
 import Gut from './components/Gut.js';
 import Pebble from './components/Pebble.js';
-import appTpl from './templates/app.html?raw';
-import gutTpl from './templates/gut.html?raw';
-import pebbleTpl from './templates/pebble.html?raw';
-import { initAnalytics } from './services/analytics.js';
+
+import appHtml from './templates/app.html?raw';
+import gutHtml from './templates/components/gut.html?raw';
+import pebbleHtml from './templates/components/pebble.html?raw';
+import onboardingHtml from './templates/screens/onboarding.html?raw';
+import todayHtml from './templates/screens/today.html?raw';
+import addHtml from './templates/screens/add.html?raw';
+import insightsHtml from './templates/screens/insights.html?raw';
+import profileHtml from './templates/screens/profile.html?raw';
 
 initAnalytics();
-register('App', App, appTpl);
-register('Gut', Gut, gutTpl);
-register('Pebble', Pebble, pebbleTpl);
-boot({});
+
+registerComponent('App', App, appHtml);
+registerComponent('Gut', Gut, gutHtml);
+registerComponent('Pebble', Pebble, pebbleHtml);
+
+registerPartial('onboarding', onboardingHtml);
+registerPartial('today', todayHtml);
+registerPartial('add', addHtml);
+registerPartial('insights', insightsHtml);
+registerPartial('profile', profileHtml);
+
+mount('#app');

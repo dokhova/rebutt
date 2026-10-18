@@ -1,7 +1,7 @@
 # Аналитика: словарь событий
 
 Каждое событие уходит в **PostHog** и дублируется в **Supabase** → таблица `analytics_events` (`event`, `properties` jsonb, `screen`, `session_id`, `user_id`).
-Код: `src/services/analytics.js`, вызовы `track()` — в `src/components/App.js`.
+Код: `src/services/analytics.js`. Все вызовы `track()` — в методах `src/app/App.js` (одно действие пользователя → одно место в коде).
 
 ## Общие свойства (у всех событий)
 
@@ -23,7 +23,7 @@
 |---|---|---|
 | `app_opened` | открытие приложения | `is_returning`, `local_days` |
 | `screen_viewed` | показ экрана (кроме онбординга) | `screen_name` |
-| `nav_clicked` | переход между экранами | `to`, `from`, `source` (`tab` / `avatar` / `back` / `empty_day`) |
+| `nav_clicked` | переход между экранами | `to`, `from` (`today` / `add_entry` / `insights` / `profile`), `source` (`tab` / `avatar` / `back` / `empty_day`) |
 | `day_selected` | выбор дня в неделе | `days_ago`, `has_data` |
 
 ### Онбординг

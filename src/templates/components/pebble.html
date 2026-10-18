@@ -1,5 +1,6 @@
-<div style="width: {{size}}px; height: {{size}}px; position: relative; flex-shrink: 0">
-<svg viewBox="0 0 160 160" width="100%" height="100%" aria-hidden="true" style="display: block; overflow: visible">
+<!-- Иконка типа стула. Props: type (1–7), size (px). Показывается одна группа t1…t7. -->
+<div class="pebble" style="width: {{size}}px; height: {{size}}px">
+<svg viewBox="0 0 160 160" width="100%" height="100%" aria-hidden="true">
 <defs>
 <radialGradient id="pbStone" cx="0.36" cy="0.28" r="0.85">
 <stop offset="0" stop-color="#F3EEE5"></stop>
@@ -26,7 +27,7 @@
 </filter>
 </defs>
 
-<sc-if value="{{t1}}" hint-placeholder-val="{{false}}">
+<sc-if value="{{t1}}">
 <ellipse cx="82" cy="126" rx="56" ry="7" fill="#000000" opacity="0.16" filter="url(#pbBlur)"></ellipse>
 <g filter="url(#pbGrain)" fill="url(#pbStone)">
 <circle cx="46" cy="96" r="17"></circle>
@@ -37,7 +38,7 @@
 </g>
 </sc-if>
 
-<sc-if value="{{t2}}" hint-placeholder-val="{{false}}">
+<sc-if value="{{t2}}">
 <ellipse cx="82" cy="118" rx="62" ry="7" fill="#000000" opacity="0.16" filter="url(#pbBlur)"></ellipse>
 <g filter="url(#pbGrain)" fill="url(#pbStone)">
 <circle cx="34" cy="92" r="19"></circle>
@@ -48,7 +49,7 @@
 </g>
 </sc-if>
 
-<sc-if value="{{t3}}" hint-placeholder-val="{{false}}">
+<sc-if value="{{t3}}">
 <ellipse cx="80" cy="114" rx="62" ry="7" fill="#000000" opacity="0.16" filter="url(#pbBlur)"></ellipse>
 <g transform="rotate(-8 80 81)">
 <rect x="16" y="60" width="128" height="42" rx="21" fill="url(#pbStone)" filter="url(#pbGrain)"></rect>
@@ -62,7 +63,7 @@
 </g>
 </sc-if>
 
-<sc-if value="{{t4}}" hint-placeholder-val="{{true}}">
+<sc-if value="{{t4}}">
 <ellipse cx="80" cy="116" rx="64" ry="7" fill="#000000" opacity="0.16" filter="url(#pbBlur)"></ellipse>
 <g transform="rotate(-10 80 82)">
 <rect x="14" y="62" width="132" height="40" rx="20" fill="url(#pbStone)" filter="url(#pbGrain)"></rect>
@@ -70,7 +71,7 @@
 </g>
 </sc-if>
 
-<sc-if value="{{t5}}" hint-placeholder-val="{{false}}">
+<sc-if value="{{t5}}">
 <ellipse cx="80" cy="120" rx="58" ry="7" fill="#000000" opacity="0.16" filter="url(#pbBlur)"></ellipse>
 <g filter="url(#pbGrain)" fill="url(#pbSoft)">
 <ellipse cx="52" cy="94" rx="25" ry="18"></ellipse>
@@ -79,7 +80,7 @@
 </g>
 </sc-if>
 
-<sc-if value="{{t6}}" hint-placeholder-val="{{false}}">
+<sc-if value="{{t6}}">
 <ellipse cx="80" cy="120" rx="60" ry="7" fill="#000000" opacity="0.14" filter="url(#pbBlur)"></ellipse>
 <g fill="url(#pbSoft)" filter="url(#pbGrain)">
 <circle cx="56" cy="92" r="16"></circle>
@@ -100,7 +101,7 @@
 </g>
 </sc-if>
 
-<sc-if value="{{t7}}" hint-placeholder-val="{{false}}">
+<sc-if value="{{t7}}">
 <ellipse cx="80" cy="118" rx="64" ry="6" fill="#000000" opacity="0.12" filter="url(#pbBlur)"></ellipse>
 <path d="M22 104 C30 88 58 94 70 86 C86 76 112 90 128 84 C146 78 148 104 132 110 C112 118 92 108 74 114 C54 120 16 122 22 104 Z" fill="url(#pbWater)"></path>
 <ellipse cx="62" cy="96" rx="18" ry="3" fill="#FFFFFF" opacity="0.5"></ellipse>

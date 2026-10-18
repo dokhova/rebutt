@@ -1,4 +1,4 @@
-// POST /api/food  { image: dataURL, context?: { goals } } → разбор блюда по фото
+// POST /api/food  { image: dataURL, goals?: string[] } → разбор блюда по фото
 import { chatJSON, handler, SAFETY, VISION_MODEL } from './_lib/openai.js';
 
 export const config = { maxDuration: 60 };
@@ -22,7 +22,7 @@ export default handler(async (body) => {
   const image = String(body.image || '');
   if (!/^data:image\/(jpeg|png|webp);base64,/.test(image)) { const e = new Error('Нужно фото в формате JPEG/PNG/WEBP'); e.status = 400; throw e; }
   if (image.length > 3_500_000) { const e = new Error('Фото слишком большое'); e.status = 413; throw e; }
-  const goals = (body.context && body.context.goals) || [];
+  const goals = Array.isArray(body.goals) ? body.goals.slice(0, 10).map(String) : [];
   return chatJSON({
     model: VISION_MODEL,
     schemaName: 'food',

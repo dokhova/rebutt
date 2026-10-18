@@ -1,6 +1,10 @@
-// Общие настройки приложения. Название пока плейсхолдер — поменяйте здесь и в public/legal/*.html
+// Настройки приложения. Всё, что может понадобиться поменять без погружения в код, — здесь.
+
+// Название пока плейсхолдер — поменяйте здесь и в public/legal/*.html
 export const APP_NAME = '[название]';
-export const APP_VERSION = '1.0.0';
+
+// Версия берётся из package.json (см. vite.config.js → define)
+export const APP_VERSION = __APP_VERSION__;
 
 // Поддержка
 export const SUPPORT_URL = 'https://t.me/the_dokhova';
@@ -14,6 +18,7 @@ export const LEGAL_DOCS = {
   consent: { url: '/legal/consent.html', title: 'Согласие на обработку данных о здоровье' }
 };
 
+// Переменные окружения (.env.local локально, Settings → Environment Variables на Vercel). Описание — .env.example
 const env = import.meta.env;
 export const POSTHOG_KEY = env.VITE_POSTHOG_KEY || '';
 export const POSTHOG_HOST = env.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com';

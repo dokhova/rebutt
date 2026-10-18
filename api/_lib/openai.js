@@ -2,7 +2,7 @@
 // Файлы в папке api/_lib не становятся эндпоинтами на Vercel.
 
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
-export const MODEL = process.env.OPENAI_MODEL || 'gpt-5-mini';
+const MODEL = process.env.OPENAI_MODEL || 'gpt-5-mini';
 export const VISION_MODEL = process.env.OPENAI_VISION_MODEL || MODEL;
 
 export const SAFETY = [
@@ -42,7 +42,7 @@ export async function chatJSON({ model = MODEL, system, user, schema, schemaName
 
 // Проверка, что запрос пришёл от пользователя приложения (JWT Supabase).
 // Если Supabase не настроен — пропускаем (локальная разработка).
-export async function requireUser(req) {
+async function requireUser(req) {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const anon = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
   if (!url || !anon) return { id: 'anonymous' };
@@ -55,7 +55,7 @@ export async function requireUser(req) {
 
 // Простейший лимит на инстанс: N запросов в минуту на пользователя
 const hits = new Map();
-export function rateLimit(id, perMinute = Number(process.env.AI_RATE_LIMIT_PER_MIN || 12)) {
+function rateLimit(id, perMinute = Number(process.env.AI_RATE_LIMIT_PER_MIN || 12)) {
   const now = Date.now(), win = 60000;
   const arr = (hits.get(id) || []).filter((t) => now - t < win);
   if (arr.length >= perMinute) { const e = new Error('Слишком много запросов, попробуйте через минуту'); e.status = 429; throw e; }

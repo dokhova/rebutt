@@ -1,6 +1,7 @@
-import { DCLogic } from '../runtime.js';
+// Иллюстрация кишечника в цвете состояния
+import { Component } from '../core/runtime.js';
 
-const T = {
+const TONES = {
   calm: { src: '/img/gut2-calm.webp', glow: '#B8F06A' },
   mild: { src: '/img/gut2-mild.webp', glow: '#6F9A55' },
   sens: { src: '/img/gut2-sens.webp', glow: '#A78BFA' },
@@ -10,11 +11,10 @@ const T = {
   onbcycle: { src: '/img/gut2-onbcycle.webp', glow: '#A78BFA' }
 };
 
-export default class Gut extends DCLogic {
-  renderVals() {
-    let tone = this.props.tone;
-    if (!T[tone]) tone = 'calm';
-    const size = Number(this.props.size ?? 240) || 240;
-    return { size, blur: Math.round(size / 6), ...T[tone] };
+export default class Gut extends Component {
+  view() {
+    const tone = TONES[this.props.tone] ? this.props.tone : 'calm';
+    const size = Number(this.props.size) || 240;
+    return { size, blur: Math.round(size / 6), ...TONES[tone] };
   }
 }
