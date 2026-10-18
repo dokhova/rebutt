@@ -1,0 +1,12 @@
+<!-- Правка записи о стуле. Значения: src/views/entry.js -->
+<div class="topbar">
+  <button class="icon-btn glass" onClick="{{closeEntry}}" aria-label="Назад"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
+  <div class="topbar-title">Запись</div>
+  <span class="topbar-spacer"></span>
+</div>
+<div class="hint">{{entryWhen}}</div>
+
+<sc-include name="gut-form"></sc-include>
+
+<button class="btn" onClick="{{saveEntry}}">Сохранить</button>
+<button class="danger-btn" onClick="{{deleteEntry}}">Удалить запись</button>

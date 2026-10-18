@@ -17,7 +17,8 @@ export const SAFETY = [
 ].join(' ');
 
 // У моделей gpt-5 часть лимита уходит на рассуждения, поэтому запас токенов большой
-export async function chatJSON({ model = MODEL, system, user, schema, schemaName = 'result', maxTokens = 4000 }) {
+export async function chatJSON({ model, system, user, schema, schemaName = 'result', maxTokens = 4000 }) {
+  model = model || MODEL;
   const key = process.env.OPENAI_API_KEY;
   if (!key) { const e = new Error('OPENAI_API_KEY не задан'); e.status = 500; throw e; }
   const body = {

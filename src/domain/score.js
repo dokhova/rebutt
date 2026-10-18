@@ -2,7 +2,7 @@
 //
 // Запись дня (DayRecord):
 //   { gut: GutEntry[], meals: Meal[], period: boolean }
-// GutEntry: { id, time 'HH:MM', type, sym: string[] }
+// GutEntry: { id, time 'HH:MM', type, sym: string[], color?: id из STOOL_COLORS, stress?: 0–10 }
 //   type 1–7 — стул по Бристольской шкале, 0 — «стула не было», -1 — отмечено только самочувствие
 // Meal: { id, time, name, kcal, fiber, verdict, tone, tip, photo?, source? }
 

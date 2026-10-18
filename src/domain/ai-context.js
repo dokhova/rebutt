@@ -1,5 +1,7 @@
 // Сводка для ИИ: профиль и записи за последние 14 дней. Отправляется в /api/ask и /api/insights.
-import { BRISTOL_TYPES } from './catalog.js';
+import { BRISTOL_TYPES, STOOL_COLORS } from './catalog.js';
+
+const colorLabel = (id) => (STOOL_COLORS.find((c) => c.id === id) || {}).label || id;
 import { addDays } from './dates.js';
 import { gutScore, symptomsOf, emptyDay } from './score.js';
 import { cycleDay, cyclePhase } from './cycle.js';
@@ -16,7 +18,8 @@ export function buildAiContext(profile, log, todayK) {
     const sc = gutScore(r);
     days.push({
       date: k,
-      stool: r.gut.filter((g) => g.type > 0).map((g) => g.time + ' тип ' + g.type + ' (' + BRISTOL_TYPES[g.type] + ')'),
+      stool: r.gut.filter((g) => g.type > 0).map((g) => g.time + ' тип ' + g.type + ' (' + BRISTOL_TYPES[g.type] + ')' + (g.color ? ', цвет: ' + colorLabel(g.color) : '')),
+      stress: r.gut.filter((g) => g.stress != null).map((g) => g.stress + '/10'),
       no_stool_marked: r.gut.some((g) => g.type === 0),
       symptoms: symptomsOf(r),
       meals: r.meals.map((m) => m.time + ' ' + m.name + ': ' + m.kcal + ' ккал, Б ' + (m.protein || 0) + ' г, Ж ' + (m.fat || 0) + ' г, У ' + (m.carbs || 0) + ' г, клетчатка ' + m.fiber + ' г' + (m.note ? ' (' + m.note + ')' : '')),

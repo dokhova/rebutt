@@ -4,7 +4,7 @@
     <sc-if value="{{is.booting}}"><div class="boot" role="status"><span class="boot-dot"></span>Загружаем ваши данные…</div></sc-if>
     <sc-if value="{{is.legal}}"><sc-include name="legal"></sc-include></sc-if>
     <sc-if value="{{is.meal}}"><sc-include name="meal"></sc-include></sc-if>
-    <sc-if value="{{is.assistant}}"><sc-include name="assistant"></sc-include></sc-if>
+    <sc-if value="{{is.entry}}"><sc-include name="entry"></sc-include></sc-if>
     <sc-if value="{{is.onboarding}}"><sc-include name="onboarding"></sc-include></sc-if>
     <sc-if value="{{is.today}}"><sc-include name="today"></sc-include></sc-if>
     <sc-if value="{{is.add}}"><sc-include name="add"></sc-include></sc-if>
@@ -14,6 +14,7 @@
 
   <sc-if value="{{showTabs}}">
     <div class="tabbar-fade"></div>
+    <div class="dock">
     <nav class="tabbar">
       <button class="{{tabToday}}" onClick="{{goToday}}">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"></circle></svg>Сегодня
@@ -25,7 +26,13 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 19V11M12 19V5M19 19v-6"></path></svg>Инсайты
       </button>
     </nav>
+    <button class="ai-fab" onClick="{{openAssistantDock}}" aria-label="Спросить ИИ">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.9L19 9.7l-5.2 1.8L12 16.4l-1.8-4.9L5 9.7l5.2-1.8z"></path><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"></path></svg>
+    </button>
+    </div>
   </sc-if>
+
+  <sc-if value="{{showAssistant}}"><sc-include name="assistant"></sc-include></sc-if>
 
   <sc-if value="{{hasToast}}">
     <div class="toast fade-in" role="status">{{toast}}</div>

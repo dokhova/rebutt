@@ -1,5 +1,6 @@
-// «+»: запись за сегодня — стул, самочувствие, отметка месячных, еда по фото.
-import { BRISTOL_TYPES, SYMPTOMS, MEAL_TINT } from '../domain/catalog.js';
+// «+»: запись за сегодня — стул, цвет, самочувствие, стресс, отметка месячных, еда.
+import { MEAL_TINT } from '../domain/catalog.js';
+import { gutFormView } from './gut-form.js';
 import { mealCard } from './meal-card.js';
 import { dayMonth } from '../domain/dates.js';
 import { gutScore } from '../domain/score.js';
@@ -14,22 +15,7 @@ export function addEntryView(app) {
   return {
     dateLong: 'Сегодня, ' + dayMonth(todayK),
 
-    stoolHad: seg(f.stool === 'had'),
-    stoolNone: seg(f.stool === 'none'),
-    setHad: () => app.setStool('had'),
-    setNone: () => app.setStool('none'),
-    showTypes: f.stool === 'had',
-    types: Object.keys(BRISTOL_TYPES).map(Number).map((n) => ({
-      type: String(n), short: BRISTOL_TYPES[n], on: f.type === n,
-      aria: 'Тип ' + n + ', ' + BRISTOL_TYPES[n],
-      cls: 'type-card' + (f.type === n ? ' on' : ''),
-      pick: () => app.pickBristolType(n)
-    })),
-
-    symptoms: SYMPTOMS.map((label) => {
-      const on = f.sym.includes(label);
-      return { label, on, cls: 'chip' + (on ? ' on' : ''), pick: () => app.toggleSymptom(label) };
-    }),
+    ...gutFormView(app, 'form'),
 
     cycleEnabled: p.cycle && !p.pregnant,
     cycleDayKnown: cycleDay(p, todayK, todayK) > 0,
@@ -52,7 +38,6 @@ export function addEntryView(app) {
     removePhoto: () => app.removeFoodPhoto(),
     analyzeCls: 'btn secondary' + (f.photo || f.note.trim() ? '' : ' off'),
     analyze: () => app.analyzeFoodDraft(),
-    tryExample: () => app.tryExampleMeal(),
     scanTint: MEAL_TINT.mild,
     card: f.result ? mealCard({ ...f.result, note: f.note }, f.photo) : null,
     removeFood: () => app.removeFood(),

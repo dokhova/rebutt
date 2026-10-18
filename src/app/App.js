@@ -11,6 +11,7 @@ import { gutScore, emptyDay, hasData } from '../domain/score.js';
 import { blankProfile, profileTraits, onboardingFlow, goalLabels } from '../domain/profile.js';
 import { buildAiContext, aiContextHash } from '../domain/ai-context.js';
 import { normalizeMeal } from '../domain/meal.js';
+import { splitSentences } from '../domain/text.js';
 import { DEMO_TODAY, demoLog, demoProfile, DEMO_ANSWERS, DEMO_ANSWER_DEFAULT } from '../domain/demo.js';
 import * as store from '../services/store.js';
 import { track, flush, identifyUser, setPersonProps, setScreen, resetAnalytics } from '../services/analytics.js';
@@ -28,6 +29,7 @@ const EXAMPLE_SCAN_MS = 1600;
 const PROFILE_SAVE_DELAY_MS = 700;
 const DRUM_ROW_PX = 40;
 const BOOT_TIMEOUT_MS = 6000;
+const SENTENCE_DELAY_MS = 900;
 
 /** Имена экранов в аналитике */
 const SCREEN_EVENT_NAME = { today: 'today', add: 'add_entry', insights: 'insights', profile: 'profile' };
@@ -36,12 +38,14 @@ const blankForm = () => ({
   stool: '',          // '' | 'had' | 'none'
   type: 4,            // тип по Бристольской шкале
   sym: [],            // симптомы
+  color: '',          // цвет стула (id из STOOL_COLORS), только если стул был
+  stress: null,       // стресс 0–10; null — не отмечали
   period: '',         // '' | 'yes' | 'no'
   food: 'pick',       // 'pick' — фото и/или описание, 'scan' — ИИ разбирает, 'done' — результат
   photo: '',          // blob-ссылка на фото (только в текущей сессии)
   note: '',           // комментарий к блюду: что на тарелке, порция
   result: null,       // разбор блюда (src/domain/meal.js)
-  source: '',         // 'photo' | 'text' | 'example'
+  source: '',         // 'photo' | 'text'
   fixOpen: false,     // открыто поле «Уточнить»
   fix: '',            // текст уточнения
   fixing: false       // идёт пересчёт
@@ -62,7 +66,7 @@ export default class App extends Component {
       // /?demo#today и т.п. открывает нужный экран с тестовым профилем, /?demo — онбординг
       log = demoLog();
       const hash = location.hash.slice(1) === 'home' ? 'today' : location.hash.slice(1);
-      if (VIEWS[hash] && hash !== 'onboarding') { screen = hash; profile = demoProfile(); }
+      if (['today', 'add', 'insights', 'profile'].includes(hash)) { screen = hash; profile = demoProfile(); }
     } else {
       const local = store.loadLocal();
       if (local && local.profile) {
@@ -82,9 +86,11 @@ export default class App extends Component {
       booting: !IS_DEMO && !!supabase && !profile.onboardedAt,
       onbStep: 'consent', consent: false,
       legal: null,        // открытый документ: { id, title, html, error }
-      assistant: false,   // открыт экран ИИ-помощника
-      chat: [],           // диалог с помощником: [{ role: 'user' | 'ai', text }]
+      assistant: false,   // открыта панель ИИ-помощника
+      chat: [],           // диалог: [{ role: 'user' | 'ai', text, shown?, image? }]; shown — сколько текста уже показано
       chatLoading: false,
+      chatImage: '',      // фото, приложенное к следующему вопросу (blob-ссылка)
+      entryEdit: null,    // правка записи о стуле: { day, id, draft }
       mealEdit: null,     // открытое сохранённое блюдо: { day, id, fix, fixing }
       keyboard: false,    // в фокусе текстовое поле — прячем нижнее меню
       avatarUrl: (tg && tg.photo_url) || '',
@@ -150,9 +156,13 @@ export default class App extends Component {
   componentDidUpdate(prev) {
     const s = this.state;
     if (prev.screen !== s.screen || prev.onbStep !== s.onbStep || prev.booting !== s.booting ||
-        !!prev.legal !== !!s.legal || prev.assistant !== s.assistant || !!prev.mealEdit !== !!s.mealEdit) {
+        !!prev.legal !== !!s.legal || !!prev.mealEdit !== !!s.mealEdit || !!prev.entryEdit !== !!s.entryEdit) {
       if (this.scrollEl) this.scrollEl.scrollTop = 0;
       this.onScreenShown();
+    } else if (prev.assistant !== s.assistant) {
+      // панель ИИ открывается поверх — экран под ней не прокручиваем
+      syncBackButton(this.canGoBack(), this.handleBack);
+      if (s.assistant) setScreen('assistant');
     }
     if ((prev.log !== s.log || prev.profile !== s.profile) && s.profile.onboardedAt) store.saveLocal(s.profile, s.log);
   }
@@ -162,8 +172,9 @@ export default class App extends Component {
     if (s.booting) return;
     syncBackButton(this.canGoBack(), this.handleBack);
     if (s.legal) { setScreen('legal_' + s.legal.id); return; }
-    if (s.mealEdit) { setScreen('meal'); return; }
     if (s.assistant) { setScreen('assistant'); return; }
+    if (s.mealEdit) { setScreen('meal'); return; }
+    if (s.entryEdit) { setScreen('entry'); return; }
     if (s.screen === 'onboarding') {
       setScreen('onboarding_' + s.onbStep);
       track('onboarding_step_viewed', { step: s.onbStep, step_index: this.onboardingFlow().indexOf(s.onbStep) + 1 });
@@ -176,9 +187,13 @@ export default class App extends Component {
 
   view() {
     const s = this.state;
-    // Поверх экранов: загрузка → документ → блюдо → ИИ-помощник
-    const screen = s.booting ? 'booting' : s.legal ? 'legal' : s.mealEdit ? 'meal' : s.assistant ? 'assistant' : s.screen;
-    return { ...shellView(this, screen), ...(VIEWS[screen] ? VIEWS[screen](this) : {}) };
+    // Поверх экранов: загрузка → документ → блюдо → запись. ИИ-помощник — выезжающая панель поверх всего.
+    const screen = s.booting ? 'booting' : s.legal ? 'legal' : s.mealEdit ? 'meal' : s.entryEdit ? 'entry' : s.screen;
+    return {
+      ...shellView(this, screen),
+      ...(VIEWS[screen] ? VIEWS[screen](this) : {}),
+      ...(s.assistant ? VIEWS.assistant(this) : {})
+    };
   }
 
   // ================= данные =================
@@ -193,8 +208,8 @@ export default class App extends Component {
     const f = this.state.form, time = IS_DEMO ? '14:46' : nowHM();
     const day = { gut: [...base.gut], meals: [...base.meals], period: f.period ? f.period === 'yes' : base.period };
     let gut = null, meal = null;
-    if (f.stool || f.sym.length) {
-      gut = { id: newId(), time, type: f.stool === 'had' ? f.type : f.stool === 'none' ? 0 : -1, sym: [...f.sym] };
+    if (f.stool || f.sym.length || f.stress != null) {
+      gut = this.gutFromDraft(f, { id: newId(), time });
       day.gut.push(gut);
     }
     if (f.food === 'done' && f.result) {
@@ -220,6 +235,14 @@ export default class App extends Component {
     this.setState({ screen });
   }
 
+  /** Стрелки «‹ Сегодня ›»: на день назад или вперёд в пределах [начало использования, сегодня] */
+  shiftDay(delta) {
+    const k = addDays(this.state.selected, delta), since = (this.state.profile.since || '').slice(0, 10);
+    if (k > this.today() || (since && k < since)) return;
+    this.setState({ selected: k });
+    track('day_selected', { days_ago: Math.round((new Date(this.today()) - new Date(k)) / 864e5), direction: delta > 0 ? 'next' : 'prev' });
+  }
+
   selectDay(k, daysAgo, withData) {
     if (k === this.state.selected) return;
     this.setState({ selected: k });
@@ -229,16 +252,17 @@ export default class App extends Component {
   /** Есть ли куда вернуться: документ, профиль, не первый шаг онбординга */
   canGoBack() {
     const s = this.state;
-    if (s.legal || s.mealEdit || s.assistant || s.screen === 'profile') return true;
+    if (s.legal || s.mealEdit || s.entryEdit || s.assistant || s.screen === 'profile') return true;
     return s.screen === 'onboarding' && this.onboardingFlow().indexOf(s.onbStep) > 0;
   }
 
   /** «Назад» — и кнопка в интерфейсе, и нативная кнопка Telegram */
   back() {
     const s = this.state;
-    if (s.legal) this.closeLegalDoc();
+    if (s.assistant) this.closeAssistant();
+    else if (s.legal) this.closeLegalDoc();
     else if (s.mealEdit) this.closeMeal();
-    else if (s.assistant) this.closeAssistant();
+    else if (s.entryEdit) this.closeEntry();
     else if (s.screen === 'profile') this.navigate('today', 'back');
     else if (s.screen === 'onboarding') this.onboardingBack();
   }
@@ -420,7 +444,7 @@ export default class App extends Component {
     if (!IS_DEMO) await signOut();
     this.onboardingStartedAt = Date.now();
     this.setState({
-      screen: 'onboarding', onbStep: 'consent', consent: false, legal: null, assistant: false, mealEdit: null, chat: [],
+      screen: 'onboarding', onbStep: 'consent', consent: false, legal: null, assistant: false, mealEdit: null, entryEdit: null, chat: [],
       profile: blankProfile(), log: {}, form: blankForm(), insights: null
     });
     this.showToast(ok ? 'Данные удалены' : 'Удалено на устройстве, сервер не ответил');
@@ -430,25 +454,98 @@ export default class App extends Component {
 
   setForm(patch) { this.setState({ form: { ...this.state.form, ...patch } }); }
 
+  // ---------- стул и самочувствие: одна логика для новой записи (target 'form') и правки ('edit') ----------
+
+  gutDraft(target) { return target === 'edit' ? this.state.entryEdit.draft : this.state.form; }
+
+  setGutDraft(target, patch) {
+    if (target === 'edit') this.setState({ entryEdit: { ...this.state.entryEdit, draft: { ...this.state.entryEdit.draft, ...patch } } });
+    else this.setForm(patch);
+  }
+
   /** «Был» / «Не было»; повторное нажатие снимает выбор */
-  setStool(value) {
-    const v = this.state.form.stool === value ? '' : value;
-    this.setForm({ stool: v });
-    track('stool_status_selected', { value: v || 'cleared' });
+  setStool(value, target = 'form') {
+    const v = this.gutDraft(target).stool === value ? '' : value;
+    this.setGutDraft(target, { stool: v });
+    track('stool_status_selected', { value: v || 'cleared', where: target });
   }
 
-  pickBristolType(n) {
-    this.setForm({ type: n });
-    track('bristol_type_selected', { bristol_type: n });
+  pickBristolType(n, target = 'form') {
+    this.setGutDraft(target, { type: n });
+    track('bristol_type_selected', { bristol_type: n, where: target });
   }
 
-  toggleSymptom(label) {
-    const sym = this.state.form.sym, on = sym.includes(label);
+  pickStoolColor(id, target = 'form') {
+    const v = this.gutDraft(target).color === id ? '' : id;
+    this.setGutDraft(target, { color: v });
+    track('stool_color_selected', { color: v || 'cleared', where: target });
+  }
+
+  /** Стресс: событие шлём один раз после того, как ползунок отпустили */
+  setStress(value, target = 'form') {
+    this.setGutDraft(target, { stress: Math.min(10, Math.max(0, Number(value) || 0)) });
+    clearTimeout(this.stressTimer);
+    this.stressTimer = setTimeout(() => track('stress_set', { stress: this.gutDraft(target).stress, where: target }), 800);
+  }
+
+  toggleSymptom(label, target = 'form') {
+    const sym = this.gutDraft(target).sym, on = sym.includes(label);
     let next;
     if (label === SYMPTOM_OK) next = on ? [] : [SYMPTOM_OK];
     else next = on ? sym.filter((x) => x !== label) : [...sym.filter((x) => x !== SYMPTOM_OK), label];
-    this.setForm({ sym: next });
-    track('symptom_toggled', { symptom: label, selected: !on });
+    this.setGutDraft(target, { sym: next });
+    track('symptom_toggled', { symptom: label, selected: !on, where: target });
+  }
+
+  /** Запись о стуле из черновика формы */
+  gutFromDraft(d, base) {
+    const had = d.stool === 'had';
+    return {
+      ...base,
+      type: had ? d.type : d.stool === 'none' ? 0 : -1,
+      sym: [...d.sym],
+      color: had ? d.color : '',
+      stress: d.stress
+    };
+  }
+
+  // ---------- правка сохранённой записи о стуле / самочувствии ----------
+
+  openEntry(dayK, id) {
+    const g = this.day(dayK).gut.find((x) => x.id === id);
+    if (!g) return;
+    const draft = {
+      stool: g.type > 0 ? 'had' : g.type === 0 ? 'none' : '',
+      type: g.type > 0 ? g.type : 4,
+      sym: [...g.sym], color: g.color || '', stress: g.stress == null ? null : g.stress
+    };
+    this.setState({ entryEdit: { day: dayK, id, time: g.time, draft } });
+    track('entry_opened');
+  }
+
+  closeEntry() { this.setState({ entryEdit: null }); }
+
+  saveEntryEdit() {
+    const e = this.state.entryEdit, d = e.draft;
+    if (!d.stool && !d.sym.length && d.stress == null) { this.showToast('Отметьте хотя бы что-то одно'); return; }
+    const day = this.day(e.day);
+    const old = day.gut.find((x) => x.id === e.id);
+    const updated = this.gutFromDraft(d, old);
+    const gut = day.gut.map((x) => (x.id === e.id ? updated : x));
+    this.setState({ log: { ...this.state.log, [e.day]: { ...day, gut } }, entryEdit: null });
+    if (!IS_DEMO) store.updateGutEntry(updated);
+    this.showToast('Сохранено');
+    track('entry_updated', { stool_status: d.stool || 'not_set', bristol_type: d.stool === 'had' ? d.type : null, has_color: !!updated.color, stress: d.stress });
+  }
+
+  deleteEntry() {
+    const e = this.state.entryEdit;
+    if (!window.confirm('Удалить эту запись?')) return;
+    const day = this.day(e.day);
+    this.setState({ log: { ...this.state.log, [e.day]: { ...day, gut: day.gut.filter((x) => x.id !== e.id) } }, entryEdit: null });
+    if (!IS_DEMO) store.deleteGutEntry(e.id);
+    this.showToast('Удалено');
+    track('entry_deleted');
   }
 
   setPeriodMark(value) {
@@ -503,8 +600,8 @@ export default class App extends Component {
     }
   }
 
-  /** «Попробовать на примере» (и любой разбор в демо): готовое блюдо без запроса к ИИ */
-  tryExampleMeal(source = 'example') {
+  /** Разбор блюда в демо-режиме: готовое блюдо без запроса к ИИ */
+  tryExampleMeal(source) {
     const n = this.state.exampleN, result = normalizeMeal(EXAMPLE_MEALS[n % EXAMPLE_MEALS.length]);
     this.setState({ form: { ...this.state.form, food: 'scan', result: null, source }, exampleN: n + 1 });
     clearTimeout(this.exampleTimer);
@@ -590,7 +687,7 @@ export default class App extends Component {
 
   saveEntry() {
     const f = this.state.form, k = this.today();
-    if (!f.stool && !f.sym.length && f.food !== 'done' && !f.period) {
+    if (!f.stool && !f.sym.length && f.stress == null && f.food !== 'done' && !f.period) {
       this.showToast('Отметьте хотя бы что-то одно');
       track('entry_save_blocked', { reason: 'empty' });
       return;
@@ -615,6 +712,8 @@ export default class App extends Component {
       bristol_type: f.stool === 'had' ? f.type : null,
       symptoms: f.sym,
       symptoms_count: f.sym.filter((x) => x !== SYMPTOM_OK).length,
+      stool_color: f.stool === 'had' ? f.color || null : null,
+      stress: f.stress,
       has_food: !!meal,
       food_source: meal ? meal.source : null,
       food_tone: meal ? meal.tone : null,
@@ -639,30 +738,56 @@ export default class App extends Component {
 
   closeAssistant() { this.setState({ assistant: false }); }
 
-  /** Вопрос помощнику. Диалог сохраняется, пока открыто приложение. */
+  attachChatImage(file) {
+    let url = '';
+    try { url = URL.createObjectURL(file); } catch (_) { return; }
+    this.setState({ chatImage: url });
+    track('assistant_image_attached', { file_type: file.type, size_kb: Math.round(file.size / 1024) });
+  }
+
+  removeChatImage() { this.setState({ chatImage: '' }); }
+
+  /** Вопрос помощнику (можно с фото). Диалог сохраняется, пока открыто приложение. */
   async ask(question, source) {
-    const s = this.state;
-    if (!question || s.chatLoading) return;
-    const history = s.chat.slice(-6);
-    const chat = [...s.chat, { role: 'user', text: question }];
-    this.setState({ chat, chatLoading: true, askText: '' });
-    track('ai_question_asked', { source, turn: chat.length, length: question.length });
-    const reply = (text) => this.setState({ chat: [...chat, { role: 'ai', text }], chatLoading: false });
+    const s = this.state, image = s.chatImage;
+    if ((!question && !image) || s.chatLoading) return;
+    const history = s.chat.slice(-6).map((m) => ({ role: m.role, text: m.text }));
+    const chat = [...s.chat, { role: 'user', text: question, image }];
+    this.setState({ chat, chatLoading: true, askText: '', chatImage: '' });
+    track('ai_question_asked', { source, turn: chat.length, length: question.length, has_image: !!image });
 
     if (IS_DEMO) {
       const hit = Object.keys(DEMO_ANSWERS).find((k) => question.toLowerCase().includes(k));
-      setTimeout(() => reply(hit ? DEMO_ANSWERS[hit] : DEMO_ANSWER_DEFAULT), 700);
+      setTimeout(() => this.revealAnswer(hit ? DEMO_ANSWERS[hit] : DEMO_ANSWER_DEFAULT), 700);
       return;
     }
     const startedAt = Date.now();
     try {
-      const r = await askAI(question, history, buildAiContext(s.profile, s.log, this.today()));
-      reply(r.answer);
+      const img = image ? await compressImage(await (await fetch(image)).blob()) : undefined;
+      const r = await askAI({ question, image: img, history, context: buildAiContext(s.profile, s.log, this.today()) });
+      this.revealAnswer(r.answer || '');
       track('ai_answer_received', { source, latency_ms: Date.now() - startedAt, answer_length: (r.answer || '').length });
     } catch (e) {
-      reply('Не получилось ответить: ' + String(e.message || e).slice(0, 160) + '. Попробуйте ещё раз чуть позже.');
+      this.revealAnswer('Не получилось ответить: ' + String(e.message || e).slice(0, 160) + '. Попробуйте ещё раз чуть позже.');
       track('ai_answer_failed', { source, error: String(e.message || e).slice(0, 120) });
     }
+  }
+
+  /** Ответ появляется по предложению — чтобы было спокойно читать */
+  revealAnswer(text) {
+    const sentences = splitSentences(text);
+    const msg = { role: 'ai', text, shown: sentences[0] || '' };
+    this.setState({ chat: [...this.state.chat, msg], chatLoading: false });
+    let i = 1;
+    clearInterval(this.revealTimer);
+    this.revealTimer = setInterval(() => {
+      if (i >= sentences.length) { clearInterval(this.revealTimer); return; }
+      i++;
+      const chat = [...this.state.chat], last = chat[chat.length - 1];
+      if (!last || last.text !== text) { clearInterval(this.revealTimer); return; }
+      chat[chat.length - 1] = { ...last, shown: sentences.slice(0, i).join(' ') };
+      this.setState({ chat });
+    }, SENTENCE_DELAY_MS);
   }
 
   /** «Совет на сегодня» и «ИИ заметил». Кэшируется до изменения данных или до следующего дня. */

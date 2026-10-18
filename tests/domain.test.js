@@ -83,3 +83,19 @@ test('блюдо: нормализация ответа ИИ и КБЖУ', async
   assert.equal(m.verdict, 'Нормально');
   assert.deepEqual(mealStats(m).map((x) => x.label), ['Белки', 'Жиры', 'Углеводы', 'Клетчатка']);
 });
+
+import { streakDays } from '../src/domain/streak.js';
+import { splitSentences } from '../src/domain/text.js';
+
+test('streakDays: дни подряд с записями; пустое сегодня не обнуляет', () => {
+  const log = { '2026-10-15': day([g(4)]), '2026-10-16': day([g(3)]), '2026-10-17': day([], [{ id: 'm' }]) };
+  assert.equal(streakDays(log, '2026-10-18'), 3);
+  assert.equal(streakDays({ ...log, '2026-10-18': day([g(4)]) }, '2026-10-18'), 4);
+  assert.equal(streakDays({ '2026-10-15': day([g(4)]) }, '2026-10-18'), 0);
+  assert.equal(streakDays({}, '2026-10-18'), 0);
+});
+
+test('splitSentences: делит по знакам препинания и не теряет их', () => {
+  assert.deepEqual(splitSentences('Всё спокойно. Пейте воду! Как вы? Хорошо…  Дальше'), ['Всё спокойно.', 'Пейте воду!', 'Как вы?', 'Хорошо…', 'Дальше']);
+  assert.deepEqual(splitSentences(''), []);
+});

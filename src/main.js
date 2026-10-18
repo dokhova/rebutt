@@ -22,7 +22,8 @@ import profileHtml from './templates/screens/profile.html?raw';
 import legalHtml from './templates/screens/legal.html?raw';
 import mealHtml from './templates/screens/meal.html?raw';
 import assistantHtml from './templates/screens/assistant.html?raw';
-import askEntryHtml from './templates/partials/ask-entry.html?raw';
+import entryHtml from './templates/screens/entry.html?raw';
+import gutFormHtml from './templates/partials/gut-form.html?raw';
 import mealCardHtml from './templates/partials/meal-card.html?raw';
 
 initTelegram();
@@ -40,7 +41,8 @@ registerPartial('profile', profileHtml);
 registerPartial('legal', legalHtml);
 registerPartial('meal', mealHtml);
 registerPartial('assistant', assistantHtml);
-registerPartial('ask-entry', askEntryHtml);
+registerPartial('entry', entryHtml);
+registerPartial('gut-form', gutFormHtml);
 registerPartial('meal-card', mealCardHtml);
 
 mount('#app');

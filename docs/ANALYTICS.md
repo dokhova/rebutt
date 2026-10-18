@@ -25,7 +25,7 @@
 | `app_opened` | открытие приложения | `is_returning`, `local_days` |
 | `screen_viewed` | показ экрана (кроме онбординга) | `screen_name` |
 | `nav_clicked` | переход между экранами | `to`, `from` (`today` / `add_entry` / `insights` / `profile`), `source` (`tab` / `avatar` / `back` / `empty_day` / `today_summary` — тап по показателю на главной) |
-| `day_selected` | выбор дня в неделе | `days_ago`, `has_data` |
+| `day_selected` | переключение дня стрелками в шапке «Сегодня» | `days_ago`, `direction` (`prev` / `next`) |
 
 ### Онбординг
 | Событие | Когда | Свойства |
@@ -47,18 +47,23 @@
 |---|---|---|
 | `stool_status_selected` | «Был» / «Не было» | `value` (`had` / `none` / `cleared`) |
 | `bristol_type_selected` | выбор типа | `bristol_type` 1–7 |
+| `stool_color_selected` | выбор цвета стула | `color` (`brown` / `light` / `yellow` / `green` / `dark` / `red` / `cleared`), `where` (`form` — новая запись / `entry` — правка) |
+| `stress_set` | ползунок стресса отпущен | `stress` 0–10, `where` |
 | `symptom_toggled` | чип самочувствия | `symptom`, `selected` |
 | `period_marked` | «Месячные» / «Месячных нет» | `value` |
 | `food_photo_added` | выбрано фото блюда | `source`, `file_type`, `size_kb` |
 | `food_photo_removed` | фото убрали до разбора | — |
 | `food_analysis_requested` | «Разобрать с ИИ» | `has_photo`, `has_note` |
-| `food_analysis_completed` | ИИ разобрал блюдо (или пример) | `source` (`photo` / `text` / `example`), `has_note`, `tone`, `kcal`, `fiber`, `latency_ms` |
+| `food_analysis_completed` | ИИ разобрал блюдо | `source` (`photo` / `text`), `has_note`, `tone`, `kcal`, `fiber`, `latency_ms` |
 | `food_analysis_failed` | ошибка или не еда | `source`, `reason`, `latency_ms` |
 | `food_reanalyzed` | пересчёт после «Уточнить» | `where` (`draft` — до сохранения / `saved` — сохранённое блюдо), `kcal` |
 | `food_reanalyze_failed` | ошибка пересчёта | `where`, `reason` |
 | `food_removed` | «Убрать» блюдо до сохранения | — |
 | `meal_opened` | открыто сохранённое блюдо из «Записей дня» | — |
 | `meal_deleted` | сохранённое блюдо удалено | — |
+| `entry_opened` | открыта запись о стуле/самочувствии из «Записей дня» | — |
+| `entry_updated` | запись исправлена | `stool_status`, `bristol_type`, `has_color`, `stress` |
+| `entry_deleted` | запись удалена | — |
 | `entry_save_blocked` | «Сохранить» без данных | `reason` |
 | `entry_saved` | запись сохранена | `stool_status`, `bristol_type`, `symptoms`, `symptoms_count`, `has_food`, `food_source`, `food_tone`, `period_mark`, `gut_score`, `score_before`, `score_delta`, `days_logged_last7`, `hour` |
 | `first_entry_saved` | первая запись пользователя | как у `entry_saved` |
@@ -68,8 +73,9 @@
 |---|---|---|
 | `ai_insights_generated` | получен совет дня + наблюдение | `latency_ms`, `days_count` |
 | `ai_insights_failed` | ошибка | `error` |
-| `assistant_opened` | открыт экран ИИ-помощника | `from` (`today` / `insights`) |
-| `ai_question_asked` | вопрос помощнику | `source` (`suggestion` / `custom`), `turn` (номер сообщения в диалоге), `length` |
+| `assistant_opened` | открыта панель ИИ-помощника | `from` (`dock` — круглая кнопка рядом с меню) |
+| `assistant_image_attached` | к вопросу приложено фото | `file_type`, `size_kb` |
+| `ai_question_asked` | вопрос помощнику | `source` (`suggestion` / `custom`), `turn` (номер сообщения в диалоге), `length`, `has_image` |
 | `ai_answer_received` | ответ получен | `source`, `latency_ms`, `answer_length` |
 | `ai_answer_failed` | ошибка | `source`, `error` |
 

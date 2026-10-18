@@ -120,7 +120,9 @@ export async function loadRemote(todayK) {
       id: g.id,
       time: (g.time || '').slice(0, 5),
       type: g.stool === 'had' ? (g.bristol_type || 4) : g.stool === 'none' ? 0 : -1,
-      sym: g.symptoms || []
+      sym: g.symptoms || [],
+      color: g.color || '',
+      stress: g.stress == null ? null : g.stress
     });
   }
   for (const m of meals.data || []) {
@@ -163,13 +165,23 @@ export const saveConsents = (documents, version) =>
     return run('consents', supabase.from('consents').insert(documents.map((d) => ({ user_id: u.id, document: d, version, user_agent: ua }))));
   });
 
+const gutRow = (g) => ({
+  stool: g.type > 0 ? 'had' : g.type === 0 ? 'none' : null,
+  bristol_type: g.type > 0 ? g.type : null,
+  symptoms: g.sym,
+  color: g.type > 0 && g.color ? g.color : null,
+  stress: g.stress == null ? null : g.stress
+});
+
 export const addGutEntry = (dayK, g) =>
-  withUser((u) => run('gut', supabase.from('gut_entries').insert({
-    id: g.id, user_id: u.id, day: dayK, time: g.time,
-    stool: g.type > 0 ? 'had' : g.type === 0 ? 'none' : null,
-    bristol_type: g.type > 0 ? g.type : null,
-    symptoms: g.sym
-  })));
+  withUser((u) => run('gut', supabase.from('gut_entries').insert({ id: g.id, user_id: u.id, day: dayK, time: g.time, ...gutRow(g) })));
+
+/** Правка записи о стуле или самочувствии */
+export const updateGutEntry = (g) =>
+  withUser(() => run('gut update', supabase.from('gut_entries').update(gutRow(g)).eq('id', g.id)));
+
+export const deleteGutEntry = (id) =>
+  withUser(() => run('gut delete', supabase.from('gut_entries').delete().eq('id', id)));
 
 const mealRow = (m) => ({
   name: m.name, kcal: m.kcal, protein: m.protein, fat: m.fat, carbs: m.carbs, fiber: m.fiber,

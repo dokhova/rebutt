@@ -1,0 +1,38 @@
+<!-- Стул, цвет, самочувствие, стресс. Значения: gf из src/views/gut-form.js -->
+<div class="card form-card">
+  <div class="caption">Стул</div>
+  <div class="segments">
+    <button class="{{gf.stoolHad}}" onClick="{{gf.setHad}}">Был</button>
+    <button class="{{gf.stoolNone}}" onClick="{{gf.setNone}}">Не было</button>
+  </div>
+  <sc-if value="{{gf.showTypes}}">
+    <div class="type-list scroller fade-in">
+      <sc-for list="{{gf.types}}" as="t">
+        <button class="{{t.cls}}" aria-pressed="{{t.on}}" aria-label="{{t.aria}}" onClick="{{t.pick}}">
+          <sc-component name="Pebble" type="{{t.type}}" size="60"></sc-component>
+          <span class="type-name">Тип {{t.type}}</span><span class="type-desc">{{t.short}}</span>
+        </button>
+      </sc-for>
+    </div>
+    <div class="hint">Бристольская шкала: 3–4 — норма</div>
+
+    <div class="caption">Цвет</div>
+    <div class="chips">
+      <sc-for list="{{gf.colors}}" as="c"><button class="{{c.cls}}" aria-pressed="{{c.on}}" onClick="{{c.pick}}"><span class="swatch" style="background: {{c.hex}}"></span>{{c.label}}</button></sc-for>
+    </div>
+    <sc-if value="{{gf.colorNote}}"><div class="soft-note">{{gf.colorNote}}</div></sc-if>
+  </sc-if>
+</div>
+
+<div class="card form-card">
+  <div class="caption">Самочувствие</div>
+  <div class="chips">
+    <sc-for list="{{gf.symptoms}}" as="c"><button class="{{c.cls}}" aria-pressed="{{c.on}}" onClick="{{c.pick}}">{{c.label}}</button></sc-for>
+  </div>
+</div>
+
+<div class="card form-card">
+  <div class="card-head"><div class="caption">Стресс</div><div class="hint num">{{gf.stressLabel}}</div></div>
+  <input class="{{gf.stressCls}}" type="range" min="0" max="10" step="1" value="{{gf.stress}}" onInput="{{gf.onStress}}" aria-label="Уровень стресса от 0 до 10">
+  <div class="slider-scale"><span>спокойно</span><span>сильно</span></div>
+</div>

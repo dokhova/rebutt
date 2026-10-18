@@ -38,8 +38,8 @@ async function post(path, body) {
  */
 export const analyzeFood = (input) => post('/api/food', input);
 
-/** Вопрос + начало разговора + сводка записей → { answer } */
-export const askAI = (question, history, context) => post('/api/ask', { question, history, context });
+/** Вопрос (+ фото) + начало разговора + сводка записей → { answer } */
+export const askAI = ({ question, image, history, context }) => post('/api/ask', { question, image, history, context });
 
 /** Сводка записей → { tip_title, tip_text, noticed } */
 export const getInsights = (context) => post('/api/insights', { context });

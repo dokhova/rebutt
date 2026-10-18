@@ -3,7 +3,7 @@ import { APP_NAME } from '../config.js';
 
 const TAB_SCREENS = ['today', 'add', 'insights', 'profile'];
 
-/** screen — что показывается сейчас: 'booting' | 'legal' | 'onboarding' | экран с меню */
+/** screen — что показывается сейчас: 'booting' | 'legal' | 'meal' | 'entry' | 'onboarding' | экран с меню. ИИ-помощник — панель поверх. */
 export function shellView(app, screen) {
   const s = app.state;
   const withTabs = TAB_SCREENS.includes(screen);
@@ -14,7 +14,7 @@ export function shellView(app, screen) {
       booting: screen === 'booting',
       legal: screen === 'legal',
       meal: screen === 'meal',
-      assistant: screen === 'assistant',
+      entry: screen === 'entry',
       onboarding: screen === 'onboarding',
       today: screen === 'today',
       add: screen === 'add',
@@ -24,7 +24,10 @@ export function shellView(app, screen) {
     screenCls: 'screen scroller' + (withTabs ? ' with-tabs' : ''),
     setScrollEl: app.setScrollEl,
 
-    showTabs: withTabs && !s.keyboard, // пока открыта клавиатура, меню не перекрывает поле ввода
+    // пока открыта клавиатура или панель ИИ, меню не перекрывает поле ввода
+    showTabs: withTabs && !s.keyboard && !s.assistant,
+    showAssistant: !!s.assistant && screen !== 'booting',
+    openAssistantDock: () => app.openAssistant('dock'),
     tabToday: tab('today'),
     tabInsights: tab('insights'),
     tabAdd: 'plus' + (screen === 'add' ? ' on' : ''),

@@ -4,33 +4,7 @@
   <h1 class="add-title">Как кишечник<br><span class="muted">сегодня?</span></h1>
 </div>
 
-<!-- Стул -->
-<div class="card form-card">
-  <div class="caption">Стул</div>
-  <div class="segments">
-    <button class="{{stoolHad}}" onClick="{{setHad}}">Был</button>
-    <button class="{{stoolNone}}" onClick="{{setNone}}">Не было</button>
-  </div>
-  <sc-if value="{{showTypes}}">
-    <div class="type-list scroller fade-in">
-      <sc-for list="{{types}}" as="t">
-        <button class="{{t.cls}}" aria-pressed="{{t.on}}" aria-label="{{t.aria}}" onClick="{{t.pick}}">
-          <sc-component name="Pebble" type="{{t.type}}" size="60"></sc-component>
-          <span class="type-name">Тип {{t.type}}</span><span class="type-desc">{{t.short}}</span>
-        </button>
-      </sc-for>
-    </div>
-    <div class="hint">Бристольская шкала: 3–4 — норма</div>
-  </sc-if>
-</div>
-
-<!-- Самочувствие -->
-<div class="card form-card">
-  <div class="caption">Самочувствие</div>
-  <div class="chips">
-    <sc-for list="{{symptoms}}" as="c"><button class="{{c.cls}}" aria-pressed="{{c.on}}" onClick="{{c.pick}}">{{c.label}}</button></sc-for>
-  </div>
-</div>
+<sc-include name="gut-form"></sc-include>
 
 <!-- Цикл -->
 <sc-if value="{{cycleEnabled}}">
@@ -62,9 +36,8 @@
       </div>
     </sc-if>
     <label class="sr-only" for="foodNote">Описание блюда</label>
-    <textarea id="foodNote" class="field-input area" rows="2" placeholder="Что на тарелке и сколько — по желанию. Например: половина порции, без соуса" onChange="{{onNote}}">{{note}}</textarea>
+    <textarea id="foodNote" class="field-input area" rows="2" placeholder="Что в тарелке? (по желанию)" onChange="{{onNote}}">{{note}}</textarea>
     <button class="{{analyzeCls}}" onClick="{{analyze}}">Разобрать с ИИ</button>
-    <button class="example-btn" onClick="{{tryExample}}">Попробовать на примере</button>
   </sc-if>
 
   <sc-if value="{{food.scan}}">
@@ -87,7 +60,7 @@
     </sc-if>
     <sc-if value="{{fixOpen}}">
       <label class="sr-only" for="foodFix">Уточнение</label>
-      <textarea id="foodFix" class="field-input area" rows="2" placeholder="Что поправить? Например: порция в два раза меньше, это гречка" onChange="{{onFix}}">{{fix}}</textarea>
+      <textarea id="foodFix" class="field-input area" rows="2" placeholder="Что поправить?" onChange="{{onFix}}">{{fix}}</textarea>
       <button class="{{fixCls}}" onClick="{{applyFix}}">{{fixLabel}}</button>
     </sc-if>
   </sc-if>

@@ -1,67 +1,55 @@
 <!-- «Сегодня». Значения: src/views/today.js -->
-<div class="home-head">
-  <div>
-    <div class="hello">{{hello}}</div>
-    <div class="hello-date">{{dateLong}}</div>
+<div class="topnav">
+  <div class="topnav-side">
+    <button class="avatar" onClick="{{goProfile}}" aria-label="Профиль"><sc-if value="{{avatarUrl}}"><img src="{{avatarUrl}}" alt=""></sc-if><sc-if value="{{noAvatar}}">{{initial}}</sc-if></button>
+    <span class="streak num" aria-label="Дней подряд с записями">🔥 {{streak}}</span>
   </div>
-  <button class="avatar" onClick="{{goProfile}}" aria-label="Профиль"><sc-if value="{{avatarUrl}}"><img src="{{avatarUrl}}" alt=""></sc-if><sc-if value="{{noAvatar}}">{{initial}}</sc-if></button>
+  <div class="day-switch">
+    <button class="{{prevCls}}" onClick="{{prevDay}}" aria-label="Предыдущий день"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
+    <span class="day-label">{{dayLabel}}</span>
+    <button class="{{nextCls}}" onClick="{{nextDay}}" aria-label="Следующий день"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+  </div>
+  <div class="topnav-side end"></div>
 </div>
 
-<div class="week">
-  <sc-for list="{{week}}" as="d">
-    <button class="{{d.cls}}" onClick="{{d.pick}}" aria-label="{{d.aria}}"><span class="day-name">{{d.dow}}</span><span class="day-num num">{{d.num}}</span><span class="{{d.dot}}"></span></button>
+<div class="hero tappable" onClick="{{goInsights}}">
+  <div class="hero-gut">
+    <sc-component name="Gut" tone="{{gutTone}}" size="240"></sc-component>
+    <div class="hero-score">
+      <div class="hero-value num">{{idx}}<sc-if value="{{hasScore}}"><span class="hero-unit">%</span></sc-if></div>
+      <div class="hero-label">работа<br>кишечника</div>
+    </div>
+  </div>
+</div>
+
+<div class="rings tappable" onClick="{{goInsights}}">
+  <sc-for list="{{rings}}" as="r">
+    <div class="ring">
+      <div class="ring-chart">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="none" stroke="#2E2B36" stroke-width="8"></circle><circle cx="50" cy="50" r="42" fill="none" stroke="{{r.color}}" stroke-width="8" stroke-linecap="round" stroke-dasharray="{{r.dash}} 300"></circle></svg>
+        <div class="ring-value num">{{r.text}}</div>
+      </div>
+      <div class="ring-label">{{r.label}}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></div>
+      <div class="ring-sub nowrap">{{r.sub}}</div>
+    </div>
   </sc-for>
 </div>
 
-<sc-if value="{{hasScore}}">
-  <div class="hero tappable" onClick="{{goInsights}}">
-    <div class="hero-gut">
-      <sc-component name="Gut" tone="{{gutTone}}" size="260"></sc-component>
-      <div class="hero-score">
-        <div class="hero-value num">{{idx}}<span class="hero-unit">%</span></div>
-        <div class="hero-label">работа<br>кишечника</div>
-      </div>
-    </div>
-  </div>
+<sc-if value="{{showAddButton}}"><button class="btn" onClick="{{goAddFromEmpty}}">Внести данные за день</button></sc-if>
 
-  <div class="card rings tappable" onClick="{{goInsights}}">
-    <sc-for list="{{rings}}" as="r">
-      <div class="ring">
-        <div class="ring-chart">
-          <svg width="76" height="76" viewBox="0 0 88 88" aria-hidden="true"><circle cx="44" cy="44" r="38" fill="none" stroke="#4A4556" stroke-width="7"></circle><circle cx="44" cy="44" r="38" fill="none" stroke="{{r.color}}" stroke-width="7" stroke-linecap="round" stroke-dasharray="{{r.dash}} 300"></circle></svg>
-          <div class="ring-value num">{{r.text}}</div>
-        </div>
-        <div class="ring-label nowrap">{{r.label}}</div>
-        <div class="ring-sub nowrap">{{r.sub}}</div>
-      </div>
-    </sc-for>
-    <div class="rings-more">Подробнее в инсайтах<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></div>
-  </div>
+<div class="card panel">
+  <div class="caption">Совет на сегодня</div>
+  <div class="panel-title">{{tip.title}}</div>
+  <div class="panel-text">{{tip.text}}</div>
+</div>
 
+<sc-if value="{{showCycle}}">
   <div class="card panel">
-    <div class="caption">Совет на сегодня</div>
-    <div class="panel-title">{{tip.title}}</div>
-    <div class="panel-text">{{tip.text}}</div>
+    <div class="caption">{{cycle.caption}}</div>
+    <div class="panel-title">{{cycle.phase}}</div>
+    <div class="panel-text">{{cycle.note}}</div>
   </div>
-
-  <sc-if value="{{showCycle}}">
-    <div class="card panel">
-      <div class="caption">{{cycle.caption}}</div>
-      <div class="panel-title">{{cycle.phase}}</div>
-      <div class="panel-text">{{cycle.note}}</div>
-    </div>
-  </sc-if>
 </sc-if>
-
-<sc-if value="{{noScore}}">
-  <div class="empty">
-    <div class="empty-art"><sc-component name="Gut" tone="empty" size="220"></sc-component></div>
-    <div class="empty-text">За этот день нет записей</div>
-  </div>
-  <sc-if value="{{isToday}}"><button class="btn" onClick="{{goAddFromEmpty}}">Внести данные за день</button></sc-if>
-</sc-if>
-
-<sc-include name="ask-entry"></sc-include>
 
 <sc-if value="{{timeline.length}}">
   <div class="section">
@@ -75,7 +63,7 @@
           <sc-if value="{{e.isPeriod}}"><span class="icon-tile"><svg width="18" height="18" viewBox="0 0 24 24" fill="#A8A3B3"><path d="M12 3c3 4.5 6 8 6 11a6 6 0 0 1-12 0c0-3 3-6.5 6-11z"></path></svg></span></sc-if>
           <div class="row-body"><div class="row-title nowrap">{{e.title}}</div><div class="row-sub nowrap">{{e.sub}}</div></div>
           <div class="row-time num">{{e.time}}</div>
-          <sc-if value="{{e.isMeal}}"><svg class="row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A8A3B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></sc-if>
+          <sc-if value="{{e.hasOpen}}"><svg class="row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A8A3B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></sc-if>
         </div>
       </sc-for>
     </div>

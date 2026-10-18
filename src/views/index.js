@@ -8,6 +8,7 @@ import { profileView } from './profile.js';
 import { legalView } from './legal.js';
 import { mealView } from './meal.js';
 import { assistantView } from './assistant.js';
+import { entryView } from './entry.js';
 
 export { shellView } from './shell.js';
 
@@ -20,5 +21,7 @@ export const VIEWS = {
   // поверх любого экрана
   legal: legalView,
   meal: mealView,
+  entry: entryView,
+  // панель поверх экрана
   assistant: assistantView
 };
