@@ -1,7 +1,5 @@
 <!-- Оболочка приложения. Экраны — src/templates/screens/*.html, значения — src/views/*.js -->
 <div class="shell">
-  <div class="glow" style="background: {{glowBg}}"></div>
-
   <div class="{{screenCls}}" ref="{{setScrollEl}}">
     <sc-if value="{{is.onboarding}}"><sc-include name="onboarding"></sc-include></sc-if>
     <sc-if value="{{is.today}}"><sc-include name="today"></sc-include></sc-if>

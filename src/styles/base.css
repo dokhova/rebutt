@@ -14,7 +14,6 @@ img { max-width: 100%; }
 .muted { color: var(--muted); }
 .num { font-variant-numeric: tabular-nums; }
 .nowrap { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.serif { font-family: var(--font-serif); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .scroller { scrollbar-width: none; }
 .scroller::-webkit-scrollbar { display: none; }

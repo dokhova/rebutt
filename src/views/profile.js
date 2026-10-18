@@ -2,7 +2,6 @@
 import { APP_VERSION, SUPPORT_URL, LEGAL_DOCS } from '../config.js';
 import { GOALS } from '../domain/catalog.js';
 import { yearsWord, dayMonthShort, addDays } from '../domain/dates.js';
-import { glow } from './shell.js';
 
 export function profileView(app) {
   const p = app.state.profile;
@@ -10,7 +9,6 @@ export function profileView(app) {
   const sw = (on) => 'switch' + (on ? ' on' : '');
 
   return {
-    glowBg: glow('calm'),
     back: () => app.navigate('today', 'back'),
     initial: (p.name.trim()[0] || '·').toUpperCase(),
     displayName: p.name.trim() || 'Без имени',

@@ -4,7 +4,6 @@ import { AI_SUGGESTED_QUESTIONS } from '../domain/catalog.js';
 import { parseKey, addDays, mondayOf, MONTHS_GEN, WEEKDAYS_SHORT } from '../domain/dates.js';
 import { gutScore, symptomsOf, toneOf, hasData, TONE_WORD, TONE_COLOR } from '../domain/score.js';
 import { cycleDay, daysToLuteal } from '../domain/cycle.js';
-import { glow } from './shell.js';
 
 const BAR_MAX_PX = 90;
 const BAR_MIN_PX = 12;
@@ -23,27 +22,29 @@ export function insightsView(app) {
     if (hasData(day)) dataDays++;
     return {
       dow,
+      value: sc ? sc.idx : '',
       height: sc ? Math.max(BAR_MIN_PX, Math.round((sc.idx - 30) / 70 * BAR_MAX_PX)) : BAR_MIN_PX,
       bg: sc ? TONE_COLOR[toneOf(sc.idx)] : 'transparent',
-      border: sc ? (k === todayK ? '2px solid #F8F7F2' : '0') : '1px dashed rgba(255,255,255,.18)',
+      border: sc ? '0' : '1px dashed rgba(255,255,255,.36)',
+      dayCls: 'bar-day' + (k === todayK ? ' today' : ''),
       title: d.getDate() + ' ' + MONTHS_GEN[d.getMonth()] + (sc ? ': ' + sc.idx + '%' : ': нет данных')
     };
   });
 
   const avg = idxDays ? Math.round(idxSum / idxDays) : null;
-  const normalPct = stools ? Math.round(normal / stools * 100) : 0;
+  const normalPct = stools ? Math.round(normal / stools * 100) : null;
   const cdToday = cycleDay(p, todayK, todayK);
 
   return {
-    glowBg: glow(toneOf(avg)),
     weekLabel: weekLabel(monday),
-    avg: avg == null ? 0 : avg,
+    avg: avg == null ? '—' : avg,
+    hasAvg: avg != null,
     avgTone: 'dot lg ' + toneOf(avg),
     avgWord: TONE_WORD[toneOf(avg)],
     bars,
-    normalPct,
+    normalPct: normalPct == null ? '—' : normalPct + '%',
     symptomDays,
-    fiberAvg: meals ? (fiberSum / meals).toFixed(1).replace('.', ',') : '0',
+    fiberAvg: meals ? (fiberSum / meals).toFixed(1).replace('.', ',') + ' г' : '—',
     noticed: noticedText(app, todayK, { dataDays, normalPct, symptomDays }),
     showCycleNote: cdToday > 0,
     daysToLuteal: daysToLuteal(cdToday, p.len),
@@ -77,5 +78,6 @@ function noticedText(app, todayK, stats) {
   if (s.insights && s.insights.noticed && s.insights.date === todayK) return s.insights.noticed;
   if (s.insightsLoading) return 'Смотрю на ваши записи…';
   if (stats.dataDays < 3) return 'Добавьте записи хотя бы за 3 дня — здесь появятся закономерности между едой и самочувствием.';
-  return 'За неделю стул был в норме в ' + stats.normalPct + '% случаев. Дней с дискомфортом: ' + stats.symptomDays + '.';
+  const normal = stats.normalPct == null ? '' : 'За неделю стул был в норме в ' + stats.normalPct + '% случаев. ';
+  return normal + 'Дней с дискомфортом: ' + stats.symptomDays + '.';
 }

@@ -11,7 +11,7 @@
       </div>
       <button class="welcome-skip" onClick="{{skip}}">Пропустить</button>
     </div>
-    <h1 class="welcome-title serif">Узнай свой<br>кишечник<br>за 21 день</h1>
+    <h1 class="welcome-title">Узнай свой<br>кишечник<br>за 21 день</h1>
     <div class="welcome-lead">Простой трекинг, личные инсайты и больше понимания своего тела.</div>
     <button class="welcome-btn" onClick="{{start}}">
       Начать <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
@@ -93,7 +93,7 @@
     <div class="goal-list">
       <sc-for list="{{goals}}" as="g">
         <button class="{{g.cls}}" aria-pressed="{{g.on}}" onClick="{{g.pick}}">
-          <span class="goal-num">{{g.num}}</span><span>{{g.label}}</span>
+          <span>{{g.label}}</span>
           <span class="goal-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></span>
         </button>
       </sc-for>

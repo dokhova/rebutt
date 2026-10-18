@@ -44,6 +44,3 @@ export const TONE_WORD = { calm: 'Хорошо', mild: 'Есть сбои', sens
 
 /** Цвета тонов — те же, что в styles/tokens.css (нужны в JS для SVG-колец и столбиков) */
 export const TONE_COLOR = { calm: '#D3FA9D', mild: '#7FA866', sens: '#A78BFA', cycle: '#7954C8', empty: 'rgba(255,255,255,.15)' };
-
-/** RGB для фонового свечения экрана */
-export const TONE_GLOW_RGB = { calm: '211,250,157', mild: '127,168,102', sens: '167,139,250', cycle: '121,84,200', empty: '168,163,179' };

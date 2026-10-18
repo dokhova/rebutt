@@ -8,24 +8,25 @@
   <div>
     <div class="caption">Кишечник работал в среднем</div>
     <div class="avg-row">
-      <div class="avg-value num">{{avg}}<span class="avg-unit">%</span></div>
+      <div class="avg-value num">{{avg}}<sc-if value="{{hasAvg}}"><span class="avg-unit">%</span></sc-if></div>
       <div class="avg-status"><span class="{{avgTone}}"></span>{{avgWord}}</div>
     </div>
   </div>
   <div class="bars">
     <sc-for list="{{bars}}" as="b">
-      <div class="bar" title="{{b.title}}">
+      <div class="bar" aria-label="{{b.title}}">
+        <span class="bar-value num">{{b.value}}</span>
         <div class="bar-fill" style="height: {{b.height}}px; background: {{b.bg}}; border: {{b.border}}"></div>
-        <span class="bar-day">{{b.dow}}</span>
+        <span class="{{b.dayCls}}">{{b.dow}}</span>
       </div>
     </sc-for>
   </div>
 </div>
 
 <div class="card list">
-  <div class="list-row"><span>Стул в норме</span><span class="stat num">{{normalPct}}%</span></div>
+  <div class="list-row"><span>Стул в норме</span><span class="stat num">{{normalPct}}</span></div>
   <div class="list-row"><span>Дни с дискомфортом</span><span class="stat num">{{symptomDays}} из 7</span></div>
-  <div class="list-row"><span>Клетчатка за приём пищи</span><span class="stat num">{{fiberAvg}} г</span></div>
+  <div class="list-row"><span>Клетчатка за приём пищи</span><span class="stat num">{{fiberAvg}}</span></div>
 </div>
 
 <div class="card panel">

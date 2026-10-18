@@ -1,9 +1,8 @@
 // «+»: запись за сегодня — стул, самочувствие, отметка месячных, еда по фото.
 import { BRISTOL_TYPES, SYMPTOMS, EXAMPLE_MEALS, MEAL_TINT } from '../domain/catalog.js';
 import { dayMonth } from '../domain/dates.js';
-import { gutScore, toneOf } from '../domain/score.js';
+import { gutScore } from '../domain/score.js';
 import { cycleDay } from '../domain/cycle.js';
-import { glow } from './shell.js';
 
 export function addEntryView(app) {
   const s = app.state, f = s.form, p = s.profile, todayK = app.today();
@@ -13,7 +12,6 @@ export function addEntryView(app) {
   const seg = (on) => 'seg' + (on ? ' on' : '');
 
   return {
-    glowBg: glow(toneOf(scorePreview ? scorePreview.idx : null)),
     dateLong: 'Сегодня, ' + dayMonth(todayK),
 
     stoolHad: seg(f.stool === 'had'),

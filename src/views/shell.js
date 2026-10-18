@@ -1,8 +1,6 @@
-// Общая оболочка: фон, нижнее меню, тост. Значения нужны на всех экранах.
+// Общая оболочка: контейнер экрана, нижнее меню, тост. Значения нужны на всех экранах.
 import { APP_NAME } from '../config.js';
-import { TONE_GLOW_RGB } from '../domain/score.js';
 
-/** Тон фонового свечения выбирает экран (view может вернуть glowTone) */
 export function shellView(app) {
   const s = app.state;
   const isOnboarding = s.screen === 'onboarding';
@@ -26,8 +24,3 @@ export function shellView(app) {
   };
 }
 
-/** Фоновое свечение экрана по тону (calm / mild / sens / cycle / empty) */
-export const glow = (tone) => {
-  const rgb = TONE_GLOW_RGB[tone] || TONE_GLOW_RGB.empty;
-  return 'radial-gradient(closest-side at 50% 42%, rgba(' + rgb + ',.14), rgba(' + rgb + ',0))';
-};

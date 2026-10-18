@@ -2,7 +2,6 @@
 import { LEGAL_DOCS } from '../config.js';
 import { AGE_MIN, AGE_MAX, GOALS, LAST_PERIOD_OPTIONS } from '../domain/catalog.js';
 import { yearsWord } from '../domain/dates.js';
-import { glow } from './shell.js';
 
 export function onboardingView(app) {
   const s = app.state, p = s.profile, step = s.onbStep;
@@ -16,7 +15,6 @@ export function onboardingView(app) {
   if (step === 'cycle') nextLabel = 'Да, учитывать';
 
   return {
-    glowBg: glow(step === 'cycle' ? 'cycle' : 'calm'),
     step: { welcome: step === 'welcome', consent: step === 'consent', about: step === 'about', goals: step === 'goals', cycle: step === 'cycle' },
     inFlow: step !== 'welcome',
     stepLabel: s.onbSkipped ? 'Перед стартом' : 'Шаг ' + (i + 1) + ' / ' + flow.length,

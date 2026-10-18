@@ -1,11 +1,11 @@
-/* Дизайн-токены. Цвета тонов продублированы в src/domain/score.js (TONE_COLOR) — менять вместе. */
+/* Дизайн-токены. Цвета тонов продублированы в src/domain/score.js (TONE_COLOR) — менять вместе.
+   Правила: текст ≥ 4.5:1 к фону, рамки элементов управления ≥ 3:1, текст не меньше 13px.
+   Цвет используется только для смысла (состояние, выбор, действие), не для украшения. */
 :root {
   color-scheme: dark;
 
   /* фон */
   --bg: #141318;
-  --bg-top: #26232D;
-  --bg-mid: #1C1A22;
 
   /* поверхности, от тёмной к светлой */
   --surface-1: #24212B;   /* карточки, поля */
@@ -16,7 +16,7 @@
   /* текст */
   --ink: #F8F7F2;
   --muted: #A8A3B3;
-  --faint: #78737F;
+  --faint: #938E9D;      /* плейсхолдеры, неактивные значения — контраст ≥ 4.5:1 на карточке */
   --dim: #5F5A67;
 
   /* акцент */
@@ -35,13 +35,13 @@
   --line: rgba(255, 255, 255, .07);
   --line-2: rgba(255, 255, 255, .1);
   --line-3: rgba(255, 255, 255, .14);
+  --line-control: rgba(255, 255, 255, .36); /* рамки полей, чипов, чекбокса — контраст ≥ 3:1 */
 
   /* приветственный экран (светлый) */
   --welcome-ink: #1C1A22;
   --welcome-text: #4B4753;
 
   --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-serif: 'Noto Serif Display', 'Noto Serif', Georgia, serif;
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);

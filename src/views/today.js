@@ -5,7 +5,6 @@ import { parseKey, addDays, diffDays, mondayOf, dayMonth, WEEKDAYS_SHORT, WEEKDA
 import { gutScore, toneOf, TONE_WORD, TONE_COLOR } from '../domain/score.js';
 import { cycleDay, cyclePhase, isPeriodDay } from '../domain/cycle.js';
 import { DEMO_TIP_CALM } from '../domain/demo.js';
-import { glow } from './shell.js';
 
 const RING_LENGTH = 238.8; // длина окружности r=38 в SVG колец
 
@@ -20,7 +19,6 @@ export function todayView(app) {
   const periodToday = isPeriodDay(p, day, cd);
 
   return {
-    glowBg: glow(tone),
     hello: p.name.trim() ? 'Привет, ' + p.name.trim() : 'Привет',
     initial: (p.name.trim()[0] || '·').toUpperCase(),
     dateLong: (isToday ? 'Сегодня, ' : WEEKDAYS_FULL[parseKey(sel).getDay()] + ', ') + dayMonth(sel),
