@@ -4,6 +4,7 @@
 import posthog from 'posthog-js';
 import { POSTHOG_KEY, POSTHOG_HOST, APP_VERSION, IS_DEMO } from '../config.js';
 import { supabase, getUser } from './supabase.js';
+import { telegramAnalyticsProps } from './telegram.js';
 import { newId } from '../core/id.js';
 
 const BATCH_SIZE = 20;
@@ -31,10 +32,33 @@ function deviceId() {
   } catch (_) { return newId(); }
 }
 
+function stripTelegramUrls(value) {
+  if (typeof value === 'string' && value.includes('tgWebApp')) {
+    try {
+      const url = new URL(value);
+      for (const key of [...url.searchParams.keys()]) {
+        if (key.startsWith('tgWebApp')) url.searchParams.delete(key);
+      }
+      if (url.hash.includes('tgWebApp')) url.hash = '';
+      return url.href;
+    } catch (_) { return ''; }
+  }
+  if (Array.isArray(value)) return value.map(stripTelegramUrls);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, stripTelegramUrls(item)]));
+  }
+  return value;
+}
+
 export function initAnalytics() {
   if (POSTHOG_KEY) {
     posthog.init(POSTHOG_KEY, {
       api_host: POSTHOG_HOST,
+      // Telegram передаёт initData в URL: удаляем параметры SDK до отправки в PostHog.
+      before_send: (event) => {
+        if (event) event.properties = stripTelegramUrls(event.properties);
+        return event;
+      },
       person_profiles: 'identified_only',
       capture_pageview: false, // экраны SPA отправляем сами через pageview()
       capture_pageleave: true,
@@ -42,7 +66,7 @@ export function initAnalytics() {
       session_recording: { maskAllInputs: true },
       persistence: 'localStorage+cookie'
     });
-    posthog.register({ app_version: APP_VERSION, is_demo: IS_DEMO, platform: 'web' });
+    posthog.register({ app_version: APP_VERSION, is_demo: IS_DEMO, ...telegramAnalyticsProps() });
     posthogReady = true;
   }
   document.addEventListener('visibilitychange', () => {

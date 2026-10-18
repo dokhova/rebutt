@@ -52,8 +52,8 @@ export function profileView(app) {
 
     supportUrl: SUPPORT_URL,
     supportHandle: '@' + SUPPORT_URL.split('/').pop(),
-    openSupport: () => app.openSupport(),
-    docs: Object.keys(LEGAL_DOCS).map((id) => ({ ...LEGAL_DOCS[id], open: () => app.openLegalDoc(id, 'profile') })),
+    openSupport: (e) => app.openSupport(e),
+    docs: Object.keys(LEGAL_DOCS).map((id) => ({ ...LEGAL_DOCS[id], open: (e) => app.openLegalDoc(id, 'profile', e) })),
 
     deleteAll: () => app.deleteAllData(),
     version: APP_VERSION

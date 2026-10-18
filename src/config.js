@@ -1,7 +1,7 @@
 // Настройки приложения. Всё, что может понадобиться поменять без погружения в код, — здесь.
 
-// Название пока плейсхолдер — поменяйте здесь и в public/legal/*.html
-export const APP_NAME = '[название]';
+// Название приложения
+export const APP_NAME = 'Rebutt';
 
 // Версия берётся из package.json (см. vite.config.js → define)
 export const APP_VERSION = __APP_VERSION__;
@@ -11,7 +11,7 @@ export const SUPPORT_URL = 'https://t.me/the_dokhova';
 
 // Юридические документы. При изменении текста документа поднимите версию —
 // новое согласие сохранится в Supabase (таблица consents) и в PostHog.
-export const LEGAL_VERSION = '2026-10-18';
+export const LEGAL_VERSION = '2026-10-18.1';
 export const LEGAL_DOCS = {
   terms: { url: '/legal/terms.html', title: 'Пользовательское соглашение' },
   privacy: { url: '/legal/privacy.html', title: 'Политика конфиденциальности' },

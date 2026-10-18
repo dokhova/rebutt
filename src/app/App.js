@@ -4,7 +4,7 @@
 
 import { Component } from '../core/runtime.js';
 import { newId } from '../core/id.js';
-import { APP_NAME, LEGAL_DOCS, LEGAL_VERSION, IS_DEMO } from '../config.js';
+import { APP_NAME, SUPPORT_URL, LEGAL_DOCS, LEGAL_VERSION, IS_DEMO } from '../config.js';
 import { keyOf, addDays, nowHM } from '../domain/dates.js';
 import { AGE_MIN, AGE_MAX, CYCLE_LEN_MIN, CYCLE_LEN_MAX, EXAMPLE_MEALS, SYMPTOM_OK } from '../domain/catalog.js';
 import { gutScore, emptyDay, hasData } from '../domain/score.js';
@@ -16,6 +16,7 @@ import { track, flush, identifyUser, setPersonProps, setScreen, resetAnalytics }
 import { analyzeFood, askAI, getInsights } from '../services/ai.js';
 import { compressImage } from '../services/image.js';
 import { exportCSV, openDoctorReport } from '../services/export.js';
+import { isTelegram, openTelegramLink, syncBackButton } from '../services/telegram.js';
 import { signOut } from '../services/supabase.js';
 import { VIEWS, shellView } from '../views/index.js';
 
@@ -75,6 +76,7 @@ export default class App extends Component {
       exampleN: 0
     };
     this.onboardingStartedAt = Date.now();
+    this.telegramBack = () => this.navigate('today', 'back');
 
     // ref-колбэки для шаблона
     this.setScrollEl = (el) => { this.scrollEl = el; };
@@ -118,6 +120,7 @@ export default class App extends Component {
 
   onScreenShown() {
     const s = this.state;
+    syncBackButton(s.screen === 'profile', this.telegramBack);
     if (s.screen === 'onboarding') {
       setScreen('onboarding_' + s.onbStep);
       track('onboarding_step_viewed', { step: s.onbStep, step_index: this.onboardingFlow().indexOf(s.onbStep) + 1 });
@@ -177,8 +180,14 @@ export default class App extends Component {
     track('day_selected', { days_ago: daysAgo, has_data: withData });
   }
 
-  openLegalDoc(doc, source) { track('legal_doc_opened', { doc, source }); }
-  openSupport() { track('support_clicked', { source: 'profile' }); }
+  openLegalDoc(doc, source, event) {
+    track('legal_doc_opened', { doc, source });
+    openTelegramLink(LEGAL_DOCS[doc].url, event);
+  }
+  openSupport(event) {
+    track('support_clicked', { source: 'profile' });
+    openTelegramLink(SUPPORT_URL, event, true);
+  }
 
   // ================= онбординг =================
 
@@ -305,13 +314,19 @@ export default class App extends Component {
   }
 
   exportCsv() {
+    if (isTelegram()) {
+      track('export_clicked', { format: 'csv' });
+      this.showToast('Откройте приложение в браузере, чтобы скачать файл');
+      return;
+    }
     const rows = exportCSV(this.state.log);
     this.showToast('Файл CSV скачан');
     track('export_clicked', { format: 'csv', rows });
   }
 
   exportDoctorReport() {
-    openDoctorReport(this.state.profile, this.state.log, APP_NAME);
+    if (isTelegram()) this.showToast('Откройте приложение в браузере, чтобы скачать файл');
+    else openDoctorReport(this.state.profile, this.state.log, APP_NAME);
     track('export_clicked', { format: 'pdf_report', days: Object.keys(this.state.log).length });
   }
 
@@ -326,6 +341,7 @@ export default class App extends Component {
     resetAnalytics();
     if (!IS_DEMO) await signOut();
     this.onboardingStartedAt = Date.now();
+    this.telegramBack = () => this.navigate('today', 'back');
     this.setState({
       screen: 'onboarding', onbStep: 'welcome', onbSkipped: false, consent: false,
       profile: blankProfile(), log: {}, form: blankForm(), insights: null,

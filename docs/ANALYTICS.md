@@ -10,7 +10,8 @@
 | `screen` | текущий экран: `onboarding_welcome`, `onboarding_consent`, `onboarding_about`, `onboarding_goals`, `onboarding_cycle`, `today`, `add_entry`, `insights`, `profile` |
 | `app_version` | версия из `src/config.js` |
 | `is_demo` | `true`, если открыто с `?demo` |
-| `platform` | `web` |
+| `platform` | `telegram` или `web` |
+| `tg_language`, `tg_is_premium` | в PostHog при наличии Telegram user; id и username не передаются |
 
 **Пользователь.** `distinct_id` = id анонимного пользователя Supabase. После онбординга на персону ставятся свойства: `sex`, `age`, `goals`, `goals_count`, `has_custom_goal`, `cycle_enabled`, `reminder_am`, `reminder_pm`, `onboarded_at`. Обновляются при изменении профиля.
 

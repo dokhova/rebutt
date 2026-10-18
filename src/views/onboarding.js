@@ -8,7 +8,7 @@ export function onboardingView(app) {
   const flow = app.onboardingFlow(), i = flow.indexOf(step);
   const isLast = i === flow.length - 1;
   const blocked = (step === 'consent' && !s.consent) || (step === 'about' && !(p.name.trim() && p.sex));
-  const legal = (id) => ({ url: LEGAL_DOCS[id].url, open: () => app.openLegalDoc(id, 'onboarding') });
+  const legal = (id) => ({ url: LEGAL_DOCS[id].url, open: (e) => app.openLegalDoc(id, 'onboarding', e) });
 
   let nextLabel = isLast ? 'Начать' : 'Дальше';
   if (step === 'consent' && !isLast) nextLabel = 'Продолжить';

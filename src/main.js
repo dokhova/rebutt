@@ -5,6 +5,7 @@ import './styles/components.css';
 import './styles/screens.css';
 
 import { registerComponent, registerPartial, mount } from './core/runtime.js';
+import { initTelegram } from './services/telegram.js';
 import { initAnalytics } from './services/analytics.js';
 import App from './app/App.js';
 import Gut from './components/Gut.js';
@@ -19,6 +20,7 @@ import addHtml from './templates/screens/add.html?raw';
 import insightsHtml from './templates/screens/insights.html?raw';
 import profileHtml from './templates/screens/profile.html?raw';
 
+initTelegram();
 initAnalytics();
 
 registerComponent('App', App, appHtml);
