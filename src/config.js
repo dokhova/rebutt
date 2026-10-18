@@ -11,7 +11,7 @@ export const SUPPORT_URL = 'https://t.me/the_dokhova';
 
 // Юридические документы. При изменении текста документа поднимите версию —
 // новое согласие сохранится в Supabase (таблица consents) и в PostHog.
-export const LEGAL_VERSION = '2026-10-18.1';
+export const LEGAL_VERSION = '2026-10-18.2';
 export const LEGAL_DOCS = {
   terms: { url: '/legal/terms.html', title: 'Пользовательское соглашение' },
   privacy: { url: '/legal/privacy.html', title: 'Политика конфиденциальности' },

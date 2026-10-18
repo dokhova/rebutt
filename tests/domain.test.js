@@ -54,10 +54,16 @@ test('цикл: день и фаза', () => {
   assert.equal(isPeriodDay(p, day([]), 2), true);
 });
 
-test('онбординг: шаги по полу и пропуску', () => {
-  assert.deepEqual(onboardingFlow({ sex: 'm' }, false), ['consent', 'about', 'goals']);
-  assert.deepEqual(onboardingFlow({ sex: 'f' }, false), ['consent', 'about', 'goals', 'cycle']);
-  assert.deepEqual(onboardingFlow({ sex: '' }, true), ['consent']);
+test('онбординг: шаги по полу', () => {
+  assert.deepEqual(onboardingFlow({ sex: 'm' }), ['consent', 'about', 'goals']);
+  assert.deepEqual(onboardingFlow({ sex: 'f' }), ['consent', 'about', 'goals', 'cycle']);
+});
+
+test('цикл: беременность отключает фазы, на КОК — две фазы', () => {
+  const p = { ...blankProfile(), cycle: true, lastAgo: 0, len: 28 };
+  assert.equal(cycleDay({ ...p, pregnant: true }, '2026-10-18', '2026-10-18'), 0);
+  assert.equal(cyclePhase(3, 28, true)[0], 'Кровотечение отмены');
+  assert.equal(cyclePhase(20, 28, true)[0], 'Приём таблеток');
 });
 
 test('контекст для ИИ: только дни с данными за 14 дней', () => {

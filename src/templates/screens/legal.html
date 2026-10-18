@@ -1,0 +1,9 @@
+<!-- Документ внутри приложения. Значения: src/views/legal.js -->
+<div class="topbar">
+  <button class="icon-btn glass" onClick="{{closeDoc}}" aria-label="Назад"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
+  <span class="topbar-spacer"></span>
+</div>
+<h1 class="title">{{docTitle}}</h1>
+<sc-if value="{{docLoading}}"><div class="muted">Загружаем…</div></sc-if>
+<sc-if value="{{docError}}"><div class="muted">{{docError}}</div></sc-if>
+<div class="legal-doc" html="{{docHtml}}" onClick="{{onDocClick}}"></div>

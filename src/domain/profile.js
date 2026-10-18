@@ -6,13 +6,14 @@ import { GOALS } from './catalog.js';
  *   name, age, sex ('f' | 'm' | ''), goals: string[] (id из GOALS), other — своя цель
  *   cycle — учитывать цикл, lastUnknown — дата начала неизвестна,
  *   lastAgo — дней назад начались месячные, len — длина цикла
+ *   pregnant — беременность (фазы цикла не считаются), coc — приём КОК (фазы сглажены)
  *   am / pm — напоминания утром / вечером
  *   onboardedAt — ISO-время завершения онбординга (null — ещё не прошёл)
  *   since — 'YYYY-MM-DD', дата начала использования
  */
 export const blankProfile = () => ({
   name: '', age: 28, sex: '', goals: [], other: '',
-  cycle: false, lastUnknown: false, lastAgo: 11, len: 28,
+  cycle: false, lastUnknown: false, lastAgo: 11, len: 28, pregnant: false, coc: false,
   am: true, pm: false, onboardedAt: null, since: ''
 });
 
@@ -30,13 +31,14 @@ export const profileTraits = (p) => ({
   goals_count: p.goals.length,
   has_custom_goal: !!p.other,
   cycle_enabled: !!p.cycle,
+  pregnant: !!p.pregnant,
+  coc: !!p.coc,
   reminder_am: !!p.am,
   reminder_pm: !!p.pm,
   onboarded_at: p.onboardedAt
 });
 
-/** Онбординг: шаги зависят от пола и от того, нажали ли «Пропустить» */
-export function onboardingFlow(profile, skipped) {
-  if (skipped) return ['consent'];
+/** Онбординг: согласие → о себе → цели → цикл (только для женщин) */
+export function onboardingFlow(profile) {
   return profile.sex === 'm' ? ['consent', 'about', 'goals'] : ['consent', 'about', 'goals', 'cycle'];
 }

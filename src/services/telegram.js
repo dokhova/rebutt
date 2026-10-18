@@ -50,3 +50,15 @@ export function telegramAnalyticsProps() {
     ...(user ? { tg_language: user.language_code || '', tg_is_premium: !!user.is_premium } : {})
   };
 }
+
+/** Подписанные данные запуска — отправляем на сервер для входа и запросов к ИИ */
+export function telegramInitData() {
+  const app = getTelegram();
+  return (app && app.initData) || '';
+}
+
+/** Пользователь Telegram: { id, first_name, photo_url, … } или null */
+export function telegramUser() {
+  const app = getTelegram();
+  return (app && app.initDataUnsafe && app.initDataUnsafe.user) || null;
+}

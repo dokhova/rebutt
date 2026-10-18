@@ -39,17 +39,22 @@ npx vercel dev               # фронт + /api на http://localhost:3000
 
 ### 1. Supabase
 1. Создать проект.
-2. **Authentication → Sign In / Providers → Allow anonymous sign-ins: ON.** Без этого данные не сохранятся.
-3. **SQL Editor** → выполнить `supabase/migrations/20261018000000_init.sql`.
-4. **Project Settings → API** → скопировать `Project URL` и `anon public` key.
+2. **Authentication → Sign In / Providers → Allow anonymous sign-ins: ON** — для входа из обычного браузера. Провайдер **Email** должен быть включён (по умолчанию включён) — через него работает вход по Telegram.
+3. **SQL Editor** → выполнить по очереди все файлы из `supabase/migrations/` (по возрастанию даты в имени).
+4. **Project Settings → API Keys** → скопировать `Publishable key` (`sb_publishable_…`) и `Secret key` (`sb_secret_…`). Project URL — `https://<id проекта>.supabase.co`.
 
 ### 2. PostHog
 **Project settings** → Project API key (`phc_…`) и регион (EU / US).
 
 ### 3. Vercel
 1. **Add New → Project → Import** репозиторий с GitHub. Framework определится как Vite.
-2. **Settings → Environment Variables** — всё из `.env.example`. `OPENAI_API_KEY` — без префикса `VITE_`, чтобы ключ не попал в браузер.
+2. **Settings → Environment Variables** — всё из `.env.example`. Тип **Secret** для `OPENAI_API_KEY`, `TELEGRAM_BOT_TOKEN`, `SUPABASE_SECRET_KEY` (без префикса `VITE_` — они не попадают в браузер). Остальные — **Config**.
 3. Deploy. После изменения переменных — Redeploy.
+4. Проверка: открыть `https://<домен>/api/health?openai=1` — все поля `true`, `openai_check: "ok"`.
+
+### 4. Telegram
+@BotFather → `/mybots` → бот → **Bot Settings → Menu Button** → URL приложения.
+В Telegram пользователь входит по своему аккаунту (`/api/auth/telegram`): данные привязаны к Telegram id, имя и аватар берутся из Telegram.
 
 ## Где что менять
 
@@ -68,12 +73,12 @@ npx vercel dev               # фронт + /api на http://localhost:3000
 ## Юридическое
 
 - Пока приложение бесплатное, отдельная оферта не нужна: пользовательское соглашение оформлено как оферта на бесплатное использование. Для платных функций понадобится отдельная оферта (цена, оплата, возвраты).
-- Документы в `public/legal/` — шаблон. Перед запуском заполнить плейсхолдеры `[…]` (оператор, страна, email) и показать юристу.
+- Документы в `public/legal/` — шаблон. Оператор указан; осталось заполнить плейсхолдеры `[…]` (страна, регистрационный номер, email) и показать юристу. Документы открываются внутри приложения (экран `legal`), текст берётся из этих же файлов.
 - Для пользователей из РФ (152-ФЗ) первичная запись персональных данных должна идти в базу на территории РФ. Supabase, PostHog и OpenAI — за рубежом; это нужно решить до масштабирования.
 - Минимальный возраст — 18 лет.
 
 ## Что не сделано
 
 - Напоминания утром и вечером сохраняются в профиль, но не отправляются (нет push и рассылок в Telegram).
-- Аккаунт анонимный и привязан к браузеру. Для переноса между устройствами нужен вход через Telegram или email (Supabase умеет привязать анонимный аккаунт).
+- Вне Telegram аккаунт анонимный и привязан к браузеру; связать его с Telegram-аккаунтом пока нельзя.
 - Лимит запросов в `/api` хранится в памяти инстанса. При росте нагрузки заменить на Redis (например, Upstash).

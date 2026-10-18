@@ -6,7 +6,7 @@ import { diffDays } from './dates.js';
  * profile.lastAgo — сколько дней назад от сегодня начались последние месячные.
  */
 export function cycleDay(profile, dayK, todayK) {
-  if (!profile.cycle || profile.lastUnknown) return 0;
+  if (!profile.cycle || profile.lastUnknown || profile.pregnant) return 0;
   const sinceStart = diffDays(dayK, todayK) + profile.lastAgo;
   const len = profile.len;
   return ((sinceStart % len) + len) % len + 1;
@@ -15,8 +15,14 @@ export function cycleDay(profile, dayK, todayK) {
 /** День считается днём месячных: первые 5 дней цикла или отмечено вручную */
 export const isPeriodDay = (profile, day, cd) => profile.cycle && ((cd >= 1 && cd <= 5) || !!day.period);
 
-/** Фаза цикла: [название, как это влияет на кишечник] */
-export function cyclePhase(d, len) {
+export const PREGNANCY_NOTE = ['Беременность', 'Прогестерон замедляет кишечник — запоры и вздутие встречаются часто. Помогают вода, клетчатка и движение. Любые слабительные и добавки — только после согласования с врачом.'];
+
+/** Фаза цикла: [название, как это влияет на кишечник]. На КОК фазы сглажены — две «фазы». */
+export function cyclePhase(d, len, coc = false) {
+  if (coc) {
+    if (d <= 5) return ['Кровотечение отмены', 'Стул может быть мягче, как во время обычных месячных. Тёплая еда и вода помогут.'];
+    return ['Приём таблеток', 'На КОК гормоны ровные, резких фазовых перемен нет. Если после начала приёма появились вздутие или запоры — отметьте, это стоит обсудить с врачом.'];
+  }
   if (d <= 5) return ['Месячные', 'Стул может быть мягче и чаще — это нормально, так действуют простагландины. Тёплая еда и вода помогут.'];
   if (d <= len - 16) return ['После месячных', 'Обычно самый ровный период для кишечника. Хорошее время пробовать новые продукты.'];
   if (d <= len - 12) return ['Овуляция', 'Возможно лёгкое вздутие на 1–2 дня. Меньше газировки и бобовых.'];

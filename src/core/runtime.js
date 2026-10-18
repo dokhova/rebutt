@@ -4,6 +4,7 @@
 //   {{path}}                         подстановка значения (в тексте и атрибутах), path может быть a.b.c
 //   onClick="{{fn}}"                 обработчик события (click, input, change, scroll); onChange у текстовых input = input
 //   ref="{{fn}}"                     fn(element) вызывается после каждой отрисовки
+//   html="{{markup}}"               вставить готовый HTML внутрь элемента (только для своего контента, например документов из public/legal)
 //   <sc-if value="{{flag}}">         отрисовать содержимое, если flag истинно
 //   <sc-for list="{{arr}}" as="x">   повторить содержимое для каждого элемента, внутри доступны x и $index
 //   <sc-include name="today">        вставить фрагмент шаблона, зарегистрированный через registerPartial
@@ -128,6 +129,8 @@ function renderNode(parent, n, scope) {
       if (ev === 'change' && tag === 'input' && n.getAttribute('type') !== 'file') ev = 'input';
       handlers.push(fn);
       el.setAttribute('data-on-' + ev, handlers.length - 1);
+    } else if (m && name === 'html') {
+      el.innerHTML = String(lookup(m[1], scope) || '');
     } else if (m && name === 'ref') {
       const fn = lookup(m[1], scope);
       if (typeof fn === 'function') { handlers.push(fn); el.setAttribute('data-ref', handlers.length - 1); }

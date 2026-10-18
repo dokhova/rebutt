@@ -19,6 +19,8 @@ import todayHtml from './templates/screens/today.html?raw';
 import addHtml from './templates/screens/add.html?raw';
 import insightsHtml from './templates/screens/insights.html?raw';
 import profileHtml from './templates/screens/profile.html?raw';
+import legalHtml from './templates/screens/legal.html?raw';
+import askHtml from './templates/partials/ask.html?raw';
 
 initTelegram();
 initAnalytics();
@@ -32,5 +34,7 @@ registerPartial('today', todayHtml);
 registerPartial('add', addHtml);
 registerPartial('insights', insightsHtml);
 registerPartial('profile', profileHtml);
+registerPartial('legal', legalHtml);
+registerPartial('ask', askHtml);
 
 mount('#app');

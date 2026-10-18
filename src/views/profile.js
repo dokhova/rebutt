@@ -1,6 +1,6 @@
 // «Профиль»: данные, цели, цикл, напоминания, экспорт, поддержка, документы, удаление данных.
 import { APP_VERSION, SUPPORT_URL, LEGAL_DOCS } from '../config.js';
-import { GOALS } from '../domain/catalog.js';
+import { GOALS, CYCLE_OPTIONS } from '../domain/catalog.js';
 import { yearsWord, dayMonthShort, addDays } from '../domain/dates.js';
 
 export function profileView(app) {
@@ -11,6 +11,8 @@ export function profileView(app) {
   return {
     back: () => app.navigate('today', 'back'),
     initial: (p.name.trim()[0] || '·').toUpperCase(),
+    avatarUrl: app.state.avatarUrl,
+    noAvatar: !app.state.avatarUrl,
     displayName: p.name.trim() || 'Без имени',
     meta: [
       p.age + ' ' + yearsWord(p.age),
@@ -37,6 +39,8 @@ export function profileView(app) {
     cycleOn: p.cycle,
     cycleSwitch: sw(p.cycle),
     toggleCycle: () => app.toggleCycle(),
+    cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: sw(p[id]), toggle: () => app.toggleCycleOption(id) })),
+    showCycleDates: p.cycle && !p.pregnant,
     lastPeriod: p.lastUnknown ? 'не знаю' : dayMonthShort(addDays(app.today(), -p.lastAgo)),
     lastEarlier: () => app.setLastPeriod((p.lastUnknown ? 11 : p.lastAgo) + 1),
     lastLater: () => app.setLastPeriod((p.lastUnknown ? 11 : p.lastAgo) - 1),

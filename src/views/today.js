@@ -1,9 +1,10 @@
-// «Сегодня»: неделя, показатель дня, кольца, совет, цикл, записи дня.
+// «Сегодня»: неделя, показатель дня, кольца, совет, цикл, вопрос ИИ, записи дня.
 import { IS_DEMO } from '../config.js';
 import { BRISTOL_TYPES, MEAL_TINT, FALLBACK_TIPS, SYMPTOM_OK } from '../domain/catalog.js';
 import { parseKey, addDays, diffDays, mondayOf, dayMonth, WEEKDAYS_SHORT, WEEKDAYS_FULL, MONTHS_GEN } from '../domain/dates.js';
-import { gutScore, toneOf, TONE_WORD, TONE_COLOR } from '../domain/score.js';
-import { cycleDay, cyclePhase, isPeriodDay } from '../domain/cycle.js';
+import { gutScore, toneOf, TONE_COLOR } from '../domain/score.js';
+import { cycleDay, cyclePhase, isPeriodDay, PREGNANCY_NOTE } from '../domain/cycle.js';
+import { askView } from './ask.js';
 import { DEMO_TIP_CALM } from '../domain/demo.js';
 
 const RING_LENGTH = 238.8; // длина окружности r=38 в SVG колец
@@ -12,15 +13,15 @@ export function todayView(app) {
   const s = app.state, p = s.profile, todayK = app.today();
   const sel = s.selected, day = app.day(sel), isToday = sel === todayK;
   const sc = gutScore(day);
-  const prevSc = gutScore(app.day(addDays(sel, -1)));
   const tone = toneOf(sc ? sc.idx : null);
-  const delta = sc && prevSc ? sc.idx - prevSc.idx : null;
   const cd = cycleDay(p, sel, todayK);
   const periodToday = isPeriodDay(p, day, cd);
 
   return {
     hello: p.name.trim() ? 'Привет, ' + p.name.trim() : 'Привет',
     initial: (p.name.trim()[0] || '·').toUpperCase(),
+    avatarUrl: s.avatarUrl,
+    noAvatar: !s.avatarUrl,
     dateLong: (isToday ? 'Сегодня, ' : WEEKDAYS_FULL[parseKey(sel).getDay()] + ', ') + dayMonth(sel),
     goProfile: () => app.navigate('profile', 'avatar'),
 
@@ -31,16 +32,23 @@ export function todayView(app) {
     isToday,
     gutTone: periodToday ? 'cycle' : tone,
     idx: sc ? sc.idx : '—',
-    heroSub: (sc && !sc.n && sc.had ? 'Стула не было' : TONE_WORD[tone]) + (delta ? ' · ' + (delta > 0 ? '+' : '−') + Math.abs(delta) + '% к вчера' : ''),
     rings: sc ? rings(sc) : [],
     tip: tipOf(s, tone, isToday, todayK),
 
-    showCycle: cd > 0,
-    cycle: cd > 0 ? { day: cd, len: p.len, phase: cyclePhase(cd, p.len)[0], note: cyclePhase(cd, p.len)[1] } : null,
+    ...cycleCard(p, cd),
+    ...askView(app, 'today'),
 
     timeline: timeline(day, p),
     goAddFromEmpty: () => app.navigate('add', 'empty_day')
   };
+}
+
+/** Карточка цикла: беременность, фаза (на КОК — упрощённо) или ничего */
+function cycleCard(p, cd) {
+  if (p.cycle && p.pregnant) return { showCycle: true, cycle: { caption: 'Цикл', phase: PREGNANCY_NOTE[0], note: PREGNANCY_NOTE[1] } };
+  if (!cd) return { showCycle: false, cycle: null };
+  const [phase, note] = cyclePhase(cd, p.len, p.coc);
+  return { showCycle: true, cycle: { caption: 'Цикл · день ' + cd + ' из ' + p.len + (p.coc ? ' · КОК' : ''), phase, note } };
 }
 
 function weekStrip(app, todayK) {

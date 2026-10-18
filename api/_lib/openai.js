@@ -1,5 +1,6 @@
 // Общая обвязка для серверных функций: вызов OpenAI, проверка пользователя, лимиты.
 // Файлы в папке api/_lib не становятся эндпоинтами на Vercel.
+import { verifyInitData } from './telegram.js';
 
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const MODEL = process.env.OPENAI_MODEL || 'gpt-5-mini';
@@ -9,10 +10,13 @@ export const SAFETY = [
   'Ты — помощник в приложении-дневнике кишечника. Отвечаешь по-русски, коротко, тепло и по делу, без канцелярита и без эмодзи.',
   'Ты не врач и не ставишь диагнозы, не назначаешь лекарства и дозировки.',
   'Если в данных или вопросе есть тревожные признаки — кровь в стуле, чёрный стул, сильная или нарастающая боль, температура, рвота, резкая потеря веса, ночные поносы, изменения стула дольше 3 недель, — прямо посоветуй обратиться к врачу (гастроэнтерологу), а при острой боли — за неотложной помощью.',
-  'Опирайся только на данные пользователя из контекста. Не выдумывай записи, которых нет.'
+  'Опирайся только на данные пользователя из контекста. Не выдумывай записи, которых нет.',
+  'Если в профиле указана беременность — не предлагай БАДы, травы, слабительные и строгие диеты, любые изменения советуй согласовать с врачом, который ведёт беременность.',
+  'Если указан приём КОК — учитывай, что фазы цикла сглажены, а кровотечение в перерыве — это кровотечение отмены.'
 ].join(' ');
 
-export async function chatJSON({ model = MODEL, system, user, schema, schemaName = 'result', maxTokens = 1200 }) {
+// У моделей gpt-5 часть лимита уходит на рассуждения, поэтому запас токенов большой
+export async function chatJSON({ model = MODEL, system, user, schema, schemaName = 'result', maxTokens = 4000 }) {
   const key = process.env.OPENAI_API_KEY;
   if (!key) { const e = new Error('OPENAI_API_KEY не задан'); e.status = 500; throw e; }
   const body = {
@@ -34,22 +38,28 @@ export async function chatJSON({ model = MODEL, system, user, schema, schemaName
     const e = new Error((data.error && data.error.message) || ('OpenAI HTTP ' + res.status));
     e.status = 502; throw e;
   }
-  const msg = data.choices && data.choices[0] && data.choices[0].message;
+  const choice = data.choices && data.choices[0], msg = choice && choice.message;
+  if (choice && choice.finish_reason === 'length' && !(msg && msg.content)) { const e = new Error('Модель не уложилась в лимит токенов'); e.status = 502; throw e; }
   if (!msg || msg.refusal) { const e = new Error('Модель отказалась отвечать'); e.status = 502; throw e; }
   try { return JSON.parse(msg.content); }
   catch (_) { const e = new Error('Некорректный ответ модели'); e.status = 502; throw e; }
 }
 
-// Проверка, что запрос пришёл от пользователя приложения (JWT Supabase).
-// Если Supabase не настроен — пропускаем (локальная разработка).
+// Проверка, что запрос пришёл от пользователя приложения. Подходит любое из:
+//   1) подпись Telegram Mini App в заголовке X-Telegram-Init-Data (нужен TELEGRAM_BOT_TOKEN);
+//   2) JWT сессии Supabase в заголовке Authorization.
+// Если не настроено ни то ни другое — пропускаем (локальная разработка).
 async function requireUser(req) {
+  const tg = verifyInitData(req.headers['x-telegram-init-data'] || '', process.env.TELEGRAM_BOT_TOKEN);
+  if (tg) return { id: 'tg:' + tg.id };
+
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const anon = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
   if (!url || !anon) return { id: 'anonymous' };
   const auth = req.headers.authorization || '';
-  if (!auth.startsWith('Bearer ')) { const e = new Error('Нет авторизации'); e.status = 401; throw e; }
+  if (!auth.startsWith('Bearer ')) { const e = new Error('Нет авторизации: откройте приложение через Telegram-бота'); e.status = 401; throw e; }
   const r = await fetch(url.replace(/\/$/, '') + '/auth/v1/user', { headers: { apikey: anon, Authorization: auth } });
-  if (!r.ok) { const e = new Error('Сессия недействительна'); e.status = 401; throw e; }
+  if (!r.ok) { const e = new Error('Сессия недействительна, перезапустите приложение'); e.status = 401; throw e; }
   return r.json();
 }
 

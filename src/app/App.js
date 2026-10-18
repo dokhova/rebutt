@@ -16,15 +16,17 @@ import { track, flush, identifyUser, setPersonProps, setScreen, resetAnalytics }
 import { analyzeFood, askAI, getInsights } from '../services/ai.js';
 import { compressImage } from '../services/image.js';
 import { exportCSV, openDoctorReport } from '../services/export.js';
-import { isTelegram, openTelegramLink, syncBackButton } from '../services/telegram.js';
-import { signOut } from '../services/supabase.js';
+import { isTelegram, openTelegramLink, syncBackButton, telegramUser } from '../services/telegram.js';
+import { loadLegalHtml, legalIdByHref } from '../services/legal.js';
+import { supabase, signOut } from '../services/supabase.js';
 import { VIEWS, shellView } from '../views/index.js';
 
 const LS_INSIGHTS = 'gt_insights';
-const TOAST_MS = 2200;
+const TOAST_MS = 3500;
 const EXAMPLE_SCAN_MS = 1600;
 const PROFILE_SAVE_DELAY_MS = 700;
 const DRUM_ROW_PX = 40;
+const BOOT_TIMEOUT_MS = 6000;
 
 /** Имена экранов в аналитике */
 const SCREEN_EVENT_NAME = { today: 'today', add: 'add_entry', insights: 'insights', profile: 'profile' };
@@ -63,9 +65,17 @@ export default class App extends Component {
       }
     }
 
+    // В Telegram подставляем имя из аккаунта; аватар берём оттуда же (не сохраняем)
+    const tg = telegramUser();
+    if (tg && !profile.name && tg.first_name) profile = { ...profile, name: tg.first_name };
+
     this.state = {
       screen,
-      onbStep: 'welcome', onbSkipped: false, consent: false,
+      // Пока проверяем, есть ли профиль на сервере, — показываем загрузку, а не онбординг
+      booting: !IS_DEMO && !!supabase && !profile.onboardedAt,
+      onbStep: 'consent', consent: false,
+      legal: null,        // открытый документ: { id, title, html, error }
+      avatarUrl: (tg && tg.photo_url) || '',
       profile, log,
       selected: this.today(),
       form: blankForm(),
@@ -76,7 +86,7 @@ export default class App extends Component {
       exampleN: 0
     };
     this.onboardingStartedAt = Date.now();
-    this.telegramBack = () => this.navigate('today', 'back');
+    this.handleBack = () => this.back();
 
     // ref-колбэки для шаблона
     this.setScrollEl = (el) => { this.scrollEl = el; };
@@ -89,29 +99,40 @@ export default class App extends Component {
   // ================= жизненный цикл =================
 
   async componentDidMount() {
-    this.onScreenShown();
+    if (!this.state.booting) this.onScreenShown();
+    const bootTimer = setTimeout(() => this.finishBoot({}), BOOT_TIMEOUT_MS);
     await identifyUser();
     track('app_opened', { is_returning: !!this.state.profile.onboardedAt, local_days: Object.keys(this.state.log).length });
     if (IS_DEMO) return;
 
     const remote = await store.loadRemote(this.today());
-    if (!remote) return;
+    clearTimeout(bootTimer);
+    if (!remote) { this.finishBoot({}); return; }
     const s = this.state;
     const patch = { log: store.mergeLogs(s.log, remote.log) };
     if (remote.profile && remote.profile.onboardedAt) {
+      // Профиль уже есть на сервере — онбординг не нужен (если человек ещё не начал его заполнять)
       patch.profile = { ...s.profile, ...remote.profile };
-      if (s.screen === 'onboarding' && s.onbStep === 'welcome') patch.screen = 'today';
+      if (s.screen === 'onboarding' && s.onbStep === 'consent' && !s.consent) patch.screen = 'today';
     } else if (s.profile.onboardedAt) {
       store.saveProfile(s.profile, this.today()); // профиль был только на устройстве — догружаем на сервер
     }
-    this.setState(patch);
+    this.finishBoot(patch);
     const p = patch.profile || s.profile;
     if (p.onboardedAt) setPersonProps(profileTraits(p));
   }
 
+  /** Снимает экран загрузки и применяет данные с сервера */
+  finishBoot(patch) {
+    const wasBooting = this.state.booting;
+    if (!wasBooting && !Object.keys(patch).length) return;
+    this.setState({ ...patch, booting: false });
+    if (wasBooting && (patch.screen || this.state.screen) === 'onboarding') track('onboarding_started');
+  }
+
   componentDidUpdate(prev) {
     const s = this.state;
-    if (prev.screen !== s.screen || prev.onbStep !== s.onbStep) {
+    if (prev.screen !== s.screen || prev.onbStep !== s.onbStep || prev.booting !== s.booting || !!prev.legal !== !!s.legal) {
       if (this.scrollEl) this.scrollEl.scrollTop = 0;
       this.onScreenShown();
     }
@@ -120,7 +141,9 @@ export default class App extends Component {
 
   onScreenShown() {
     const s = this.state;
-    syncBackButton(s.screen === 'profile', this.telegramBack);
+    if (s.booting) return;
+    syncBackButton(this.canGoBack(), this.handleBack);
+    if (s.legal) { setScreen('legal_' + s.legal.id); return; }
     if (s.screen === 'onboarding') {
       setScreen('onboarding_' + s.onbStep);
       track('onboarding_step_viewed', { step: s.onbStep, step_index: this.onboardingFlow().indexOf(s.onbStep) + 1 });
@@ -132,7 +155,9 @@ export default class App extends Component {
   }
 
   view() {
-    return { ...shellView(this), ...VIEWS[this.state.screen](this) };
+    const s = this.state;
+    const screen = s.booting ? 'booting' : s.legal ? 'legal' : s.screen;
+    return { ...shellView(this, screen), ...(VIEWS[screen] ? VIEWS[screen](this) : {}) };
   }
 
   // ================= данные =================
@@ -158,7 +183,7 @@ export default class App extends Component {
     return { day, gut, meal };
   }
 
-  onboardingFlow() { return onboardingFlow(this.state.profile, this.state.onbSkipped); }
+  onboardingFlow() { return onboardingFlow(this.state.profile); }
 
   // ================= общее =================
 
@@ -180,9 +205,44 @@ export default class App extends Component {
     track('day_selected', { days_ago: daysAgo, has_data: withData });
   }
 
-  openLegalDoc(doc, source, event) {
+  /** Есть ли куда вернуться: документ, профиль, не первый шаг онбординга */
+  canGoBack() {
+    const s = this.state;
+    if (s.legal || s.screen === 'profile') return true;
+    return s.screen === 'onboarding' && this.onboardingFlow().indexOf(s.onbStep) > 0;
+  }
+
+  /** «Назад» — и кнопка в интерфейсе, и нативная кнопка Telegram */
+  back() {
+    const s = this.state;
+    if (s.legal) this.closeLegalDoc();
+    else if (s.screen === 'profile') this.navigate('today', 'back');
+    else if (s.screen === 'onboarding') this.onboardingBack();
+  }
+
+  /** Документ открывается внутри приложения поверх текущего экрана */
+  async openLegalDoc(doc, source, event) {
+    if (event) event.preventDefault();
     track('legal_doc_opened', { doc, source });
-    openTelegramLink(LEGAL_DOCS[doc].url, event);
+    this.setState({ legal: { id: doc, title: LEGAL_DOCS[doc].title, html: '', error: '' } });
+    try {
+      const html = await loadLegalHtml(doc);
+      if (this.state.legal && this.state.legal.id === doc) this.setState({ legal: { ...this.state.legal, html } });
+    } catch (e) {
+      if (this.state.legal) this.setState({ legal: { ...this.state.legal, error: 'Не получилось загрузить документ' } });
+    }
+  }
+
+  closeLegalDoc() { this.setState({ legal: null }); }
+
+  /** Клик по ссылке внутри документа: другие документы — в приложении, остальное — наружу */
+  onLegalLinkClick(event) {
+    const a = event.target.closest && event.target.closest('a[href]');
+    if (!a) return;
+    const id = legalIdByHref(a.getAttribute('href'));
+    if (id) { this.openLegalDoc(id, 'legal_link', event); return; }
+    if (isTelegram()) openTelegramLink(a.href, event, a.href.startsWith('https://t.me/'));
+    else { event.preventDefault(); window.open(a.href, '_blank', 'noopener'); }
   }
   openSupport(event) {
     track('support_clicked', { source: 'profile' });
@@ -191,22 +251,11 @@ export default class App extends Component {
 
   // ================= онбординг =================
 
-  startOnboarding() {
-    this.onboardingStartedAt = Date.now();
-    track('onboarding_started');
-    this.setState({ onbStep: 'consent', onbSkipped: false });
-  }
-
-  /** «Пропустить» на приветствии: без анкеты, но согласие с документами обязательно */
-  skipOnboarding() {
-    track('onboarding_skipped', { step: 'welcome' });
-    this.setState({ onbStep: 'consent', onbSkipped: true });
-  }
-
   onboardingBack() {
     const flow = this.onboardingFlow(), i = flow.indexOf(this.state.onbStep);
+    if (i <= 0) return;
     track('onboarding_back', { step: this.state.onbStep });
-    this.setState(i > 0 ? { onbStep: flow[i - 1] } : { onbStep: 'welcome', onbSkipped: false });
+    this.setState({ onbStep: flow[i - 1] });
   }
 
   toggleConsent() {
@@ -234,7 +283,7 @@ export default class App extends Component {
     const props = { step };
     if (step === 'about') Object.assign(props, { sex: p.sex, age: p.age });
     if (step === 'goals') Object.assign(props, { goals: p.goals, goals_count: p.goals.length, has_custom_goal: !!p.other.trim() });
-    if (step === 'cycle') Object.assign(props, { cycle_enabled: cycleAnswer, last_period: p.lastUnknown ? 'unknown' : p.lastAgo });
+    if (step === 'cycle') Object.assign(props, { cycle_enabled: cycleAnswer, last_period: p.lastUnknown ? 'unknown' : p.lastAgo, pregnant: !!p.pregnant, coc: !!p.coc });
     track('onboarding_step_completed', props);
 
     if (i < flow.length - 1) this.setState({ onbStep: flow[i + 1] });
@@ -244,12 +293,11 @@ export default class App extends Component {
   finishOnboarding(extra) {
     const s = this.state, todayK = this.today();
     const profile = { ...s.profile, ...extra, onboardedAt: new Date().toISOString(), since: s.profile.since || todayK };
-    this.setState({ profile, screen: 'today', onbStep: 'welcome', onbSkipped: false, selected: todayK });
+    this.setState({ profile, screen: 'today', onbStep: 'consent', selected: todayK });
     if (!IS_DEMO) store.saveProfile(profile, todayK);
     identifyUser(profileTraits(profile));
     track('onboarding_completed', {
       ...profileTraits(profile),
-      skipped: s.onbSkipped,
       duration_sec: Math.round((Date.now() - this.onboardingStartedAt) / 1000)
     });
     flush();
@@ -307,6 +355,13 @@ export default class App extends Component {
     track('cycle_toggled', { enabled });
   }
 
+  /** Беременность или приём КОК (option: 'pregnant' | 'coc') */
+  toggleCycleOption(option) {
+    const enabled = !this.state.profile[option];
+    this.updateProfile({ [option]: enabled }, option);
+    track('cycle_option_toggled', { option, enabled });
+  }
+
   toggleReminder(slot) {
     const key = slot === 'morning' ? 'am' : 'pm', enabled = !this.state.profile[key];
     this.updateProfile({ [key]: enabled }, 'reminder_' + key);
@@ -341,9 +396,8 @@ export default class App extends Component {
     resetAnalytics();
     if (!IS_DEMO) await signOut();
     this.onboardingStartedAt = Date.now();
-    this.telegramBack = () => this.navigate('today', 'back');
     this.setState({
-      screen: 'onboarding', onbStep: 'welcome', onbSkipped: false, consent: false,
+      screen: 'onboarding', onbStep: 'consent', consent: false, legal: null,
       profile: blankProfile(), log: {}, form: blankForm(), insights: null,
       ai: { question: '', answer: '', loading: false }
     });
@@ -418,7 +472,8 @@ export default class App extends Component {
       this.setForm({ food: 'done', result });
       track('food_analysis_completed', { source: 'photo', verdict: result.verdict, tone: result.tone, kcal: result.kcal, fiber: result.fiber, latency_ms: Date.now() - startedAt });
     } catch (e) {
-      if (this.scanId === scanId) fail(String(e.message || e).slice(0, 120), 'Не получилось разобрать фото');
+      const reason = String(e.message || e).slice(0, 120);
+      if (this.scanId === scanId) fail(reason, 'Не получилось разобрать фото: ' + reason);
     }
   }
 
@@ -476,7 +531,7 @@ export default class App extends Component {
   async ask(question, source) {
     if (!question || this.state.ai.loading) return;
     this.setState({ ai: { question, answer: '', loading: true }, askText: '' });
-    track('ai_question_asked', { source, length: question.length });
+    track('ai_question_asked', { source, screen_name: this.state.screen, length: question.length });
 
     if (IS_DEMO) {
       const hit = Object.keys(DEMO_ANSWERS).find((k) => question.toLowerCase().includes(k));
@@ -490,7 +545,7 @@ export default class App extends Component {
       this.setState({ ai: { question, answer: r.answer, loading: false } });
       track('ai_answer_received', { source, latency_ms: Date.now() - startedAt, answer_length: (r.answer || '').length });
     } catch (e) {
-      this.setState({ ai: { question, answer: 'Не получилось получить ответ. Попробуйте ещё раз чуть позже.', loading: false } });
+      this.setState({ ai: { question, answer: 'Не получилось получить ответ: ' + String(e.message || e).slice(0, 160), loading: false } });
       track('ai_answer_failed', { source, error: String(e.message || e).slice(0, 120) });
     }
   }

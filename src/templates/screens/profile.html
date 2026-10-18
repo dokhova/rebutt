@@ -6,7 +6,7 @@
 </div>
 
 <div class="profile-head">
-  <div class="avatar-lg">{{initial}}</div>
+  <div class="avatar-lg"><sc-if value="{{avatarUrl}}"><img src="{{avatarUrl}}" alt=""></sc-if><sc-if value="{{noAvatar}}">{{initial}}</sc-if></div>
   <div class="profile-name nowrap">{{displayName}}</div>
   <div class="profile-meta nowrap">{{meta}}</div>
 </div>
@@ -28,6 +28,11 @@
     <div class="caption">Цикл</div>
     <div class="list-row"><span>Учитывать цикл</span><button class="{{cycleSwitch}}" onClick="{{toggleCycle}}" role="switch" aria-checked="{{cycleOn}}" aria-label="Учитывать цикл"></button></div>
     <sc-if value="{{cycleOn}}">
+      <sc-for list="{{cycleOptions}}" as="o">
+        <div class="list-row"><span>{{o.label}}</span><button class="{{o.cls}}" onClick="{{o.toggle}}" role="switch" aria-checked="{{o.on}}" aria-label="{{o.label}}"></button></div>
+      </sc-for>
+    </sc-if>
+    <sc-if value="{{showCycleDates}}">
       <div class="list-row"><span class="muted">Начало месячных</span><div class="controls"><button class="round-btn" onClick="{{lastEarlier}}" aria-label="Раньше">−</button><span class="control-value wide num">{{lastPeriod}}</span><button class="round-btn" onClick="{{lastLater}}" aria-label="Позже">+</button></div></div>
       <div class="list-row"><span class="muted">Длина цикла</span><div class="controls"><button class="round-btn" onClick="{{lenMinus}}" aria-label="Короче">−</button><span class="control-value wide num">{{cycleLen}} дн.</span><button class="round-btn" onClick="{{lenPlus}}" aria-label="Длиннее">+</button></div></div>
     </sc-if>

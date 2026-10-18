@@ -7,13 +7,13 @@
 
 | Свойство | Значение |
 |---|---|
-| `screen` | текущий экран: `onboarding_welcome`, `onboarding_consent`, `onboarding_about`, `onboarding_goals`, `onboarding_cycle`, `today`, `add_entry`, `insights`, `profile` |
+| `screen` | текущий экран: `onboarding_consent`, `onboarding_about`, `onboarding_goals`, `onboarding_cycle`, `today`, `add_entry`, `insights`, `profile`, `legal_terms` / `legal_privacy` / `legal_consent` |
 | `app_version` | версия из `src/config.js` |
 | `is_demo` | `true`, если открыто с `?demo` |
 | `platform` | `telegram` или `web` |
 | `tg_language`, `tg_is_premium` | в PostHog при наличии Telegram user; id и username не передаются |
 
-**Пользователь.** `distinct_id` = id анонимного пользователя Supabase. После онбординга на персону ставятся свойства: `sex`, `age`, `goals`, `goals_count`, `has_custom_goal`, `cycle_enabled`, `reminder_am`, `reminder_pm`, `onboarded_at`. Обновляются при изменении профиля.
+**Пользователь.** `distinct_id` = id пользователя Supabase (в Telegram — один и тот же для аккаунта на любом устройстве). После онбординга на персону ставятся свойства: `sex`, `age`, `goals`, `goals_count`, `has_custom_goal`, `cycle_enabled`, `pregnant`, `coc`, `reminder_am`, `reminder_pm`, `onboarded_at`. Обновляются при изменении профиля.
 
 **Экраны.** На каждый экран шлётся `$pageview` с `$current_url = …/#<screen>` — работает стандартная Web Analytics и Paths в PostHog.
 
@@ -30,8 +30,8 @@
 ### Онбординг
 | Событие | Когда | Свойства |
 |---|---|---|
-| `onboarding_started` | «Начать» на приветствии | — |
-| `onboarding_skipped` | «Пропустить» / «Не сейчас» | `step` (`welcome` / `cycle`) |
+| `onboarding_started` | показан первый шаг онбординга новому пользователю | — |
+| `onboarding_skipped` | «Не сейчас» на шаге цикла | `step` (`cycle`) |
 | `onboarding_step_viewed` | показ шага | `step`, `step_index` |
 | `onboarding_step_completed` | «Дальше» на шаге | `step` + `sex`, `age` (about) / `goals`, `goals_count`, `has_custom_goal` (goals) / `cycle_enabled`, `last_period` (cycle) |
 | `onboarding_validation_error` | не заполнены имя/пол | `step`, `missing` |
@@ -39,7 +39,7 @@
 | `consent_checkbox_toggled` | клик по чекбоксу | `checked` |
 | `consent_blocked` | «Продолжить» без галочки | — |
 | `consent_accepted` | согласие принято | `version`, `documents` |
-| `legal_doc_opened` | открыт документ | `doc` (`terms` / `privacy` / `consent`), `source` (`onboarding` / `profile`) |
+| `legal_doc_opened` | открыт документ (внутри приложения) | `doc` (`terms` / `privacy` / `consent`), `source` (`onboarding` / `profile` / `legal_link`) |
 | `onboarding_completed` | онбординг завершён | свойства персоны + `skipped`, `duration_sec` |
 
 ### Запись дня (экран «+»)
@@ -62,7 +62,7 @@
 |---|---|---|
 | `ai_insights_generated` | получен совет дня + наблюдение | `latency_ms`, `days_count` |
 | `ai_insights_failed` | ошибка | `error` |
-| `ai_question_asked` | вопрос ИИ | `source` (`suggestion` / `custom`), `length` |
+| `ai_question_asked` | вопрос ИИ (на главной или в инсайтах) | `source` (`suggestion` / `custom`), `screen_name` (`today` / `insights`), `length` |
 | `ai_answer_received` | ответ получен | `source`, `latency_ms`, `answer_length` |
 | `ai_answer_failed` | ошибка | `source`, `error` |
 
@@ -71,6 +71,7 @@
 |---|---|---|
 | `profile_updated` | изменения профиля (с задержкой 0,7 с) | `fields` |
 | `cycle_toggled` | переключатель цикла | `enabled` |
+| `cycle_option_toggled` | беременность / КОК (онбординг и профиль) | `option` (`pregnant` / `coc`), `enabled` |
 | `reminder_toggled` | напоминания | `slot` (`morning` / `evening`), `enabled` |
 | `export_clicked` | экспорт | `format` (`csv` / `pdf_report`), `rows` / `days` |
 | `support_clicked` | «Написать в Telegram» | `source` |

@@ -32,7 +32,9 @@ export function buildAiContext(profile, log, todayK) {
       age: profile.age,
       sex: profile.sex === 'f' ? 'женский' : profile.sex === 'm' ? 'мужской' : 'не указан',
       goals: goalLabels(profile),
-      cycle: cd ? { day: cd, length: profile.len, phase: cyclePhase(cd, profile.len)[0] } : null
+      pregnant: !!profile.pregnant,
+      hormonal_contraception: profile.coc ? 'КОК' : null,
+      cycle: cd ? { day: cd, length: profile.len, phase: cyclePhase(cd, profile.len, profile.coc)[0] } : null
     },
     days
   };

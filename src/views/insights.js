@@ -1,9 +1,9 @@
 // «Инсайты»: средний показатель недели, столбики по дням, статистика, наблюдение ИИ, вопросы к ИИ.
 import { IS_DEMO } from '../config.js';
-import { AI_SUGGESTED_QUESTIONS } from '../domain/catalog.js';
 import { parseKey, addDays, mondayOf, MONTHS_GEN, WEEKDAYS_SHORT } from '../domain/dates.js';
 import { gutScore, symptomsOf, toneOf, hasData, TONE_WORD, TONE_COLOR } from '../domain/score.js';
 import { cycleDay, daysToLuteal } from '../domain/cycle.js';
+import { askView } from './ask.js';
 
 const BAR_MAX_PX = 90;
 const BAR_MIN_PX = 12;
@@ -46,17 +46,10 @@ export function insightsView(app) {
     symptomDays,
     fiberAvg: meals ? (fiberSum / meals).toFixed(1).replace('.', ',') + ' г' : '—',
     noticed: noticedText(app, todayK, { dataDays, normalPct, symptomDays }),
-    showCycleNote: cdToday > 0,
+    showCycleNote: cdToday > 0 && !p.coc,
     daysToLuteal: daysToLuteal(cdToday, p.len),
 
-    suggestions: AI_SUGGESTED_QUESTIONS.map((q) => ({ q, pick: () => app.ask(q, 'suggestion') })),
-    hasChat: !!s.ai.question,
-    question: s.ai.question,
-    answer: s.ai.loading ? 'Думаю…' : s.ai.answer,
-    answerCls: 'card bubble-a' + (s.ai.loading ? ' pulse' : ''),
-    askText: s.askText,
-    onAskInput: (e) => app.setState({ askText: e.target.value }),
-    sendAsk: () => app.ask(s.askText.trim(), 'custom')
+    ...askView(app, 'insights')
   };
 }
 

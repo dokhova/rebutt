@@ -4,7 +4,7 @@
     <div class="hello">{{hello}}</div>
     <div class="hello-date">{{dateLong}}</div>
   </div>
-  <button class="avatar" onClick="{{goProfile}}" aria-label="Профиль">{{initial}}</button>
+  <button class="avatar" onClick="{{goProfile}}" aria-label="Профиль"><sc-if value="{{avatarUrl}}"><img src="{{avatarUrl}}" alt=""></sc-if><sc-if value="{{noAvatar}}">{{initial}}</sc-if></button>
 </div>
 
 <div class="week">
@@ -19,10 +19,9 @@
       <sc-component name="Gut" tone="{{gutTone}}" size="260"></sc-component>
       <div class="hero-score">
         <div class="hero-value num">{{idx}}<span class="hero-unit">%</span></div>
-        <div class="hero-label nowrap">работа кишечника</div>
+        <div class="hero-label">работа<br>кишечника</div>
       </div>
     </div>
-    <div class="hero-sub nowrap">{{heroSub}}</div>
   </div>
 
   <div class="card rings">
@@ -46,7 +45,7 @@
 
   <sc-if value="{{showCycle}}">
     <div class="card panel">
-      <div class="caption">Цикл · день {{cycle.day}} из {{cycle.len}}</div>
+      <div class="caption">{{cycle.caption}}</div>
       <div class="panel-title">{{cycle.phase}}</div>
       <div class="panel-text">{{cycle.note}}</div>
     </div>
@@ -60,6 +59,8 @@
   </div>
   <sc-if value="{{isToday}}"><button class="btn" onClick="{{goAddFromEmpty}}">Внести данные за день</button></sc-if>
 </sc-if>
+
+<sc-include name="ask"></sc-include>
 
 <sc-if value="{{timeline.length}}">
   <div class="section">

@@ -31,7 +31,7 @@ export function addEntryView(app) {
       return { label, on, cls: 'chip' + (on ? ' on' : ''), pick: () => app.toggleSymptom(label) };
     }),
 
-    cycleEnabled: p.cycle,
+    cycleEnabled: p.cycle && !p.pregnant,
     cycleDayKnown: cycleDay(p, todayK, todayK) > 0,
     cycleDay: cycleDay(p, todayK, todayK),
     periodNo: seg(f.period === 'no'),

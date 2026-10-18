@@ -1,18 +1,6 @@
 /* Элементы конкретных экранов */
 
 /* ================= Онбординг ================= */
-.welcome {
-  position: absolute; inset: 0; z-index: 5; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
-  padding: calc(24px + var(--safe-top)) 24px calc(28px + var(--safe-bottom));
-  background: linear-gradient(180deg, #F3EEFF 0%, #EDE5FF 55%, #E2D6FF 100%);
-}
-.welcome-art { position: absolute; right: -110px; bottom: 70px; transform: rotate(-12deg); }
-.welcome-bar { position: relative; display: flex; align-items: center; justify-content: space-between; height: 44px; }
-.brand { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--welcome-ink); }
-.welcome-skip { border: 0; background: transparent; font-size: 15px; color: var(--dim); padding: 10px 0; }
-.welcome-title { position: relative; margin: 40px 0 0; font-size: 38px; font-weight: 700; line-height: 1.1; letter-spacing: -.5px; color: var(--welcome-ink); }
-.welcome-lead { position: relative; margin-top: 16px; font-size: 15px; line-height: 1.45; color: var(--welcome-text); max-width: 230px; }
-.welcome-btn { position: relative; margin-top: auto; width: 100%; height: 60px; border-radius: 30px; border: 0; background: var(--welcome-ink); color: var(--ink); font-size: 16px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
 .onb-step { display: flex; flex-direction: column; gap: 18px; }
 .onb-footer { margin-top: auto; padding-top: 8px; display: flex; flex-direction: column; gap: 4px; }
@@ -56,10 +44,9 @@
 .hero { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .hero-gut { position: relative; width: 260px; height: 260px; margin-top: -6px; }
 .hero-score { position: absolute; left: 70px; top: 80px; width: 120px; height: 74px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-.hero-value { font-size: 36px; font-weight: 600; line-height: 1; letter-spacing: -1px; }
-.hero-unit { font-size: 20px; font-weight: 500; color: var(--muted); }
-.hero-label { color: var(--ink); font-size: 13px; font-weight: 500; margin-top: 6px; }
-.hero-sub { font-size: 15px; font-weight: 500; margin-top: -8px; }
+.hero-value { font-size: 28px; font-weight: 600; line-height: 1; letter-spacing: -.5px; }
+.hero-unit { font-size: 16px; font-weight: 500; color: var(--muted); }
+.hero-label { color: var(--ink); font-size: 13px; font-weight: 500; margin-top: 4px; line-height: 1.2; }
 
 .rings { padding: 20px 8px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .ring { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
@@ -130,7 +117,8 @@
 
 /* ================= Профиль ================= */
 .profile-head { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 4px 0 8px; }
-.avatar-lg { width: 76px; height: 76px; border-radius: 50%; background: var(--surface-3); border: 1px solid rgba(255, 255, 255, .12); display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 500; }
+.avatar-lg { width: 76px; height: 76px; border-radius: 50%; overflow: hidden; background: var(--surface-3); border: 1px solid rgba(255, 255, 255, .12); display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 500; }
+.avatar-lg img, .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .profile-name { font-size: 22px; font-weight: 500; }
 .profile-meta { color: var(--muted); font-size: 13px; }
 .settings { display: flex; flex-direction: column; }
@@ -138,3 +126,21 @@
 .settings .chips { padding-top: 12px; }
 .danger-btn { border: 0; background: transparent; color: var(--danger); font-size: 14px; height: 48px; }
 .version { color: var(--muted); font-size: 13px; text-align: center; margin-top: -12px; }
+
+/* ================= Документ внутри приложения ================= */
+.legal-doc { font-size: 15px; line-height: 1.55; color: #DCD9E2; }
+.legal-doc h2 { font-size: 17px; font-weight: 600; color: var(--ink); margin: 24px 0 8px; }
+.legal-doc p { margin: 0 0 10px; }
+.legal-doc ul { padding-left: 20px; margin: 0 0 10px; }
+.legal-doc li { margin: 4px 0; }
+.legal-doc a { color: var(--ink); }
+.legal-doc .meta { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
+.legal-doc .note { background: var(--surface-1); border: 1px solid var(--line); border-radius: 20px; padding: 14px 16px; margin: 12px 0 16px; }
+.legal-doc table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 13px; margin: 8px 0 12px; }
+.legal-doc th, .legal-doc td { text-align: left; vertical-align: top; padding: 8px 6px; border-bottom: 1px solid var(--line-2); overflow-wrap: anywhere; }
+.legal-doc th { color: var(--muted); font-weight: 500; }
+.legal-doc footer { margin-top: 24px; color: var(--muted); font-size: 13px; }
+
+/* ================= Загрузка ================= */
+.boot { margin: auto; display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 15px; }
+.boot-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }

@@ -37,10 +37,6 @@
   --line-3: rgba(255, 255, 255, .14);
   --line-control: rgba(255, 255, 255, .36); /* рамки полей, чипов, чекбокса — контраст ≥ 3:1 */
 
-  /* приветственный экран (светлый) */
-  --welcome-ink: #1C1A22;
-  --welcome-text: #4B4753;
-
   --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
   --safe-top: env(safe-area-inset-top, 0px);

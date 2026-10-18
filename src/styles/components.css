@@ -9,11 +9,11 @@
 }
 .screen.with-tabs { padding-bottom: calc(120px + var(--safe-bottom)); }
 
-.tabbar-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 120px; background: linear-gradient(180deg, rgba(20, 19, 24, 0), rgba(20, 19, 24, .92) 55%); pointer-events: none; }
+.tabbar-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 100px; background: linear-gradient(180deg, rgba(20, 19, 24, 0), rgba(20, 19, 24, .6)); pointer-events: none; }
 .tabbar {
   position: absolute; left: 50%; bottom: calc(22px + var(--safe-bottom)); transform: translateX(-50%);
   height: 64px; padding: 6px; box-sizing: border-box; display: flex; gap: 8px; align-items: center; border-radius: 32px;
-  background: rgba(43, 40, 51, .82); border: 1px solid rgba(255, 255, 255, .12); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  background: rgba(43, 40, 51, .72); border: 1px solid rgba(255, 255, 255, .12); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
 }
 .tab { height: 52px; min-width: 96px; padding: 0 16px; border: 0; border-radius: 26px; background: transparent; color: var(--muted); font-size: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
 .tab.on { background: rgba(255, 255, 255, .1); color: var(--ink); }
@@ -109,7 +109,7 @@
 .thumb.sm { width: 44px; height: 44px; border-radius: 14px; }
 .thumb.lg { width: 60px; height: 60px; }
 
-.avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--surface-3); border: 1px solid var(--line-2); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 500; padding: 0; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; background: var(--surface-3); border: 1px solid var(--line-2); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 500; padding: 0; }
 
 /* ---------- компоненты Gut и Pebble ---------- */
 .gut { position: relative; flex-shrink: 0; }

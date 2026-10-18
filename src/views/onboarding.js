@@ -1,6 +1,6 @@
-// Онбординг: приветствие → согласие с документами → о себе → цели → цикл (только для женщин).
+// Онбординг: согласие с документами → о себе → цели → цикл (только для женщин).
 import { LEGAL_DOCS } from '../config.js';
-import { AGE_MIN, AGE_MAX, GOALS, LAST_PERIOD_OPTIONS } from '../domain/catalog.js';
+import { AGE_MIN, AGE_MAX, GOALS, LAST_PERIOD_OPTIONS, CYCLE_OPTIONS } from '../domain/catalog.js';
 import { yearsWord } from '../domain/dates.js';
 
 export function onboardingView(app) {
@@ -15,11 +15,10 @@ export function onboardingView(app) {
   if (step === 'cycle') nextLabel = 'Да, учитывать';
 
   return {
-    step: { welcome: step === 'welcome', consent: step === 'consent', about: step === 'about', goals: step === 'goals', cycle: step === 'cycle' },
-    inFlow: step !== 'welcome',
-    stepLabel: s.onbSkipped ? 'Перед стартом' : 'Шаг ' + (i + 1) + ' / ' + flow.length,
-    start: () => app.startOnboarding(),
-    skip: () => app.skipOnboarding(),
+    step: { consent: step === 'consent', about: step === 'about', goals: step === 'goals', cycle: step === 'cycle' },
+    stepLabel: 'Шаг ' + (i + 1) + ' / ' + flow.length,
+    canBack: i > 0,
+    noBack: i <= 0,
     back: () => app.onboardingBack(),
     nextLabel,
     nextCls: 'btn' + (blocked ? ' off' : ''),
@@ -60,6 +59,8 @@ export function onboardingView(app) {
     lastPeriodOptions: LAST_PERIOD_OPTIONS.map(([label, daysAgo]) => {
       const on = daysAgo == null ? p.lastUnknown : !p.lastUnknown && p.lastAgo === daysAgo;
       return { label, on, cls: 'chip' + (on ? ' on' : ''), pick: () => app.setLastPeriod(daysAgo) };
-    })
+    }),
+    cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: 'chip' + (p[id] ? ' on' : ''), pick: () => app.toggleCycleOption(id) })),
+    askLastPeriod: !p.pregnant
   };
 }

@@ -1,6 +1,7 @@
 // Клиент серверных функций /api/* (Vercel). Ключ OpenAI живёт только на сервере.
 import { API_BASE } from '../config.js';
 import { getAccessToken } from './supabase.js';
+import { telegramInitData } from './telegram.js';
 
 const TIMEOUT_MS = 45000;
 
@@ -9,15 +10,23 @@ async function post(path, body) {
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
     const token = await getAccessToken();
+    const initData = telegramInitData();
     const res = await fetch(API_BASE + path, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: 'Bearer ' + token } : {}),
+        ...(initData ? { 'X-Telegram-Init-Data': initData } : {})
+      },
       body: JSON.stringify(body),
       signal: ctrl.signal
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'HTTP ' + res.status);
+    if (!res.ok) throw new Error(data.error || 'Сервер ответил ' + res.status);
     return data;
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error('ИИ не ответил за 45 секунд');
+    throw e;
   } finally {
     clearTimeout(timer);
   }

@@ -6,8 +6,7 @@ const IMAGES = {
   mild: '/img/gut2-mild.webp',
   sens: '/img/gut2-sens.webp',
   cycle: '/img/gut2-cycle.webp',
-  empty: '/img/gut2-empty.webp',
-  onbcycle: '/img/gut2-onbcycle.webp'
+  empty: '/img/gut2-empty.webp'
 };
 
 export default class Gut extends Component {
