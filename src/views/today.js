@@ -1,10 +1,10 @@
 // «Сегодня»: неделя, показатель дня, кольца, совет, цикл, вопрос ИИ, записи дня.
 import { IS_DEMO } from '../config.js';
-import { BRISTOL_TYPES, MEAL_TINT, FALLBACK_TIPS, SYMPTOM_OK } from '../domain/catalog.js';
+import { BRISTOL_TYPES, FALLBACK_TIPS, SYMPTOM_OK } from '../domain/catalog.js';
+import { mealSummary, mealTint } from '../domain/meal.js';
 import { parseKey, addDays, diffDays, mondayOf, dayMonth, WEEKDAYS_SHORT, WEEKDAYS_FULL, MONTHS_GEN } from '../domain/dates.js';
 import { gutScore, toneOf, TONE_COLOR } from '../domain/score.js';
 import { cycleDay, cyclePhase, isPeriodDay, PREGNANCY_NOTE } from '../domain/cycle.js';
-import { askView } from './ask.js';
 import { DEMO_TIP_CALM } from '../domain/demo.js';
 
 const RING_LENGTH = 238.8; // длина окружности r=38 в SVG колец
@@ -36,9 +36,10 @@ export function todayView(app) {
     tip: tipOf(s, tone, isToday, todayK),
 
     ...cycleCard(p, cd),
-    ...askView(app, 'today'),
+    openAssistant: () => app.openAssistant('today'),
+    goInsights: () => app.navigate('insights', 'today_summary'),
 
-    timeline: timeline(day, p),
+    timeline: timeline(app, sel, day, p),
     goAddFromEmpty: () => app.navigate('add', 'empty_day')
   };
 }
@@ -55,7 +56,8 @@ function weekStrip(app, todayK) {
   const s = app.state, p = s.profile, monday = mondayOf(todayK);
   return WEEKDAYS_SHORT.map((dow, i) => {
     const k = addDays(monday, i), d = parseKey(k);
-    const future = k > todayK;
+    // будущие дни и дни до начала использования неактивны
+    const future = k > todayK || (!!p.since && k < p.since.slice(0, 10));
     const day = app.day(k), sc = gutScore(day);
     const period = isPeriodDay(p, day, cycleDay(p, k, todayK));
     return {
@@ -92,7 +94,7 @@ function tipOf(s, tone, isToday, todayK) {
 }
 
 /** Записи дня по времени: стул, самочувствие, еда, месячные */
-function timeline(day, profile) {
+function timeline(app, dayK, day, profile) {
   const items = [];
   for (const g of day.gut) {
     const sym = g.sym.filter((v) => v !== SYMPTOM_OK);
@@ -101,9 +103,13 @@ function timeline(day, profile) {
     else items.push({ kind: 'feel', title: g.type === 0 ? 'Стула не было' : 'Самочувствие', sub: symText, time: g.time });
   }
   for (const m of day.meals) {
-    items.push({ kind: 'meal', tint: MEAL_TINT[m.tone] || MEAL_TINT.mild, photo: m.photo, title: m.name, sub: m.kcal + ' ккал · клетчатка ' + String(m.fiber).replace('.', ',') + ' г', time: m.time });
+    items.push({ kind: 'meal', tint: mealTint(m), photo: m.photo, title: m.name, sub: mealSummary(m), time: m.time, open: () => app.openMeal(dayK, m.id) });
   }
   if (profile.cycle && day.period) items.push({ kind: 'period', title: 'Месячные', sub: 'отмечено вручную', time: 'день', sortKey: '00:00' });
   items.sort((a, b) => (a.sortKey || a.time).localeCompare(b.sortKey || b.time));
-  return items.map((e) => ({ ...e, isStool: e.kind === 'stool', isMeal: e.kind === 'meal', isFeel: e.kind === 'feel', isPeriod: e.kind === 'period' }));
+  return items.map((e) => ({
+    ...e,
+    rowCls: 'row' + (e.open ? ' tappable' : ''),
+    isStool: e.kind === 'stool', isMeal: e.kind === 'meal', isFeel: e.kind === 'feel', isPeriod: e.kind === 'period'
+  }));
 }

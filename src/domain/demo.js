@@ -1,6 +1,7 @@
 // Демо-режим (/?demo): фиксированная неделя 20–26 сентября 2026 с тестовыми записями.
 import { EXAMPLE_MEALS } from './catalog.js';
 import { blankProfile } from './profile.js';
+import { normalizeMeal } from './meal.js';
 import { newId } from '../core/id.js';
 
 export const DEMO_TODAY = '2026-09-26';
@@ -13,7 +14,7 @@ export const demoProfile = () => ({
 
 export function demoLog() {
   const gut = (time, type, sym) => ({ id: newId(), time, type, sym: sym || [] });
-  const meal = (time, i) => ({ id: newId(), time, ...EXAMPLE_MEALS[i], photo: '' });
+  const meal = (time, i) => ({ id: newId(), time, ...normalizeMeal(EXAMPLE_MEALS[i]), source: 'example', photo: '' });
   const day = (o) => ({ gut: [], meals: [], period: false, ...o });
   return {
     '2026-09-20': day({ gut: [gut('09:00', 5)] }),

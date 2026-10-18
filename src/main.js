@@ -20,7 +20,10 @@ import addHtml from './templates/screens/add.html?raw';
 import insightsHtml from './templates/screens/insights.html?raw';
 import profileHtml from './templates/screens/profile.html?raw';
 import legalHtml from './templates/screens/legal.html?raw';
-import askHtml from './templates/partials/ask.html?raw';
+import mealHtml from './templates/screens/meal.html?raw';
+import assistantHtml from './templates/screens/assistant.html?raw';
+import askEntryHtml from './templates/partials/ask-entry.html?raw';
+import mealCardHtml from './templates/partials/meal-card.html?raw';
 
 initTelegram();
 initAnalytics();
@@ -35,6 +38,9 @@ registerPartial('add', addHtml);
 registerPartial('insights', insightsHtml);
 registerPartial('profile', profileHtml);
 registerPartial('legal', legalHtml);
-registerPartial('ask', askHtml);
+registerPartial('meal', mealHtml);
+registerPartial('assistant', assistantHtml);
+registerPartial('ask-entry', askEntryHtml);
+registerPartial('meal-card', mealCardHtml);
 
 mount('#app');

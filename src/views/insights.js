@@ -1,19 +1,23 @@
 // «Инсайты»: средний показатель недели, столбики по дням, статистика, наблюдение ИИ, вопросы к ИИ.
 import { IS_DEMO } from '../config.js';
-import { parseKey, addDays, mondayOf, MONTHS_GEN, WEEKDAYS_SHORT } from '../domain/dates.js';
+import { parseKey, addDays, mondayOf, dayMonth, MONTHS_GEN, WEEKDAYS_SHORT } from '../domain/dates.js';
 import { gutScore, symptomsOf, toneOf, hasData, TONE_WORD, TONE_COLOR } from '../domain/score.js';
 import { cycleDay, daysToLuteal } from '../domain/cycle.js';
-import { askView } from './ask.js';
 
 const BAR_MAX_PX = 90;
 const BAR_MIN_PX = 12;
 
 export function insightsView(app) {
   const s = app.state, p = s.profile, todayK = app.today(), monday = mondayOf(todayK);
+  // Неделя, но не раньше дня, когда человек начал вести дневник
+  const since = p.since ? p.since.slice(0, 10) : '';
+  const start = since > monday && since <= todayK ? since : monday;
+  const days = [0, 1, 2, 3, 4, 5, 6].map((i) => addDays(monday, i)).filter((k) => k >= start);
+  const pastDays = days.filter((k) => k <= todayK).length;
   let stools = 0, normal = 0, symptomDays = 0, fiberSum = 0, meals = 0, idxSum = 0, idxDays = 0, dataDays = 0;
 
-  const bars = WEEKDAYS_SHORT.map((dow, i) => {
-    const k = addDays(monday, i), d = parseKey(k);
+  const bars = days.map((k) => {
+    const d = parseKey(k), dow = WEEKDAYS_SHORT[(d.getDay() + 6) % 7];
     const day = app.day(k), sc = k > todayK ? null : gutScore(day);
     for (const g of day.gut) if (g.type > 0) { stools++; if (g.type === 3 || g.type === 4) normal++; }
     for (const m of day.meals) { fiberSum += Number(m.fiber) || 0; meals++; }
@@ -36,7 +40,7 @@ export function insightsView(app) {
   const cdToday = cycleDay(p, todayK, todayK);
 
   return {
-    weekLabel: weekLabel(monday),
+    weekLabel: start === monday ? weekLabel(monday) : 'С ' + dayMonth(start),
     avg: avg == null ? '—' : avg,
     hasAvg: avg != null,
     avgTone: 'dot lg ' + toneOf(avg),
@@ -44,12 +48,13 @@ export function insightsView(app) {
     bars,
     normalPct: normalPct == null ? '—' : normalPct + '%',
     symptomDays,
+    symptomDaysText: symptomDays + ' из ' + pastDays,
     fiberAvg: meals ? (fiberSum / meals).toFixed(1).replace('.', ',') + ' г' : '—',
     noticed: noticedText(app, todayK, { dataDays, normalPct, symptomDays }),
     showCycleNote: cdToday > 0 && !p.coc,
     daysToLuteal: daysToLuteal(cdToday, p.len),
 
-    ...askView(app, 'insights')
+    openAssistant: () => app.openAssistant('insights')
   };
 }
 

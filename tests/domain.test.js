@@ -72,3 +72,14 @@ test('контекст для ИИ: только дни с данными за 1
   assert.deepEqual(ctx.days.map((d) => d.date), ['2026-10-18']);
   assert.deepEqual(ctx.profile.goals, ['Наладить стул']);
 });
+
+test('блюдо: нормализация ответа ИИ и КБЖУ', async () => {
+  const { normalizeMeal, mealStats } = await import('../src/domain/meal.js');
+  const m = normalizeMeal({ name: 'Гречка', kcal: '410.6', protein: 15.04, fat: -3, carbs: 70, fiber: 8.25, tone: 'weird', tip: 'ok' });
+  assert.equal(m.kcal, 411);
+  assert.equal(m.fat, 0);
+  assert.equal(m.fiber, 8.3);
+  assert.equal(m.tone, 'mild');
+  assert.equal(m.verdict, 'Нормально');
+  assert.deepEqual(mealStats(m).map((x) => x.label), ['Белки', 'Жиры', 'Углеводы', 'Клетчатка']);
+});

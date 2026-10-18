@@ -1,0 +1,14 @@
+<!-- Карточка блюда. Значения: card из src/views/meal-card.js -->
+<div class="meal-card">
+  <div class="meal-head">
+    <span class="thumb lg" style="background: {{card.tint}}"><sc-if value="{{card.photo}}"><img src="{{card.photo}}" alt=""></sc-if></span>
+    <div class="meal-info">
+      <div class="meal-name">{{card.name}}</div>
+      <div class="meal-verdict">{{card.verdict}}</div>
+    </div>
+  </div>
+  <div class="macros">
+    <sc-for list="{{card.stats}}" as="m"><div class="macro"><div class="macro-value num">{{m.value}}</div><div class="macro-label">{{m.label}}</div></div></sc-for>
+  </div>
+  <sc-if value="{{card.tip}}"><div class="meal-tip">{{card.tip}}</div></sc-if>
+</div>

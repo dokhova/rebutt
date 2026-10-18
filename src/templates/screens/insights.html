@@ -25,14 +25,14 @@
 
 <div class="card list">
   <div class="list-row"><span>Стул в норме</span><span class="stat num">{{normalPct}}</span></div>
-  <div class="list-row"><span>Дни с дискомфортом</span><span class="stat num">{{symptomDays}} из 7</span></div>
+  <div class="list-row"><span>Дни с дискомфортом</span><span class="stat num">{{symptomDaysText}}</span></div>
   <div class="list-row"><span>Клетчатка за приём пищи</span><span class="stat num">{{fiberAvg}}</span></div>
 </div>
 
 <div class="card panel">
   <div class="caption">ИИ заметил</div>
   <div class="panel-lead">{{noticed}}</div>
-  <sc-if value="{{showCycleNote}}"><div class="panel-text">Через {{daysToLuteal}} дн. начнётся фаза перед месячными — вздутие в это время ожидаемо.</div></sc-if>
+  <sc-if value="{{showCycleNote}}"><div class="panel-text">Через {{daysToLuteal}} дн. начнётся фаза перед месячными — в эти дни кишечник часто ведёт себя иначе, это нормально.</div></sc-if>
 </div>
 
-<sc-include name="ask"></sc-include>
+<sc-include name="ask-entry"></sc-include>

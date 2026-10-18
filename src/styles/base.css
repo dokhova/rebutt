@@ -1,7 +1,7 @@
 /* Сброс, типографика, утилиты */
 html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); }
 body { font-family: var(--font); overflow: hidden; -webkit-tap-highlight-color: transparent; }
-button, input { font-family: inherit; color: inherit; }
+button, input, textarea { font-family: inherit; color: inherit; }
 button { cursor: pointer; }
 a { color: var(--ink); }
 input::placeholder { color: var(--faint); }

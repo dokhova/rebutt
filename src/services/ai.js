@@ -32,11 +32,14 @@ async function post(path, body) {
   }
 }
 
-/** Фото блюда (data URL) → { is_food, name, kcal, fiber, verdict, tone, tip } */
-export const analyzeFood = (image, goals) => post('/api/food', { image, goals });
+/**
+ * Разбор блюда → { is_food, name, kcal, protein, fat, carbs, fiber, tone, tip }
+ * @param {{ image?: string, note?: string, previous?: object, goals?: string[] }} input
+ */
+export const analyzeFood = (input) => post('/api/food', input);
 
-/** Вопрос + сводка записей → { answer } */
-export const askAI = (question, context) => post('/api/ask', { question, context });
+/** Вопрос + начало разговора + сводка записей → { answer } */
+export const askAI = (question, history, context) => post('/api/ask', { question, history, context });
 
 /** Сводка записей → { tip_title, tip_text, noticed } */
 export const getInsights = (context) => post('/api/insights', { context });

@@ -1,5 +1,6 @@
 // «+»: запись за сегодня — стул, самочувствие, отметка месячных, еда по фото.
-import { BRISTOL_TYPES, SYMPTOMS, EXAMPLE_MEALS, MEAL_TINT } from '../domain/catalog.js';
+import { BRISTOL_TYPES, SYMPTOMS, MEAL_TINT } from '../domain/catalog.js';
+import { mealCard } from './meal-card.js';
 import { dayMonth } from '../domain/dates.js';
 import { gutScore } from '../domain/score.js';
 import { cycleDay } from '../domain/cycle.js';
@@ -8,7 +9,6 @@ export function addEntryView(app) {
   const s = app.state, f = s.form, p = s.profile, todayK = app.today();
   const today = app.day(todayK);
   const scoreNow = gutScore(today), scorePreview = gutScore(app.draftDay(today).day);
-  const meal = f.result || EXAMPLE_MEALS[0];
   const seg = (on) => 'seg' + (on ? ' on' : '');
 
   return {
@@ -41,14 +41,29 @@ export function addEntryView(app) {
 
     food: { pick: f.food === 'pick', scan: f.food === 'scan', done: f.food === 'done' },
     photo: f.photo,
-    meal: { ...meal, tint: MEAL_TINT[meal.tone] || MEAL_TINT.mild, fiberText: String(meal.fiber).replace('.', ',') },
+    noPhoto: !f.photo,
+    note: f.note,
+    onNote: (e) => app.setForm({ note: e.target.value }),
     onPhoto: (e) => {
       const file = e.target.files && e.target.files[0];
       e.target.value = ''; // чтобы можно было выбрать то же фото повторно
-      if (file) app.addFoodPhoto(file);
+      if (file) app.pickFoodPhoto(file);
     },
+    removePhoto: () => app.removeFoodPhoto(),
+    analyzeCls: 'btn secondary' + (f.photo || f.note.trim() ? '' : ' off'),
+    analyze: () => app.analyzeFoodDraft(),
     tryExample: () => app.tryExampleMeal(),
+    scanTint: MEAL_TINT.mild,
+    card: f.result ? mealCard({ ...f.result, note: f.note }, f.photo) : null,
     removeFood: () => app.removeFood(),
+    fixOpen: f.fixOpen,
+    fixClosed: !f.fixOpen,
+    openFix: () => app.setForm({ fixOpen: true }),
+    fix: f.fix,
+    onFix: (e) => app.setForm({ fix: e.target.value }),
+    fixCls: 'btn secondary' + (f.fix.trim() && !f.fixing ? '' : ' off'),
+    fixLabel: f.fixing ? 'Пересчитываем…' : 'Пересчитать',
+    applyFix: () => app.applyFoodFix(),
 
     scoreNow: scoreNow ? scoreNow.idx + '%' : '—',
     scorePreview: scorePreview ? scorePreview.idx + '%' : '—',

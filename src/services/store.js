@@ -5,6 +5,7 @@
 import { supabase, getUser } from './supabase.js';
 import { IS_DEMO } from '../config.js';
 import { addDays, diffDays } from '../domain/dates.js';
+import { normalizeMeal } from '../domain/meal.js';
 
 const LS_STATE = 'gt_state_v1';
 const LS_PREFIX = 'gt_';
@@ -124,8 +125,8 @@ export async function loadRemote(todayK) {
   }
   for (const m of meals.data || []) {
     day(m.day).meals.push({
-      id: m.id, time: (m.time || '').slice(0, 5), name: m.name, kcal: m.kcal, fiber: Number(m.fiber) || 0,
-      verdict: m.verdict, tone: m.tone, tip: m.tip, source: m.source, photo: ''
+      id: m.id, time: (m.time || '').slice(0, 5), source: m.source, note: m.note || '', photo: '',
+      ...normalizeMeal(m)
     });
   }
   for (const p of per.data || []) day(p.day).period = true;
@@ -170,11 +171,22 @@ export const addGutEntry = (dayK, g) =>
     symptoms: g.sym
   })));
 
+const mealRow = (m) => ({
+  name: m.name, kcal: m.kcal, protein: m.protein, fat: m.fat, carbs: m.carbs, fiber: m.fiber,
+  verdict: m.verdict, tone: m.tone, tip: m.tip, note: m.note || null
+});
+
 export const addMeal = (dayK, m) =>
   withUser((u) => run('meal', supabase.from('meals').insert({
-    id: m.id, user_id: u.id, day: dayK, time: m.time, name: m.name, kcal: m.kcal, fiber: m.fiber,
-    verdict: m.verdict, tone: m.tone, tip: m.tip, source: m.source || 'photo'
+    id: m.id, user_id: u.id, day: dayK, time: m.time, source: m.source || 'photo', ...mealRow(m)
   })));
+
+/** Обновляет блюдо после уточнения */
+export const updateMeal = (m) =>
+  withUser(() => run('meal update', supabase.from('meals').update(mealRow(m)).eq('id', m.id)));
+
+export const deleteMeal = (id) =>
+  withUser(() => run('meal delete', supabase.from('meals').delete().eq('id', id)));
 
 export const setPeriodDay = (dayK, on) =>
   withUser((u) => on

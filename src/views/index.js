@@ -6,6 +6,8 @@ import { addEntryView } from './add-entry.js';
 import { insightsView } from './insights.js';
 import { profileView } from './profile.js';
 import { legalView } from './legal.js';
+import { mealView } from './meal.js';
+import { assistantView } from './assistant.js';
 
 export { shellView } from './shell.js';
 
@@ -15,5 +17,8 @@ export const VIEWS = {
   add: addEntryView,
   insights: insightsView,
   profile: profileView,
-  legal: legalView        // документ поверх любого экрана
+  // поверх любого экрана
+  legal: legalView,
+  meal: mealView,
+  assistant: assistantView
 };

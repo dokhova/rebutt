@@ -1,0 +1,25 @@
+<!-- Сохранённое блюдо. Значения: src/views/meal.js -->
+<div class="topbar">
+  <button class="icon-btn glass" onClick="{{closeMeal}}" aria-label="Назад"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
+  <div class="topbar-title">Блюдо</div>
+  <span class="topbar-spacer"></span>
+</div>
+
+<sc-if value="{{mealMissing}}"><div class="empty-text">Это блюдо уже удалено</div></sc-if>
+
+<sc-if value="{{mealFound}}">
+  <div class="hint">{{mealWhen}}</div>
+  <div class="card form-card">
+    <sc-include name="meal-card"></sc-include>
+  </div>
+  <sc-if value="{{noteText}}"><div class="hint">Ваш комментарий: {{noteText}}</div></sc-if>
+
+  <div class="section">
+    <div class="caption">Уточнить разбор</div>
+    <label class="sr-only" for="mealFix">Уточнение</label>
+    <textarea id="mealFix" class="field-input area" rows="3" placeholder="Например: порция в два раза меньше, без майонеза, это индейка" onChange="{{onFix}}">{{fix}}</textarea>
+    <button class="{{fixCls}}" onClick="{{applyFix}}">{{fixLabel}}</button>
+  </div>
+
+  <button class="danger-btn" onClick="{{deleteMeal}}">Удалить блюдо</button>
+</sc-if>

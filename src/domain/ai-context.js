@@ -19,7 +19,7 @@ export function buildAiContext(profile, log, todayK) {
       stool: r.gut.filter((g) => g.type > 0).map((g) => g.time + ' тип ' + g.type + ' (' + BRISTOL_TYPES[g.type] + ')'),
       no_stool_marked: r.gut.some((g) => g.type === 0),
       symptoms: symptomsOf(r),
-      meals: r.meals.map((m) => m.time + ' ' + m.name + ', ' + m.kcal + ' ккал, клетчатка ' + m.fiber + ' г'),
+      meals: r.meals.map((m) => m.time + ' ' + m.name + ': ' + m.kcal + ' ккал, Б ' + (m.protein || 0) + ' г, Ж ' + (m.fat || 0) + ' г, У ' + (m.carbs || 0) + ' г, клетчатка ' + m.fiber + ' г' + (m.note ? ' (' + m.note + ')' : '')),
       period: !!r.period,
       gut_score: sc ? sc.idx : null
     });

@@ -10,6 +10,7 @@ import { AGE_MIN, AGE_MAX, CYCLE_LEN_MIN, CYCLE_LEN_MAX, EXAMPLE_MEALS, SYMPTOM_
 import { gutScore, emptyDay, hasData } from '../domain/score.js';
 import { blankProfile, profileTraits, onboardingFlow, goalLabels } from '../domain/profile.js';
 import { buildAiContext, aiContextHash } from '../domain/ai-context.js';
+import { normalizeMeal } from '../domain/meal.js';
 import { DEMO_TODAY, demoLog, demoProfile, DEMO_ANSWERS, DEMO_ANSWER_DEFAULT } from '../domain/demo.js';
 import * as store from '../services/store.js';
 import { track, flush, identifyUser, setPersonProps, setScreen, resetAnalytics } from '../services/analytics.js';
@@ -36,11 +37,17 @@ const blankForm = () => ({
   type: 4,            // тип по Бристольской шкале
   sym: [],            // симптомы
   period: '',         // '' | 'yes' | 'no'
-  food: 'pick',       // 'pick' — выбор фото, 'scan' — ИИ разбирает, 'done' — результат
-  photo: '',          // blob-ссылка для превью
-  result: null,       // разбор блюда
-  source: ''          // 'photo' | 'example'
+  food: 'pick',       // 'pick' — фото и/или описание, 'scan' — ИИ разбирает, 'done' — результат
+  photo: '',          // blob-ссылка на фото (только в текущей сессии)
+  note: '',           // комментарий к блюду: что на тарелке, порция
+  result: null,       // разбор блюда (src/domain/meal.js)
+  source: '',         // 'photo' | 'text' | 'example'
+  fixOpen: false,     // открыто поле «Уточнить»
+  fix: '',            // текст уточнения
+  fixing: false       // идёт пересчёт
 });
+
+const isTextField = (el) => !!el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && el.type === 'text'));
 
 function readInsightsCache() {
   try { return JSON.parse(localStorage.getItem(LS_INSIGHTS) || 'null'); } catch (_) { return null; }
@@ -75,11 +82,15 @@ export default class App extends Component {
       booting: !IS_DEMO && !!supabase && !profile.onboardedAt,
       onbStep: 'consent', consent: false,
       legal: null,        // открытый документ: { id, title, html, error }
+      assistant: false,   // открыт экран ИИ-помощника
+      chat: [],           // диалог с помощником: [{ role: 'user' | 'ai', text }]
+      chatLoading: false,
+      mealEdit: null,     // открытое сохранённое блюдо: { day, id, fix, fixing }
+      keyboard: false,    // в фокусе текстовое поле — прячем нижнее меню
       avatarUrl: (tg && tg.photo_url) || '',
       profile, log,
       selected: this.today(),
       form: blankForm(),
-      ai: { question: '', answer: '', loading: false },
       askText: '',
       insights: readInsightsCache(), insightsLoading: false,
       toast: '',
@@ -99,6 +110,12 @@ export default class App extends Component {
   // ================= жизненный цикл =================
 
   async componentDidMount() {
+    // Клавиатура на телефоне: пока печатают, нижнее меню не должно перекрывать поле ввода
+    document.addEventListener('focusin', (e) => { if (isTextField(e.target)) this.setState({ keyboard: true }); });
+    document.addEventListener('focusout', (e) => {
+      if (isTextField(e.target)) setTimeout(() => { if (!isTextField(document.activeElement)) this.setState({ keyboard: false }); }, 50);
+    });
+
     if (!this.state.booting) this.onScreenShown();
     const bootTimer = setTimeout(() => this.finishBoot({}), BOOT_TIMEOUT_MS);
     await identifyUser();
@@ -132,7 +149,8 @@ export default class App extends Component {
 
   componentDidUpdate(prev) {
     const s = this.state;
-    if (prev.screen !== s.screen || prev.onbStep !== s.onbStep || prev.booting !== s.booting || !!prev.legal !== !!s.legal) {
+    if (prev.screen !== s.screen || prev.onbStep !== s.onbStep || prev.booting !== s.booting ||
+        !!prev.legal !== !!s.legal || prev.assistant !== s.assistant || !!prev.mealEdit !== !!s.mealEdit) {
       if (this.scrollEl) this.scrollEl.scrollTop = 0;
       this.onScreenShown();
     }
@@ -144,6 +162,8 @@ export default class App extends Component {
     if (s.booting) return;
     syncBackButton(this.canGoBack(), this.handleBack);
     if (s.legal) { setScreen('legal_' + s.legal.id); return; }
+    if (s.mealEdit) { setScreen('meal'); return; }
+    if (s.assistant) { setScreen('assistant'); return; }
     if (s.screen === 'onboarding') {
       setScreen('onboarding_' + s.onbStep);
       track('onboarding_step_viewed', { step: s.onbStep, step_index: this.onboardingFlow().indexOf(s.onbStep) + 1 });
@@ -156,7 +176,8 @@ export default class App extends Component {
 
   view() {
     const s = this.state;
-    const screen = s.booting ? 'booting' : s.legal ? 'legal' : s.screen;
+    // Поверх экранов: загрузка → документ → блюдо → ИИ-помощник
+    const screen = s.booting ? 'booting' : s.legal ? 'legal' : s.mealEdit ? 'meal' : s.assistant ? 'assistant' : s.screen;
     return { ...shellView(this, screen), ...(VIEWS[screen] ? VIEWS[screen](this) : {}) };
   }
 
@@ -177,7 +198,7 @@ export default class App extends Component {
       day.gut.push(gut);
     }
     if (f.food === 'done' && f.result) {
-      meal = { id: newId(), time, ...f.result, photo: f.photo, source: f.source };
+      meal = { id: newId(), time, ...f.result, note: f.note.trim(), photo: f.photo, source: f.source };
       day.meals.push(meal);
     }
     return { day, gut, meal };
@@ -208,7 +229,7 @@ export default class App extends Component {
   /** Есть ли куда вернуться: документ, профиль, не первый шаг онбординга */
   canGoBack() {
     const s = this.state;
-    if (s.legal || s.screen === 'profile') return true;
+    if (s.legal || s.mealEdit || s.assistant || s.screen === 'profile') return true;
     return s.screen === 'onboarding' && this.onboardingFlow().indexOf(s.onbStep) > 0;
   }
 
@@ -216,6 +237,8 @@ export default class App extends Component {
   back() {
     const s = this.state;
     if (s.legal) this.closeLegalDoc();
+    else if (s.mealEdit) this.closeMeal();
+    else if (s.assistant) this.closeAssistant();
     else if (s.screen === 'profile') this.navigate('today', 'back');
     else if (s.screen === 'onboarding') this.onboardingBack();
   }
@@ -270,12 +293,12 @@ export default class App extends Component {
     const flow = this.onboardingFlow(), i = flow.indexOf(step);
 
     if (step === 'consent') {
-      if (!s.consent) { this.showToast('Нужно согласие с документами'); track('consent_blocked'); return; }
+      if (!s.consent) { this.showToast('Отметьте согласие, чтобы продолжить'); track('consent_blocked'); return; }
       track('consent_accepted', { version: LEGAL_VERSION, documents: Object.keys(LEGAL_DOCS) });
       if (!IS_DEMO) store.saveConsents(Object.keys(LEGAL_DOCS), LEGAL_VERSION);
     }
     if (step === 'about' && (!p.name.trim() || !p.sex)) {
-      this.showToast('Укажите имя и пол');
+      this.showToast('Напишите имя и выберите пол');
       track('onboarding_validation_error', { step, missing: [!p.name.trim() && 'name', !p.sex && 'sex'].filter(Boolean) });
       return;
     }
@@ -397,9 +420,8 @@ export default class App extends Component {
     if (!IS_DEMO) await signOut();
     this.onboardingStartedAt = Date.now();
     this.setState({
-      screen: 'onboarding', onbStep: 'consent', consent: false, legal: null,
-      profile: blankProfile(), log: {}, form: blankForm(), insights: null,
-      ai: { question: '', answer: '', loading: false }
+      screen: 'onboarding', onbStep: 'consent', consent: false, legal: null, assistant: false, mealEdit: null, chat: [],
+      profile: blankProfile(), log: {}, form: blankForm(), insights: null
     });
     this.showToast(ok ? 'Данные удалены' : 'Удалено на устройстве, сервер не ответил');
   }
@@ -435,59 +457,141 @@ export default class App extends Component {
     track('period_marked', { value: v || 'cleared' });
   }
 
-  /** «Попробовать на примере» (и любое фото в демо): готовое блюдо без запроса к ИИ */
+  // ---------- еда ----------
+
+  /** Запрос к ИИ про блюдо. photo — blob-ссылка (если фото ещё в памяти), previous — прошлый разбор при уточнении */
+  async requestMeal({ photo, note, previous }) {
+    let image;
+    if (photo) image = await compressImage(await (await fetch(photo)).blob());
+    const r = await analyzeFood({ image, note, previous, goals: goalLabels(this.state.profile) });
+    if (r.is_food === false) throw new Error('Не похоже на еду — попробуйте другое фото или опишите блюдо словами');
+    return normalizeMeal(r);
+  }
+
+  pickFoodPhoto(file) {
+    let photo = '';
+    try { photo = URL.createObjectURL(file); } catch (_) { /* без превью */ }
+    this.setForm({ photo });
+    track('food_photo_added', { source: 'photo', file_type: file.type, size_kb: Math.round(file.size / 1024) });
+  }
+
+  removeFoodPhoto() {
+    this.setForm({ photo: '' });
+    track('food_photo_removed');
+  }
+
+  /** «Разобрать»: фото и/или описание → ИИ */
+  async analyzeFoodDraft() {
+    const f = this.state.form, note = f.note.trim();
+    if (!f.photo && !note) { this.showToast('Добавьте фото или опишите блюдо'); return; }
+    if (IS_DEMO) { this.tryExampleMeal(f.photo ? 'photo' : 'text'); return; }
+    const source = f.photo ? 'photo' : 'text';
+    const scanId = (this.scanId = newId());
+    this.setForm({ food: 'scan', source });
+    track('food_analysis_requested', { has_photo: !!f.photo, has_note: !!note });
+    const startedAt = Date.now();
+    try {
+      const result = await this.requestMeal({ photo: f.photo, note });
+      if (this.scanId !== scanId) return; // блюдо уже убрали
+      this.setForm({ food: 'done', result });
+      track('food_analysis_completed', { source, has_note: !!note, tone: result.tone, kcal: result.kcal, fiber: result.fiber, latency_ms: Date.now() - startedAt });
+    } catch (e) {
+      if (this.scanId !== scanId) return;
+      this.setForm({ food: 'pick' });
+      this.showToast(String(e.message || e).slice(0, 140));
+      track('food_analysis_failed', { source, reason: String(e.message || e).slice(0, 120), latency_ms: Date.now() - startedAt });
+    }
+  }
+
+  /** «Попробовать на примере» (и любой разбор в демо): готовое блюдо без запроса к ИИ */
   tryExampleMeal(source = 'example') {
-    const n = this.state.exampleN, result = EXAMPLE_MEALS[n % EXAMPLE_MEALS.length];
-    this.setState({ form: { ...this.state.form, food: 'scan', photo: '', result: null, source }, exampleN: n + 1 });
-    track('food_photo_added', { source });
+    const n = this.state.exampleN, result = normalizeMeal(EXAMPLE_MEALS[n % EXAMPLE_MEALS.length]);
+    this.setState({ form: { ...this.state.form, food: 'scan', result: null, source }, exampleN: n + 1 });
     clearTimeout(this.exampleTimer);
     this.exampleTimer = setTimeout(() => {
       this.setForm({ food: 'done', result });
-      track('food_analysis_completed', { source, verdict: result.verdict, tone: result.tone, kcal: result.kcal, fiber: result.fiber, latency_ms: EXAMPLE_SCAN_MS });
+      track('food_analysis_completed', { source, tone: result.tone, kcal: result.kcal, fiber: result.fiber, latency_ms: EXAMPLE_SCAN_MS });
     }, EXAMPLE_SCAN_MS);
-  }
-
-  async addFoodPhoto(file) {
-    if (IS_DEMO) { this.tryExampleMeal('photo'); return; }
-    let preview = '';
-    try { preview = URL.createObjectURL(file); } catch (_) { /* превью не обязательно */ }
-    const scanId = (this.scanId = newId());
-    this.setForm({ food: 'scan', photo: preview, result: null, source: 'photo' });
-    track('food_photo_added', { source: 'photo', file_type: file.type, size_kb: Math.round(file.size / 1024) });
-
-    const startedAt = Date.now();
-    const fail = (reason, message) => {
-      this.setForm({ food: 'pick', photo: '' });
-      this.showToast(message);
-      track('food_analysis_failed', { reason, latency_ms: Date.now() - startedAt });
-    };
-    try {
-      const r = await analyzeFood(await compressImage(file), goalLabels(this.state.profile));
-      if (this.scanId !== scanId) return; // фото уже убрали
-      if (r.is_food === false) { fail('not_food', 'Не похоже на еду — попробуйте другое фото'); return; }
-      const result = {
-        name: r.name, kcal: Math.round(r.kcal) || 0, fiber: Math.round((r.fiber || 0) * 10) / 10,
-        verdict: r.verdict, tone: ['calm', 'mild', 'sens'].includes(r.tone) ? r.tone : 'mild', tip: r.tip
-      };
-      this.setForm({ food: 'done', result });
-      track('food_analysis_completed', { source: 'photo', verdict: result.verdict, tone: result.tone, kcal: result.kcal, fiber: result.fiber, latency_ms: Date.now() - startedAt });
-    } catch (e) {
-      const reason = String(e.message || e).slice(0, 120);
-      if (this.scanId === scanId) fail(reason, 'Не получилось разобрать фото: ' + reason);
-    }
   }
 
   removeFood() {
     clearTimeout(this.exampleTimer);
     this.scanId = null;
-    this.setForm({ food: 'pick', photo: '', result: null });
+    const f = blankForm();
+    this.setForm({ food: f.food, photo: f.photo, note: f.note, result: f.result, source: f.source, fixOpen: false, fix: '', fixing: false });
     track('food_removed');
+  }
+
+  /** Уточнение разбора до сохранения */
+  async applyFoodFix() {
+    const f = this.state.form, fix = f.fix.trim();
+    if (!fix || f.fixing) return;
+    if (IS_DEMO) { this.setForm({ fixOpen: false, fix: '' }); this.showToast('В демо уточнение не пересчитывается'); return; }
+    this.setForm({ fixing: true });
+    try {
+      const result = await this.requestMeal({ photo: f.photo, note: fix, previous: f.result });
+      this.setForm({ result, fixing: false, fixOpen: false, fix: '', note: [f.note.trim(), fix].filter(Boolean).join('; ') });
+      track('food_reanalyzed', { where: 'draft', kcal: result.kcal });
+    } catch (e) {
+      this.setForm({ fixing: false });
+      this.showToast(String(e.message || e).slice(0, 140));
+      track('food_reanalyze_failed', { where: 'draft', reason: String(e.message || e).slice(0, 120) });
+    }
+  }
+
+  // ---------- сохранённое блюдо: уточнить или удалить ----------
+
+  findMeal(dayK, id) { return this.day(dayK).meals.find((m) => m.id === id) || null; }
+
+  openMeal(dayK, id) {
+    this.setState({ mealEdit: { day: dayK, id, fix: '', fixing: false } });
+    track('meal_opened');
+  }
+
+  closeMeal() { this.setState({ mealEdit: null }); }
+
+  setMealFix(text) { this.setState({ mealEdit: { ...this.state.mealEdit, fix: text } }); }
+
+  replaceMeal(dayK, id, patch) {
+    const d = this.day(dayK);
+    const meals = patch ? d.meals.map((m) => (m.id === id ? { ...m, ...patch } : m)) : d.meals.filter((m) => m.id !== id);
+    this.setState({ log: { ...this.state.log, [dayK]: { ...d, meals } } });
+  }
+
+  async applyMealFix() {
+    const me = this.state.mealEdit, fix = me.fix.trim(), meal = this.findMeal(me.day, me.id);
+    if (!fix || me.fixing || !meal) return;
+    if (IS_DEMO) { this.showToast('В демо уточнение не пересчитывается'); return; }
+    this.setState({ mealEdit: { ...me, fixing: true } });
+    try {
+      const result = await this.requestMeal({ photo: meal.photo, note: fix, previous: meal });
+      const updated = { ...meal, ...result, note: [meal.note, fix].filter(Boolean).join('; ') };
+      this.replaceMeal(me.day, me.id, updated);
+      store.updateMeal(updated);
+      this.setState({ mealEdit: { ...this.state.mealEdit, fix: '', fixing: false } });
+      this.showToast('Пересчитали');
+      track('food_reanalyzed', { where: 'saved', kcal: result.kcal });
+    } catch (e) {
+      this.setState({ mealEdit: { ...this.state.mealEdit, fixing: false } });
+      this.showToast(String(e.message || e).slice(0, 140));
+      track('food_reanalyze_failed', { where: 'saved', reason: String(e.message || e).slice(0, 120) });
+    }
+  }
+
+  deleteMeal() {
+    const me = this.state.mealEdit;
+    if (!window.confirm('Удалить это блюдо из записей?')) return;
+    this.replaceMeal(me.day, me.id, null);
+    if (!IS_DEMO) store.deleteMeal(me.id);
+    this.setState({ mealEdit: null });
+    this.showToast('Удалено');
+    track('meal_deleted');
   }
 
   saveEntry() {
     const f = this.state.form, k = this.today();
     if (!f.stool && !f.sym.length && f.food !== 'done' && !f.period) {
-      this.showToast('Отметьте хоть что-нибудь');
+      this.showToast('Отметьте хотя бы что-то одно');
       track('entry_save_blocked', { reason: 'empty' });
       return;
     }
@@ -528,24 +632,35 @@ export default class App extends Component {
 
   // ================= ИИ =================
 
+  openAssistant(from) {
+    this.setState({ assistant: true });
+    track('assistant_opened', { from });
+  }
+
+  closeAssistant() { this.setState({ assistant: false }); }
+
+  /** Вопрос помощнику. Диалог сохраняется, пока открыто приложение. */
   async ask(question, source) {
-    if (!question || this.state.ai.loading) return;
-    this.setState({ ai: { question, answer: '', loading: true }, askText: '' });
-    track('ai_question_asked', { source, screen_name: this.state.screen, length: question.length });
+    const s = this.state;
+    if (!question || s.chatLoading) return;
+    const history = s.chat.slice(-6);
+    const chat = [...s.chat, { role: 'user', text: question }];
+    this.setState({ chat, chatLoading: true, askText: '' });
+    track('ai_question_asked', { source, turn: chat.length, length: question.length });
+    const reply = (text) => this.setState({ chat: [...chat, { role: 'ai', text }], chatLoading: false });
 
     if (IS_DEMO) {
       const hit = Object.keys(DEMO_ANSWERS).find((k) => question.toLowerCase().includes(k));
-      setTimeout(() => this.setState({ ai: { question, answer: hit ? DEMO_ANSWERS[hit] : DEMO_ANSWER_DEFAULT, loading: false } }), 700);
+      setTimeout(() => reply(hit ? DEMO_ANSWERS[hit] : DEMO_ANSWER_DEFAULT), 700);
       return;
     }
     const startedAt = Date.now();
     try {
-      const r = await askAI(question, buildAiContext(this.state.profile, this.state.log, this.today()));
-      if (this.state.ai.question !== question) return;
-      this.setState({ ai: { question, answer: r.answer, loading: false } });
+      const r = await askAI(question, history, buildAiContext(s.profile, s.log, this.today()));
+      reply(r.answer);
       track('ai_answer_received', { source, latency_ms: Date.now() - startedAt, answer_length: (r.answer || '').length });
     } catch (e) {
-      this.setState({ ai: { question, answer: 'Не получилось получить ответ: ' + String(e.message || e).slice(0, 160), loading: false } });
+      reply('Не получилось ответить: ' + String(e.message || e).slice(0, 160) + '. Попробуйте ещё раз чуть позже.');
       track('ai_answer_failed', { source, error: String(e.message || e).slice(0, 120) });
     }
   }

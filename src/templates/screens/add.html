@@ -43,39 +43,53 @@
   </div>
 </sc-if>
 
-<!-- Еда: фото → ИИ разбирает → результат -->
+<!-- Еда: фото и/или описание → ИИ разбирает → КБЖУ; можно уточнить -->
 <div class="card form-card">
   <div class="card-head"><div class="caption">Еда</div><div class="hint">по желанию</div></div>
 
   <sc-if value="{{food.pick}}">
-    <label class="photo-drop" for="foodFile">
-      <span class="icon-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></span>
-      <span>Сфотографировать блюдо</span>
-      <input id="foodFile" class="file-input" type="file" accept="image/*" onChange="{{onPhoto}}">
-    </label>
+    <sc-if value="{{noPhoto}}">
+      <label class="photo-drop" for="foodFile">
+        <span class="icon-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></span>
+        <span>Сфотографировать блюдо</span>
+        <input id="foodFile" class="file-input" type="file" accept="image/*" onChange="{{onPhoto}}">
+      </label>
+    </sc-if>
+    <sc-if value="{{photo}}">
+      <div class="photo-preview">
+        <img src="{{photo}}" alt="Фото блюда">
+        <button class="icon-btn small on-photo" onClick="{{removePhoto}}" aria-label="Убрать фото"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+      </div>
+    </sc-if>
+    <label class="sr-only" for="foodNote">Описание блюда</label>
+    <textarea id="foodNote" class="field-input area" rows="2" placeholder="Что на тарелке и сколько — по желанию. Например: половина порции, без соуса" onChange="{{onNote}}">{{note}}</textarea>
+    <button class="{{analyzeCls}}" onClick="{{analyze}}">Разобрать с ИИ</button>
     <button class="example-btn" onClick="{{tryExample}}">Попробовать на примере</button>
   </sc-if>
 
   <sc-if value="{{food.scan}}">
-    <div class="scan" style="background: {{meal.tint}}">
+    <div class="scan" style="background: {{scanTint}}">
       <sc-if value="{{photo}}"><img src="{{photo}}" alt="Фото блюда"></sc-if>
       <div class="scan-line"></div>
     </div>
-    <div class="scan-text">ИИ разбирает блюдо…</div>
+    <div class="scan-text">ИИ считает КБЖУ…</div>
   </sc-if>
 
   <sc-if value="{{food.done}}">
-    <div class="meal fade-in">
-      <div class="meal-head">
-        <span class="thumb lg" style="background: {{meal.tint}}"><sc-if value="{{photo}}"><img src="{{photo}}" alt="Фото блюда"></sc-if></span>
-        <div class="meal-info">
-          <div class="meal-name">{{meal.name}}</div>
-          <div class="meal-meta num">{{meal.kcal}} ккал · клетчатка {{meal.fiberText}} г</div>
-        </div>
-        <button class="icon-btn small" onClick="{{removeFood}}" aria-label="Убрать фото"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
-      </div>
-      <div class="meal-verdict"><span class="pill">{{meal.verdict}}</span><span class="meal-tip">{{meal.tip}}</span></div>
+    <div class="fade-in">
+      <sc-include name="meal-card"></sc-include>
     </div>
+    <sc-if value="{{fixClosed}}">
+      <div class="meal-actions">
+        <button class="text-link" onClick="{{openFix}}">Уточнить</button>
+        <button class="text-link" onClick="{{removeFood}}">Убрать</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{fixOpen}}">
+      <label class="sr-only" for="foodFix">Уточнение</label>
+      <textarea id="foodFix" class="field-input area" rows="2" placeholder="Что поправить? Например: порция в два раза меньше, это гречка" onChange="{{onFix}}">{{fix}}</textarea>
+      <button class="{{fixCls}}" onClick="{{applyFix}}">{{fixLabel}}</button>
+    </sc-if>
   </sc-if>
 </div>
 

@@ -2,7 +2,7 @@
 //
 // Синтаксис шаблонов (src/templates):
 //   {{path}}                         подстановка значения (в тексте и атрибутах), path может быть a.b.c
-//   onClick="{{fn}}"                 обработчик события (click, input, change, scroll); onChange у текстовых input = input
+//   onClick="{{fn}}"                 обработчик события (click, input, change, scroll); onChange у текстовых input и textarea = input
 //   ref="{{fn}}"                     fn(element) вызывается после каждой отрисовки
 //   html="{{markup}}"               вставить готовый HTML внутрь элемента (только для своего контента, например документов из public/legal)
 //   <sc-if value="{{flag}}">         отрисовать содержимое, если flag истинно
@@ -126,7 +126,8 @@ function renderNode(parent, n, scope) {
       const fn = lookup(m[1], scope);
       if (typeof fn !== 'function') continue;
       let ev = name.slice(2);
-      if (ev === 'change' && tag === 'input' && n.getAttribute('type') !== 'file') ev = 'input';
+      // onChange у текстовых полей срабатывает на каждый ввод символа
+      if (ev === 'change' && (tag === 'textarea' || (tag === 'input' && n.getAttribute('type') !== 'file'))) ev = 'input';
       handlers.push(fn);
       el.setAttribute('data-on-' + ev, handlers.length - 1);
     } else if (m && name === 'html') {

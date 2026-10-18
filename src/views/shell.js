@@ -13,6 +13,8 @@ export function shellView(app, screen) {
     is: {
       booting: screen === 'booting',
       legal: screen === 'legal',
+      meal: screen === 'meal',
+      assistant: screen === 'assistant',
       onboarding: screen === 'onboarding',
       today: screen === 'today',
       add: screen === 'add',
@@ -22,7 +24,7 @@ export function shellView(app, screen) {
     screenCls: 'screen scroller' + (withTabs ? ' with-tabs' : ''),
     setScrollEl: app.setScrollEl,
 
-    showTabs: withTabs,
+    showTabs: withTabs && !s.keyboard, // пока открыта клавиатура, меню не перекрывает поле ввода
     tabToday: tab('today'),
     tabInsights: tab('insights'),
     tabAdd: 'plus' + (screen === 'add' ? ' on' : ''),

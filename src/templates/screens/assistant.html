@@ -1,0 +1,30 @@
+<!-- ИИ-помощник. Значения: src/views/assistant.js -->
+<div class="topbar">
+  <button class="icon-btn glass" onClick="{{closeAssistant}}" aria-label="Назад"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
+  <div class="topbar-title">ИИ-помощник</div>
+  <span class="topbar-spacer"></span>
+</div>
+
+<sc-if value="{{emptyChat}}">
+  <div class="page-head">
+    <h1 class="title">Чем помочь?</h1>
+    <div class="subtitle">Спросите про еду, стул или самочувствие — отвечу с учётом ваших записей</div>
+  </div>
+  <div class="chips">
+    <sc-for list="{{suggestions}}" as="s"><button class="chip" onClick="{{s.pick}}">{{s.q}}</button></sc-for>
+  </div>
+</sc-if>
+
+<div class="chat">
+  <sc-for list="{{messages}}" as="m"><div class="{{m.cls}}">{{m.text}}</div></sc-for>
+  <span ref="{{scrollChat}}"></span>
+</div>
+
+<div class="ask-bar">
+  <div class="ask">
+    <label class="sr-only" for="askInput">Вопрос ИИ</label>
+    <input id="askInput" class="ask-input" type="text" placeholder="Ваш вопрос…" value="{{askText}}" onChange="{{onAskInput}}">
+    <button class="{{sendCls}}" onClick="{{sendAsk}}" aria-label="Отправить"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
+  </div>
+  <div class="hint chat-note">ИИ помогает разобраться, но не заменяет врача</div>
+</div>

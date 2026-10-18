@@ -26,7 +26,7 @@ function flatten(log) {
       const what = g.type > 0 ? 'Тип ' + g.type + ' — ' + typeName(g.type) : g.type === 0 ? 'Стула не было' : 'Самочувствие';
       rows.push([k, g.time, 'Стул', what, (g.sym || []).join(', ')]);
     }
-    for (const m of r.meals || []) rows.push([k, m.time, 'Еда', m.name, m.kcal + ' ккал, клетчатка ' + m.fiber + ' г']);
+    for (const m of r.meals || []) rows.push([k, m.time, 'Еда', m.name, m.kcal + ' ккал, Б ' + (m.protein || 0) + ' г, Ж ' + (m.fat || 0) + ' г, У ' + (m.carbs || 0) + ' г, клетчатка ' + m.fiber + ' г']);
     if (r.period) rows.push([k, '', 'Цикл', 'Месячные', '']);
   }
   return rows;

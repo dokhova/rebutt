@@ -3,6 +3,8 @@
   <div class="{{screenCls}}" ref="{{setScrollEl}}">
     <sc-if value="{{is.booting}}"><div class="boot" role="status"><span class="boot-dot"></span>Загружаем ваши данные…</div></sc-if>
     <sc-if value="{{is.legal}}"><sc-include name="legal"></sc-include></sc-if>
+    <sc-if value="{{is.meal}}"><sc-include name="meal"></sc-include></sc-if>
+    <sc-if value="{{is.assistant}}"><sc-include name="assistant"></sc-include></sc-if>
     <sc-if value="{{is.onboarding}}"><sc-include name="onboarding"></sc-include></sc-if>
     <sc-if value="{{is.today}}"><sc-include name="today"></sc-include></sc-if>
     <sc-if value="{{is.add}}"><sc-include name="add"></sc-include></sc-if>

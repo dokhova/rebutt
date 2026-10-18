@@ -1,4 +1,9 @@
-// POST /api/food  { image: dataURL, goals?: string[] } → разбор блюда по фото
+// POST /api/food — разбор блюда: КБЖУ, клетчатка, оценка для кишечника, мягкий совет.
+// Тело: { image?: dataURL, note?: string, previous?: прошлый разбор, goals?: string[] }
+//   image          — фото блюда (JPEG/PNG/WEBP)
+//   note           — комментарий пользователя: что на тарелке, размер порции, или уточнение к разбору
+//   previous       — прошлый разбор, если пользователь его уточняет
+// Нужно хотя бы фото или текст.
 import { chatJSON, handler, SAFETY, VISION_MODEL } from './_lib/openai.js';
 
 export const config = { maxDuration: 60 };
@@ -6,31 +11,49 @@ export const config = { maxDuration: 60 };
 const schema = {
   type: 'object',
   additionalProperties: false,
-  required: ['is_food', 'name', 'kcal', 'fiber', 'verdict', 'tone', 'tip'],
+  required: ['is_food', 'name', 'kcal', 'protein', 'fat', 'carbs', 'fiber', 'tone', 'tip'],
   properties: {
-    is_food: { type: 'boolean', description: 'true, если на фото еда или напиток' },
+    is_food: { type: 'boolean', description: 'true, если на фото или в описании еда или напиток' },
     name: { type: 'string', description: 'Короткое название блюда по-русски, 1–4 слова' },
-    kcal: { type: 'number', description: 'Оценка калорийности порции, ккал' },
-    fiber: { type: 'number', description: 'Оценка клетчатки в порции, г' },
-    verdict: { type: 'string', enum: ['Хорошо', 'Умеренно', 'Тяжело'] },
-    tone: { type: 'string', enum: ['calm', 'mild', 'sens'], description: 'calm = Хорошо, mild = Умеренно, sens = Тяжело' },
-    tip: { type: 'string', description: 'Совет для кишечника, одно предложение до 90 символов' }
+    kcal: { type: 'number', description: 'Калории всей порции, ккал' },
+    protein: { type: 'number', description: 'Белки, г' },
+    fat: { type: 'number', description: 'Жиры, г' },
+    carbs: { type: 'number', description: 'Углеводы, г' },
+    fiber: { type: 'number', description: 'Клетчатка, г' },
+    tone: { type: 'string', enum: ['calm', 'mild', 'sens'], description: 'Насколько мягко блюдо для кишечника: calm — мягко, mild — нормально, sens — лучше в меру' },
+    tip: { type: 'string', description: 'Один бережный совет до 100 символов, без запретов и оценок' }
   }
 };
 
+const bad = (msg, status = 400) => Object.assign(new Error(msg), { status });
+
 export default handler(async (body) => {
-  const image = String(body.image || '');
-  if (!/^data:image\/(jpeg|png|webp);base64,/.test(image)) { const e = new Error('Нужно фото в формате JPEG/PNG/WEBP'); e.status = 400; throw e; }
-  if (image.length > 3_500_000) { const e = new Error('Фото слишком большое'); e.status = 413; throw e; }
+  const image = body.image ? String(body.image) : '';
+  const note = String(body.note || '').trim().slice(0, 500);
   const goals = Array.isArray(body.goals) ? body.goals.slice(0, 10).map(String) : [];
+  const previous = body.previous && typeof body.previous === 'object' ? body.previous : null;
+
+  if (!image && !note) throw bad('Добавьте фото или опишите блюдо');
+  if (image && !/^data:image\/(jpeg|png|webp);base64,/.test(image)) throw bad('Нужно фото в формате JPEG/PNG/WEBP');
+  if (image.length > 3_500_000) throw bad('Фото слишком большое', 413);
+
+  const parts = [image ? 'Разбери блюдо на фото.' : 'Разбери блюдо по описанию.'];
+  if (previous) {
+    parts.push('Прошлый разбор: ' + JSON.stringify({
+      name: previous.name, kcal: previous.kcal, protein: previous.protein, fat: previous.fat, carbs: previous.carbs, fiber: previous.fiber
+    }) + '. Пользователь уточняет — пересчитай с учётом уточнения.');
+  }
+  if (note) parts.push((previous ? 'Уточнение пользователя: ' : 'Комментарий пользователя: ') + note);
+  if (goals.length) parts.push('Цели пользователя: ' + goals.join(', ') + '.');
+
+  const content = [{ type: 'text', text: parts.join('\n') }];
+  if (image) content.push({ type: 'image_url', image_url: { url: image, detail: 'low' } });
+
   return chatJSON({
     model: VISION_MODEL,
     schemaName: 'food',
     schema,
-    system: SAFETY + ' Оцени блюдо на фото с точки зрения комфорта кишечника: клетчатка, жирность, острота, газообразующие продукты. Калории и клетчатку оценивай для видимой порции, округляй. Если на фото не еда — is_food=false, остальные поля заполни нейтрально (name "Не еда", 0, 0, "Умеренно", "mild", пустой совет).',
-    user: [
-      { type: 'text', text: 'Разбери блюдо.' + (goals.length ? ' Цели пользователя: ' + goals.join(', ') + '.' : '') },
-      { type: 'image_url', image_url: { url: image, detail: 'low' } }
-    ]
+    system: SAFETY + ' Оцени блюдо: калории, белки, жиры, углеводы и клетчатку для видимой или описанной порции, числа округляй. Комментарий и уточнения пользователя важнее того, что видно на фото. Оценка tone — про комфорт кишечника (клетчатка, жирность, острота, газообразующие продукты), а не про «полезно/вредно». Совет — один, мягкий, без запретов. Если это не еда — is_food=false, числа 0, name "Не еда", tone "mild", tip пустой.',
+    user: content
   });
 });
