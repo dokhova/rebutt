@@ -50,7 +50,9 @@ export function mergeLogs(local, remote) {
     out[k] = {
       gut: uniqueById([...(b.gut || []), ...(a.gut || [])]).sort(byTime),
       meals: uniqueById([...(b.meals || []), ...(a.meals || [])]).sort(byTime),
-      period: !!(a.period || b.period)
+      period: !!(a.period || b.period),
+      // жидкость хранится одним числом за день; на устройстве — самое свежее, поэтому берём большее
+      water: Math.max(a.water || 0, b.water || 0)
     };
   }
   return out;
@@ -105,16 +107,18 @@ export async function loadRemote(todayK) {
   const user = await getUser();
   if (!user) return null;
   const from = addDays(todayK, -HISTORY_DAYS);
-  const [pr, gut, meals, per] = await Promise.all([
+  const [pr, gut, meals, per, wat] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
     supabase.from('gut_entries').select('*').gte('day', from).order('time'),
     supabase.from('meals').select('*').gte('day', from).order('time'),
-    supabase.from('period_days').select('day').gte('day', from)
+    supabase.from('period_days').select('day').gte('day', from),
+    supabase.from('water_days').select('day, ml').gte('day', from)
   ]);
+  if (wat.error) console.warn('[store] water load:', wat.error.message); // нет миграции water — приложение работает без неё
   if (pr.error) { console.warn('[store] profile load:', pr.error.message); return null; }
 
   const log = {};
-  const day = (k) => (log[k] = log[k] || { gut: [], meals: [], period: false });
+  const day = (k) => (log[k] = log[k] || { gut: [], meals: [], period: false, water: 0 });
   for (const g of gut.data || []) {
     day(g.day).gut.push({
       id: g.id,
@@ -132,6 +136,7 @@ export async function loadRemote(todayK) {
     });
   }
   for (const p of per.data || []) day(p.day).period = true;
+  for (const w of wat.data || []) day(w.day).water = w.ml || 0;
 
   return { profile: pr.data ? rowToProfile(pr.data, todayK) : null, log };
 }
@@ -205,11 +210,15 @@ export const setPeriodDay = (dayK, on) =>
     ? run('period', supabase.from('period_days').upsert({ user_id: u.id, day: dayK }))
     : run('period', supabase.from('period_days').delete().eq('user_id', u.id).eq('day', dayK)));
 
+/** Жидкость за день, мл: одна строка на день, перезаписывается */
+export const setWaterDay = (dayK, ml) =>
+  withUser((u) => run('water', supabase.from('water_days').upsert({ user_id: u.id, day: dayK, ml, updated_at: new Date().toISOString() })));
+
 /** Удаляет всё по пользователю: записи, еду, цикл, согласия, аналитику, профиль. Плюс локальный кэш. */
 export async function wipeAll() {
   clearLocal();
   return withUser(async (u) => {
-    const tables = ['gut_entries', 'meals', 'period_days', 'analytics_events', 'consents'];
+    const tables = ['gut_entries', 'meals', 'period_days', 'water_days', 'analytics_events', 'consents'];
     const results = await Promise.all(tables.map((t) => run('wipe ' + t, supabase.from(t).delete().eq('user_id', u.id))));
     const profileOk = await run('wipe profiles', supabase.from('profiles').delete().eq('id', u.id));
     return results.every(Boolean) && profileOk;

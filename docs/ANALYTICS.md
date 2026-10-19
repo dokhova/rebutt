@@ -25,7 +25,7 @@
 | `app_opened` | открытие приложения | `is_returning`, `local_days` |
 | `screen_viewed` | показ экрана (кроме онбординга) | `screen_name` |
 | `nav_clicked` | переход между экранами | `to`, `from` (`today` / `add_entry` / `insights` / `profile`), `source` (`tab` / `avatar` / `back` / `empty_day` / `today_summary` — тап по показателю на главной) |
-| `day_selected` | переключение дня стрелками в шапке «Сегодня» | `days_ago`, `direction` (`prev` / `next`) |
+| `day_selected` | выбор дня: календарь в шапке «Сегодня» или неделя в инсайтах | `days_ago`, `direction` (`calendar` / `prev` / `next`), `has_data` |
 
 ### Онбординг
 | Событие | Когда | Свойства |
@@ -45,6 +45,8 @@
 ### Запись дня (экран «+»)
 | Событие | Когда | Свойства |
 |---|---|---|
+| `add_section_opened` | переключение раздела на «+» | `section` (`stool` / `food` / `water`) |
+| `water_changed` | ± жидкость в разделе «Жидкости» | `step_ml` (250, 150, 500, −250), `draft_ml` — сколько добавится к дню |
 | `stool_status_selected` | «Был» / «Не было» | `value` (`had` / `none` / `cleared`) |
 | `bristol_type_selected` | выбор типа | `bristol_type` 1–7 |
 | `stool_color_selected` | выбор цвета стула | `color` (`brown` / `light` / `yellow` / `green` / `dark` / `red` / `cleared`), `where` (`form` — новая запись / `entry` — правка) |
@@ -65,7 +67,7 @@
 | `entry_updated` | запись исправлена | `stool_status`, `bristol_type`, `has_color`, `stress` |
 | `entry_deleted` | запись удалена | — |
 | `entry_save_blocked` | «Сохранить» без данных | `reason` |
-| `entry_saved` | запись сохранена | `stool_status`, `bristol_type`, `symptoms`, `symptoms_count`, `has_food`, `food_source`, `food_tone`, `period_mark`, `gut_score`, `score_before`, `score_delta`, `days_logged_last7`, `hour` |
+| `entry_saved` | запись сохранена | `stool_status`, `bristol_type`, `symptoms`, `symptoms_count`, `has_food`, `food_source`, `food_tone`, `period_mark`, `water_ml_added`, `water_ml_day`, `gut_score`, `score_before`, `score_delta`, `days_logged_last7`, `hour` |
 | `first_entry_saved` | первая запись пользователя | как у `entry_saved` |
 
 ### ИИ и инсайты

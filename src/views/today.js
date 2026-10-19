@@ -1,19 +1,24 @@
-// «Сегодня»: шапка (аватар, стрик, переключатель дня), показатель дня, кольца, совет, цикл, записи дня.
-// Базовые блоки видны всегда — даже в первый день без записей.
+// «Сегодня»: шапка (аватар, день, календарь), дуга «работа кишечника», показатели дня,
+// «Что может помочь», цикл, записи дня. Базовые блоки видны всегда — даже в первый день без записей.
 import { IS_DEMO } from '../config.js';
-import { BRISTOL_TYPES, FALLBACK_TIPS, SYMPTOM_OK, STOOL_COLORS, stressWord } from '../domain/catalog.js';
+import { BRISTOL_TYPES, FALLBACK_TIPS, SYMPTOM_OK, STOOL_COLORS, FIBER_GOAL_G, WATER_GOAL_ML, stressWord } from '../domain/catalog.js';
 import { mealSummary, mealTint } from '../domain/meal.js';
-import { parseKey, addDays, dayMonthShort, WEEKDAYS_SHORT } from '../domain/dates.js';
-import { gutScore, toneOf, TONE_COLOR } from '../domain/score.js';
+import { parseKey, addDays, dayMonth, WEEKDAYS_SHORT, WEEKDAYS_FULL } from '../domain/dates.js';
+import { gutScore, toneOf, TONE_COLOR, fiberOf, waterOf } from '../domain/score.js';
+import { suggestionsFor, litres } from '../domain/suggestions.js';
 import { cycleDay, cyclePhase, isPeriodDay, PREGNANCY_NOTE } from '../domain/cycle.js';
-import { streakDays } from '../domain/streak.js';
 import { DEMO_TIP_CALM } from '../domain/demo.js';
 
-const RING_LENGTH = 263.9; // длина окружности r=42 в SVG колец (viewBox 100)
+// Дуга: нижняя полуокружность в SVG 350×300, центр (175, 115), радиус 155 — те же числа в templates/screens/today.html
+const ARC = { cx: 175, cy: 115, r: 155 };
+const MAX_TIPS = 3;
+
+// RGB тонов для свечения за дугой (цвета — TONE_COLOR)
+const TONE_RGB = { calm: '211,250,157', mild: '127,168,102', sens: '167,139,250', cycle: '121,84,200' };
 
 const EMPTY_TIPS = {
-  today: ['Начнём с одной записи', 'Отметьте стул, самочувствие или еду — и здесь появится совет на сегодня.'],
-  past: ['В этот день записей нет', 'Ничего страшного — продолжайте с сегодняшнего дня.']
+  today: ['Начнём с одной записи', 'Отметь стул, еду или воду — и здесь появятся подсказки на сегодня.'],
+  past: ['В этот день записей нет', 'Ничего страшного — продолжай с сегодняшнего дня.']
 };
 
 export function todayView(app) {
@@ -23,6 +28,7 @@ export function todayView(app) {
   const sc = gutScore(day);
   const tone = toneOf(sc ? sc.idx : null);
   const cd = cycleDay(p, sel, todayK);
+  const arcTone = isPeriodDay(p, day, cd) && sc ? 'cycle' : tone;
 
   return {
     // шапка
@@ -30,32 +36,119 @@ export function todayView(app) {
     avatarUrl: s.avatarUrl,
     noAvatar: !s.avatarUrl,
     goProfile: () => app.navigate('profile', 'avatar'),
-    streak: streakDays(s.log, todayK),
-    dayLabel: dayLabel(sel, todayK),
-    prevCls: 'day-arrow' + (since && sel <= since ? ' off' : ''),
-    nextCls: 'day-arrow' + (isToday ? ' off' : ''),
-    prevDay: () => app.shiftDay(-1),
-    nextDay: () => app.shiftDay(1),
+    ...dayTitle(sel, todayK),
+    dateMin: since || addDays(todayK, -90),
+    dateMax: todayK,
+    dateValue: sel,
+    pickDay: (e) => app.pickDay(e.target.value),
 
-    // показатель дня
-    gutTone: isPeriodDay(p, day, cd) ? 'cycle' : sc ? tone : 'empty',
+    // дуга
     idx: sc ? sc.idx : '—',
     hasScore: !!sc,
-    rings: rings(sc),
+    ...arc(sc, arcTone),
     goInsights: () => app.navigate('insights', 'today_summary'),
     showAddButton: isToday && !sc,
     goAddFromEmpty: () => app.navigate('add', 'empty_day'),
 
-    tip: tipOf(s, sc, tone, isToday, todayK),
+    // показатели и подсказки
+    ...metrics(sc, day),
+    tips: tipsOf(s, day, sc, tone, isToday, todayK),
+
     ...cycleCard(p, cd),
     timeline: timeline(app, sel, day, p)
   };
 }
 
-function dayLabel(k, todayK) {
-  if (k === todayK) return 'Сегодня';
-  if (k === addDays(todayK, -1)) return 'Вчера';
-  return WEEKDAYS_SHORT[(parseKey(k).getDay() + 6) % 7] + ', ' + dayMonthShort(k);
+/** «Сегодня / пн, 19 октября», «Вчера / 18 октября», «Пятница / 16 октября» */
+function dayTitle(k, todayK) {
+  const wd = (parseKey(k).getDay() + 6) % 7;
+  if (k === todayK) return { dayLabel: 'Сегодня', dateSub: WEEKDAYS_SHORT[wd].toLowerCase() + ', ' + dayMonth(k) };
+  if (k === addDays(todayK, -1)) return { dayLabel: 'Вчера', dateSub: WEEKDAYS_SHORT[wd].toLowerCase() + ', ' + dayMonth(k) };
+  return { dayLabel: WEEKDAYS_FULL[parseKey(k).getDay()], dateSub: dayMonth(k) };
+}
+
+/** Дуга: сколько закрашено, где ползунок, цвет и свечение по тону */
+function arc(sc, tone) {
+  if (!sc) return { arcDash: '0 100', knobX: 0, knobY: 0, knobR: 0, haloR: 0, arcColor: TONE_COLOR.empty, glowStyle: 'background: none' };
+  const a = (sc.idx / 100) * Math.PI, rgb = TONE_RGB[tone] || TONE_RGB.mild;
+  return {
+    arcDash: sc.idx + ' 100',
+    knobX: (ARC.cx + ARC.r * Math.cos(a)).toFixed(1),
+    knobY: (ARC.cy + ARC.r * Math.sin(a)).toFixed(1),
+    knobR: 6.5,
+    haloR: 12,
+    arcColor: TONE_COLOR[tone] || TONE_COLOR.mild,
+    glowStyle: 'background: radial-gradient(circle, rgba(' + rgb + ',.2) 0%, rgba(' + rgb + ',.08) 40%, rgba(' + rgb + ',0) 70%)'
+  };
+}
+
+const bar = (pct, tone) => ({ width: 'width: ' + Math.max(0, Math.min(100, Math.round(pct))) + '%', cls: 'mbar-fill ' + tone });
+
+/** Стул, форма, комфорт + плитки клетчатки и жидкости. Нет данных — «—», а не 0. */
+function metrics(sc, day) {
+  const seg = (on, tone) => 'mseg' + (on ? ' on ' + tone : '');
+
+  // стул: сколько раз, шкала 1–3
+  let stool;
+  if (!sc) stool = { value: '—', unit: '', sub: 'нет записи', segs: [1, 2, 3].map(() => ({ cls: 'mseg' })) };
+  else {
+    const t = toneOf(sc.reg);
+    stool = {
+      value: String(sc.n),
+      unit: sc.n === 1 ? 'раз' : sc.n > 1 && sc.n < 5 ? 'раза' : 'раз',
+      sub: sc.n ? 'обычно 1–3 раза в день' : sc.had ? 'стула не было — так бывает' : 'стул не отмечен',
+      segs: [1, 2, 3].map((i) => ({ cls: seg(i <= sc.n, t) }))
+    };
+  }
+
+  // форма: тип по Бристольской шкале на шкале 1–7, ровная зона 3–4
+  let form;
+  if (!sc || !sc.last) form = { value: '—', sub: sc ? 'стула не было' : 'нет записи', segs: [1, 2, 3, 4, 5, 6, 7].map((i) => ({ cls: 'mseg' + (i === 3 || i === 4 ? ' zone' : '') })) };
+  else {
+    const t = toneOf(sc.form);
+    form = {
+      value: String(sc.last),
+      sub: sc.last === 3 || sc.last === 4 ? 'в ровной зоне 3–4' : 'из 7, ровнее всего — 3–4',
+      segs: [1, 2, 3, 4, 5, 6, 7].map((i) => ({ cls: i === sc.last ? 'mseg wide on ' + t : 'mseg' + (i === 3 || i === 4 ? ' zone' : '') }))
+    };
+  }
+
+  // комфорт: по отмеченному самочувствию
+  const comfort = !sc
+    ? { value: '—', sub: 'нет записи', bar: bar(0, 'empty') }
+    : {
+      value: String(sc.comfort),
+      sub: sc.sym.length ? sc.sym.join(', ').toLowerCase() : 'без дискомфорта',
+      bar: bar(sc.comfort, toneOf(sc.comfort))
+    };
+
+  // клетчатка и жидкость — к дневному ориентиру
+  const fiber = fiberOf(day), water = waterOf(day);
+  const fiberPct = fiber == null ? 0 : fiber / FIBER_GOAL_G * 100, waterPct = water / WATER_GOAL_ML * 100;
+  return {
+    stool, form, comfort,
+    hasComfort: !!sc,
+    fiber: { value: fiber == null ? '—' : String(fiber), goal: 'из ' + FIBER_GOAL_G + ' г', bar: bar(fiberPct, fiber == null ? 'empty' : toneOf(fiberPct)) },
+    water: { value: litres(water), goal: 'из ' + litres(WATER_GOAL_ML) + ' л', bar: bar(waterPct, water ? toneOf(waterPct) : 'empty') }
+  };
+}
+
+/** «Что может помочь»: совет ИИ на сегодня (если есть) + правила из domain/suggestions.js; пусто — заготовка по тону */
+function tipsOf(s, day, sc, tone, isToday, todayK) {
+  const items = [];
+  const ai = s.insights;
+  if (isToday && sc && ai && ai.date === todayK && ai.tipTitle) items.push({ id: 'ai', icon: 'ai', tone: 'calm', title: ai.tipTitle, text: ai.tipText });
+  items.push(...suggestionsFor(day, sc));
+  if (!items.length) {
+    const [title, text] = !sc ? EMPTY_TIPS[isToday ? 'today' : 'past'] : FALLBACK_TIPS[tone] || FALLBACK_TIPS.mild;
+    items.push({ id: 'fallback', icon: 'calm', tone: 'mild', title, text: IS_DEMO && tone === 'calm' && sc ? DEMO_TIP_CALM : text });
+  }
+  return items.slice(0, MAX_TIPS).map((t) => ({
+    ...t,
+    tileCls: 'tip-icon ' + t.tone,
+    isWater: t.icon === 'water', isFiber: t.icon === 'fiber', isWalk: t.icon === 'walk',
+    isWarm: t.icon === 'warm' || t.icon === 'slow', isCalm: t.icon === 'calm', isAi: t.icon === 'ai'
+  }));
 }
 
 /** Карточка цикла: беременность, фаза (на КОК — упрощённо) или ничего */
@@ -64,31 +157,6 @@ function cycleCard(p, cd) {
   if (!cd) return { showCycle: false, cycle: null };
   const [phase, note] = cyclePhase(cd, p.len, p.coc);
   return { showCycle: true, cycle: { caption: 'Цикл · день ' + cd + ' из ' + p.len + (p.coc ? ' · КОК' : ''), phase, note } };
-}
-
-/** Три кольца: стул, форма, комфорт. Без записей — пустые кольца с «—». */
-function rings(sc) {
-  const ring = (label, value, text, sub) => ({
-    label, sub, text,
-    dash: value == null ? '0' : (value / 100 * RING_LENGTH).toFixed(1),
-    color: value == null ? 'transparent' : TONE_COLOR[toneOf(value)]
-  });
-  if (!sc) return [ring('Стул', null, '—', 'нет записи'), ring('Форма', null, '—', 'нет записи'), ring('Комфорт', null, '—', 'нет записи')];
-  const symSub = sc.sym.length === 1 ? sc.sym[0].toLowerCase() : sc.sym.length ? sc.sym.length + ' симптома' : 'без симптомов';
-  return [
-    ring('Стул', sc.reg, sc.n + '×', sc.n ? (sc.n === 1 ? 'раз за день' : 'раза за день') : (sc.had ? 'не было' : 'не отмечено')),
-    ring('Форма', sc.last ? sc.form : null, sc.last ? String(sc.last) : '—', sc.last ? 'тип ' + sc.last + (sc.last === 3 || sc.last === 4 ? ' · норма' : '') : 'нет стула'),
-    ring('Комфорт', sc.comfort, sc.comfort + '%', symSub)
-  ];
-}
-
-/** Совет ИИ на сегодня, если есть; иначе — заготовка по тону дня */
-function tipOf(s, sc, tone, isToday, todayK) {
-  if (!sc) { const [title, text] = EMPTY_TIPS[isToday ? 'today' : 'past']; return { title, text }; }
-  const ai = s.insights;
-  if (isToday && ai && ai.date === todayK && ai.tipTitle) return { title: ai.tipTitle, text: ai.tipText };
-  const [title, text] = FALLBACK_TIPS[tone] || FALLBACK_TIPS.mild;
-  return { title, text: IS_DEMO && tone === 'calm' ? DEMO_TIP_CALM : text };
 }
 
 const colorLabel = (id) => ((STOOL_COLORS.find((c) => c.id === id) || {}).label || '').toLowerCase();
@@ -108,12 +176,13 @@ function timeline(app, dayK, day, profile) {
   for (const m of day.meals) {
     items.push({ kind: 'meal', tint: mealTint(m), photo: m.photo, title: m.name, sub: mealSummary(m), time: m.time, open: () => app.openMeal(dayK, m.id) });
   }
+  if (day.water > 0) items.push({ kind: 'water', title: 'Жидкость', sub: litres(day.water) + ' л за день', time: 'день', sortKey: '00:01' });
   if (profile.cycle && day.period) items.push({ kind: 'period', title: 'Месячные', sub: 'отмечено вручную', time: 'день', sortKey: '00:00' });
   items.sort((a, b) => (a.sortKey || a.time).localeCompare(b.sortKey || b.time));
   return items.map((e) => ({
     ...e,
     rowCls: 'row' + (e.open ? ' tappable' : ''),
     hasOpen: !!e.open,
-    isStool: e.kind === 'stool', isMeal: e.kind === 'meal', isFeel: e.kind === 'feel', isPeriod: e.kind === 'period'
+    isStool: e.kind === 'stool', isMeal: e.kind === 'meal', isFeel: e.kind === 'feel', isPeriod: e.kind === 'period', isWater: e.kind === 'water'
   }));
 }

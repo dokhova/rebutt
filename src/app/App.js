@@ -35,6 +35,8 @@ const SENTENCE_DELAY_MS = 900;
 const SCREEN_EVENT_NAME = { today: 'today', add: 'add_entry', insights: 'insights', profile: 'profile' };
 
 const blankForm = () => ({
+  section: 'stool',   // раздел экрана «+»: 'stool' | 'food' | 'water'
+  water: 0,           // сколько жидкости добавить к дню, мл
   stool: '',          // '' | 'had' | 'none'
   type: 4,            // тип по Бристольской шкале
   sym: [],            // симптомы
@@ -206,7 +208,11 @@ export default class App extends Component {
   /** Запись дня с учётом заполненной формы «+». Возвращает { day, gut, meal } — добавленные записи. */
   draftDay(base) {
     const f = this.state.form, time = IS_DEMO ? '14:46' : nowHM();
-    const day = { gut: [...base.gut], meals: [...base.meals], period: f.period ? f.period === 'yes' : base.period };
+    const day = {
+      gut: [...base.gut], meals: [...base.meals],
+      period: f.period ? f.period === 'yes' : base.period,
+      water: Math.max(0, (base.water || 0) + (f.water || 0))
+    };
     let gut = null, meal = null;
     if (f.stool || f.sym.length || f.stress != null) {
       gut = this.gutFromDraft(f, { id: newId(), time });
@@ -241,6 +247,13 @@ export default class App extends Component {
     if (k > this.today() || (since && k < since)) return;
     this.setState({ selected: k });
     track('day_selected', { days_ago: Math.round((new Date(this.today()) - new Date(k)) / 864e5), direction: delta > 0 ? 'next' : 'prev' });
+  }
+
+  /** Календарь в шапке «Сегодня»: любой день в пределах [начало использования или 90 дней назад, сегодня] */
+  pickDay(k) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(k || '') || k > this.today() || k === this.state.selected) return;
+    this.setState({ selected: k });
+    track('day_selected', { days_ago: Math.round((new Date(this.today()) - new Date(k)) / 864e5), direction: 'calendar', has_data: hasData(this.state.log[k]) });
   }
 
   selectDay(k, daysAgo, withData) {
@@ -453,6 +466,22 @@ export default class App extends Component {
   // ================= запись дня (экран «+») =================
 
   setForm(patch) { this.setState({ form: { ...this.state.form, ...patch } }); }
+
+  /** Раздел экрана «+»: стул, питание, жидкости. Заполненное в других разделах не теряется. */
+  setAddSection(section) {
+    if (this.state.form.section === section) return;
+    this.setForm({ section });
+    track('add_section_opened', { section });
+  }
+
+  /** Жидкость: +ml или −ml к черновику. Минус может убрать и уже сохранённое за сегодня (исправить ошибку), но не ниже 0 за день. */
+  addWater(ml) {
+    const saved = this.day(this.today()).water || 0;
+    const water = Math.max(-saved, Math.min(5000, (this.state.form.water || 0) + ml));
+    if (water === this.state.form.water) return;
+    this.setForm({ water });
+    track('water_changed', { step_ml: ml, draft_ml: water });
+  }
 
   // ---------- стул и самочувствие: одна логика для новой записи (target 'form') и правки ('edit') ----------
 
@@ -687,7 +716,7 @@ export default class App extends Component {
 
   saveEntry() {
     const f = this.state.form, k = this.today();
-    if (!f.stool && !f.sym.length && f.stress == null && f.food !== 'done' && !f.period) {
+    if (!f.stool && !f.sym.length && f.stress == null && f.food !== 'done' && !f.period && !f.water) {
       this.showToast('Отметьте хотя бы что-то одно');
       track('entry_save_blocked', { reason: 'empty' });
       return;
@@ -705,6 +734,7 @@ export default class App extends Component {
       if (gut) store.addGutEntry(k, gut);
       if (meal) store.addMeal(k, meal);
       if (f.period) store.setPeriodDay(k, f.period === 'yes');
+      if (f.water) store.setWaterDay(k, day.water);
     }
 
     const props = {
@@ -718,6 +748,8 @@ export default class App extends Component {
       food_source: meal ? meal.source : null,
       food_tone: meal ? meal.tone : null,
       period_mark: f.period || null,
+      water_ml_added: f.water || 0,
+      water_ml_day: day.water || 0,
       gut_score: scoreAfter ? scoreAfter.idx : null,
       score_before: scoreBefore ? scoreBefore.idx : null,
       score_delta: scoreAfter && scoreBefore ? scoreAfter.idx - scoreBefore.idx : null,

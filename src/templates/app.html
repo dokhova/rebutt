@@ -15,15 +15,15 @@
   <sc-if value="{{showTabs}}">
     <div class="tabbar-fade"></div>
     <div class="dock">
-    <nav class="tabbar">
-      <button class="{{tabToday}}" onClick="{{goToday}}">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"></circle></svg>Сегодня
+    <nav class="tabbar" aria-label="Меню">
+      <button class="{{tabToday}}" onClick="{{goToday}}" aria-label="Сегодня">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z"></path></svg>
       </button>
       <button class="{{tabAdd}}" onClick="{{goAdd}}" aria-label="Новая запись">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
       </button>
-      <button class="{{tabInsights}}" onClick="{{goInsights}}">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 19V11M12 19V5M19 19v-6"></path></svg>Инсайты
+      <button class="{{tabInsights}}" onClick="{{goInsights}}" aria-label="Инсайты">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19h16M7 15v-4M12 15V7M17 15v-6"></path></svg>
       </button>
     </nav>
     <button class="ai-fab" onClick="{{openAssistantDock}}" aria-label="Спросить ИИ">

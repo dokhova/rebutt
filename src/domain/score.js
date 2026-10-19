@@ -1,19 +1,26 @@
 // «Работа кишечника», % — главный показатель дня.
 //
 // Запись дня (DayRecord):
-//   { gut: GutEntry[], meals: Meal[], period: boolean }
+//   { gut: GutEntry[], meals: Meal[], period: boolean, water: number }
+//   water — сколько жидкости выпито за день, мл (вода, чай, суп и т.п. — одним числом)
 // GutEntry: { id, time 'HH:MM', type, sym: string[], color?: id из STOOL_COLORS, stress?: 0–10 }
 //   type 1–7 — стул по Бристольской шкале, 0 — «стула не было», -1 — отмечено только самочувствие
 // Meal: { id, time, name, kcal, fiber, verdict, tone, tip, photo?, source? }
 
 import { SYMPTOM_OK } from './catalog.js';
 
-export const emptyDay = () => ({ gut: [], meals: [], period: false });
+export const emptyDay = () => ({ gut: [], meals: [], period: false, water: 0 });
 
 /** Уникальные симптомы за день, без «Всё хорошо» */
 export const symptomsOf = (day) => [...new Set(day.gut.flatMap((x) => x.sym).filter((x) => x !== SYMPTOM_OK))];
 
-export const hasData = (day) => !!day && ((day.gut && day.gut.length > 0) || (day.meals && day.meals.length > 0));
+export const hasData = (day) => !!day && ((day.gut && day.gut.length > 0) || (day.meals && day.meals.length > 0) || day.water > 0);
+
+/** Клетчатка за день, г — сумма по блюдам с разбором. null — блюд не было. */
+export const fiberOf = (day) => (day && day.meals && day.meals.length ? Math.round(day.meals.reduce((a, m) => a + (Number(m.fiber) || 0), 0)) : null);
+
+/** Жидкость за день, мл */
+export const waterOf = (day) => (day && day.water > 0 ? day.water : 0);
 
 // Насколько форма стула близка к норме, по типам Бристольской шкалы
 const FORM_BY_TYPE = { 1: 35, 2: 55, 3: 85, 4: 92, 5: 72, 6: 48, 7: 30 };

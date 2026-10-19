@@ -15,15 +15,15 @@ export const demoProfile = () => ({
 export function demoLog() {
   const gut = (time, type, sym) => ({ id: newId(), time, type, sym: sym || [] });
   const meal = (time, i) => ({ id: newId(), time, ...normalizeMeal(EXAMPLE_MEALS[i]), source: 'example', photo: '' });
-  const day = (o) => ({ gut: [], meals: [], period: false, ...o });
+  const day = (o) => ({ gut: [], meals: [], period: false, water: 0, ...o });
   return {
     '2026-09-20': day({ gut: [gut('09:00', 5)] }),
     '2026-09-21': day({ gut: [gut('08:15', 4, ['Боль'])], meals: [meal('08:00', 1)] }),
     '2026-09-22': day({ gut: [gut('08:40', 4)], meals: [meal('08:20', 1)] }),
     '2026-09-23': day({ gut: [gut('21:00', 0, ['Вздутие'])], meals: [meal('20:30', 2)] }),
-    '2026-09-24': day({ gut: [gut('09:10', 2, ['Вздутие', 'Тяжесть'])], meals: [meal('13:30', 0)] }),
-    '2026-09-25': day({ gut: [gut('08:20', 3)], meals: [meal('08:30', 1)] }),
-    '2026-09-26': day({ gut: [gut('08:35', 4)], meals: [meal('08:10', 1)] })
+    '2026-09-24': day({ gut: [gut('09:10', 2, ['Вздутие', 'Тяжесть'])], meals: [meal('13:30', 0)], water: 700 }),
+    '2026-09-25': day({ gut: [gut('08:20', 3)], meals: [meal('08:30', 1)], water: 1500 }),
+    '2026-09-26': day({ gut: [gut('08:35', 4)], meals: [meal('08:10', 1)], water: 1200 })
   };
 }
 

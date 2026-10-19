@@ -1,5 +1,7 @@
-// «+»: запись за сегодня — стул, цвет, самочувствие, стресс, отметка месячных, еда.
-import { MEAL_TINT } from '../domain/catalog.js';
+// «+»: запись за сегодня в трёх разделах — «Стул» (стул, цвет, самочувствие, стресс, месячные), «Питание» (еда с ИИ), «Жидкости».
+// Разделы — вкладки одной формы: переключение ничего не стирает, «Сохранить» сохраняет всё заполненное сразу.
+import { MEAL_TINT, WATER_STEPS, WATER_GOAL_ML } from '../domain/catalog.js';
+import { litres } from '../domain/suggestions.js';
 import { gutFormView } from './gut-form.js';
 import { mealCard } from './meal-card.js';
 import { dayMonth } from '../domain/dates.js';
@@ -12,8 +14,34 @@ export function addEntryView(app) {
   const scoreNow = gutScore(today), scorePreview = gutScore(app.draftDay(today).day);
   const seg = (on) => 'seg' + (on ? ' on' : '');
 
+  const stoolFilled = !!(f.stool || f.sym.length || f.stress != null || f.period);
+  const foodFilled = f.food === 'done';
+  const waterFilled = !!f.water;
+  const tab = (id, label, filled) => ({
+    id, label, filled,
+    cls: 'add-tab' + (f.section === id ? ' on' : ''),
+    pressed: f.section === id ? 'true' : 'false',
+    pick: () => app.setAddSection(id)
+  });
+  const savedWater = today.water || 0, totalWater = Math.max(0, savedWater + (f.water || 0));
+
   return {
     dateLong: 'Сегодня, ' + dayMonth(todayK),
+
+    // разделы
+    tabs: [tab('stool', 'Стул', stoolFilled), tab('food', 'Питание', foodFilled), tab('water', 'Жидкости', waterFilled)],
+    sec: { stool: f.section === 'stool', food: f.section === 'food', water: f.section === 'water' },
+    title: { stool: { top: 'Как кишечник', bottom: 'сегодня?' }, food: { top: 'Что было', bottom: 'в тарелке?' }, water: { top: 'Сколько', bottom: 'выпито?' } }[f.section],
+
+    // жидкости
+    waterTotal: litres(totalWater),
+    waterGoal: 'из ' + litres(WATER_GOAL_ML) + ' л за день',
+    waterBar: 'width: ' + Math.min(100, Math.round(totalWater / WATER_GOAL_ML * 100)) + '%',
+    waterDelta: f.water ? (f.water > 0 ? '+' : '−') + Math.abs(f.water) + ' мл в этой записи' : savedWater ? 'уже записано ' + litres(savedWater) + ' л' : 'пока ничего не записано',
+    waterSteps: WATER_STEPS.map(([ml, label]) => ({ label, ml: '+' + ml + ' мл', add: () => app.addWater(ml) })),
+    waterMinus: () => app.addWater(-250),
+    waterMinusCls: 'round-btn lg' + (totalWater > 0 ? '' : ' off'),
+    waterPlus: () => app.addWater(250),
 
     ...gutFormView(app, 'form'),
 

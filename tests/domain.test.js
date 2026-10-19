@@ -99,3 +99,41 @@ test('splitSentences: делит по знакам препинания и не 
   assert.deepEqual(splitSentences('Всё спокойно. Пейте воду! Как вы? Хорошо…  Дальше'), ['Всё спокойно.', 'Пейте воду!', 'Как вы?', 'Хорошо…', 'Дальше']);
   assert.deepEqual(splitSentences(''), []);
 });
+
+// ---------- главная: клетчатка, жидкость, «Что может помочь» ----------
+import { fiberOf, waterOf, hasData } from '../src/domain/score.js';
+import { suggestionsFor, litres } from '../src/domain/suggestions.js';
+
+const dw = (gut, meals = [], water = 0) => ({ gut, meals, period: false, water });
+
+test('клетчатка и жидкость за день', () => {
+  assert.equal(fiberOf(dw([])), null); // блюд нет — «—», а не 0
+  assert.equal(fiberOf(dw([], [{ fiber: 5 }, { fiber: 6.4 }])), 11);
+  assert.equal(waterOf(dw([], [], 1200)), 1200);
+  assert.equal(hasData(dw([], [], 250)), true);
+  assert.equal(litres(1200), '1,2');
+  assert.equal(litres(2000), '2');
+});
+
+test('подсказки: твёрдый стул → вода, клетчатка, прогулка', () => {
+  const d = dw([g(2)], [{ fiber: 4 }], 500);
+  const ids = suggestionsFor(d, gutScore(d)).map((x) => x.id);
+  assert.deepEqual(ids, ['water', 'fiber', 'walk']);
+});
+
+test('подсказки: не больше трёх и без повторов', () => {
+  const d = dw([{ ...g(7, ['Вздутие', 'Боль']), stress: 8 }], [], 0);
+  const list = suggestionsFor(d, gutScore(d));
+  assert.ok(list.length <= 3);
+  assert.equal(new Set(list.map((x) => x.id)).size, list.length);
+});
+
+test('подсказки: ровный день без пробелов — «можно ничего не менять»', () => {
+  const d = dw([g(4)], [{ fiber: 20 }], 1800);
+  assert.deepEqual(suggestionsFor(d, gutScore(d)).map((x) => x.id), ['keep']);
+});
+
+test('подсказки: тон бережный — без «надо» и «нужно»', () => {
+  const d = dw([{ ...g(1, ['Боль', 'Вздутие']), stress: 9 }], [], 0);
+  for (const s of suggestionsFor(d, gutScore(d))) assert.ok(!/(^|[^а-яё])(надо|нужно|должн)/i.test(s.title + ' ' + s.text), s.title);
+});

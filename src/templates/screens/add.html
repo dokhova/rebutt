@@ -1,12 +1,19 @@
-<!-- «+» Новая запись. Значения: src/views/add-entry.js -->
+<!-- «+» Новая запись: три раздела — Стул, Питание, Жидкости. Значения: src/views/add-entry.js -->
 <div>
   <div class="add-date">{{dateLong}}</div>
-  <h1 class="add-title">Как кишечник<br><span class="muted">сегодня?</span></h1>
+  <h1 class="add-title">{{title.top}}<br><span class="muted">{{title.bottom}}</span></h1>
 </div>
 
+<div class="add-tabs" role="group" aria-label="Раздел записи">
+  <sc-for list="{{tabs}}" as="t">
+    <button class="{{t.cls}}" aria-pressed="{{t.pressed}}" onClick="{{t.pick}}">{{t.label}}<sc-if value="{{t.filled}}"><span class="add-tab-dot" aria-label="заполнено"></span></sc-if></button>
+  </sc-for>
+</div>
+
+<!-- Стул: форма + цикл -->
+<sc-if value="{{sec.stool}}">
 <sc-include name="gut-form"></sc-include>
 
-<!-- Цикл -->
 <sc-if value="{{cycleEnabled}}">
   <div class="card form-card">
     <div class="card-head"><div class="caption">Цикл</div><sc-if value="{{cycleDayKnown}}"><div class="hint num">день {{cycleDay}}</div></sc-if></div>
@@ -17,9 +24,12 @@
   </div>
 </sc-if>
 
-<!-- Еда: фото и/или описание → ИИ разбирает → КБЖУ; можно уточнить -->
+</sc-if>
+
+<!-- Питание: фото и/или описание → ИИ разбирает → КБЖУ; можно уточнить -->
+<sc-if value="{{sec.food}}">
 <div class="card form-card">
-  <div class="card-head"><div class="caption">Еда</div><div class="hint">по желанию</div></div>
+  <div class="card-head"><div class="caption">Блюдо</div><div class="hint">фото или описание</div></div>
 
   <sc-if value="{{food.pick}}">
     <sc-if value="{{noPhoto}}">
@@ -65,6 +75,28 @@
     </sc-if>
   </sc-if>
 </div>
+
+</sc-if>
+
+<!-- Жидкости: вода, чай, суп — одним числом за день -->
+<sc-if value="{{sec.water}}">
+<div class="card form-card">
+  <div class="card-head"><div class="caption">За сегодня</div><div class="hint">{{waterDelta}}</div></div>
+  <div class="water-now">
+    <button class="{{waterMinusCls}}" onClick="{{waterMinus}}" aria-label="Убрать 250 мл">−</button>
+    <div class="water-value num">{{waterTotal}}<span class="metric-unit"> л</span></div>
+    <button class="round-btn lg" onClick="{{waterPlus}}" aria-label="Добавить 250 мл">+</button>
+  </div>
+  <div class="mbar" aria-hidden="true"><div class="mbar-fill sens" style="{{waterBar}}"></div></div>
+  <div class="hint water-goal">{{waterGoal}}</div>
+  <div class="water-steps">
+    <sc-for list="{{waterSteps}}" as="w">
+      <button class="water-step" onClick="{{w.add}}"><span>{{w.label}}</span><span class="muted num">{{w.ml}}</span></button>
+    </sc-for>
+  </div>
+  <div class="hint">Считается любая жидкость: вода, чай, суп, кефир.</div>
+</div>
+</sc-if>
 
 <div class="save-bar">
   <div class="preview">

@@ -1,7 +1,7 @@
 /* Переиспользуемые элементы интерфейса */
 
 /* ---------- оболочка ---------- */
-.shell { position: absolute; inset: 0; overflow: hidden; background: var(--bg); }
+.shell { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 40%, var(--bg) 100%); }
 .screen {
   position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
   box-sizing: border-box; padding: calc(28px + var(--safe-top)) 16px calc(28px + var(--safe-bottom));
@@ -13,12 +13,13 @@
 /* нижняя панель: меню и рядом круглая кнопка ИИ */
 .dock { position: absolute; left: 0; right: 0; bottom: calc(22px + var(--safe-bottom)); display: flex; justify-content: center; align-items: center; gap: 10px; }
 .tabbar {
-  height: 64px; padding: 6px; box-sizing: border-box; display: flex; gap: 8px; align-items: center; border-radius: 32px;
-  background: rgba(43, 40, 51, .72); border: 1px solid rgba(255, 255, 255, .12); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  padding: 5px; box-sizing: border-box; display: flex; gap: 6px; align-items: center; border-radius: 40px;
+  background: rgba(36, 33, 43, .9); border: 1px solid var(--line); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
 }
-.tab { height: 52px; min-width: 84px; padding: 0 16px; border: 0; border-radius: 26px; background: transparent; color: var(--muted); font-size: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
-.tab.on { background: rgba(255, 255, 255, .1); color: var(--ink); }
-.plus { width: 52px; height: 52px; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform .2s; }
+/* меню — капсула из трёх кругов: «Сегодня», «+», «Инсайты» */
+.tab { width: 56px; height: 56px; border: 0; border-radius: 50%; padding: 0; background: rgba(43, 40, 51, .7); color: var(--muted); display: flex; align-items: center; justify-content: center; }
+.tab.on { background: var(--surface-4); color: var(--ink); }
+.plus { width: 64px; height: 64px; border-radius: 50%; border: 0; padding: 0; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform .2s; }
 .plus.on { box-shadow: inset 0 0 0 2px var(--accent-ink); }
 .ai-fab {
   width: 64px; height: 64px; border-radius: 50%; padding: 0; flex-shrink: 0; color: var(--accent); display: flex; align-items: center; justify-content: center;
