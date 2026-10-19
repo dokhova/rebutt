@@ -60,18 +60,9 @@
 .metric-unit { font-size: 14px; font-weight: 300; color: var(--muted); letter-spacing: 0; }
 .metric-sub { font-size: 13px; line-height: 17px; color: var(--muted); }
 
-/* шкалы: сегменты (стул 1–3, форма 1–7) и полоска (комфорт, клетчатка, жидкость) */
-.mscale { display: grid; gap: 3px; }
-.mscale.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.mscale.seven { grid-template-columns: repeat(7, minmax(0, 1fr)); }
-.mseg { height: 5px; border-radius: 3px; background: rgba(248, 247, 242, .16); }
-.mseg.zone { background: rgba(248, 247, 242, .34); }
-.mseg.on.calm { background: var(--tone-calm); }
-.mseg.on.mild { background: var(--tone-mild); }
-.mseg.on.sens { background: var(--tone-sens); }
-.mbar { height: 5px; border-radius: 3px; background: rgba(248, 247, 242, .16); overflow: hidden; }
-.mbar.thin { height: 4px; }
-.mbar-fill { height: 100%; border-radius: 3px; }
+/* одна полоска для всех показателей: стул, форма, комфорт, клетчатка, жидкость */
+.mbar { height: 4px; border-radius: 2px; background: rgba(248, 247, 242, .16); overflow: hidden; }
+.mbar-fill { height: 100%; border-radius: 2px; }
 .mbar-fill.calm { background: var(--tone-calm); }
 .mbar-fill.mild { background: var(--tone-mild); }
 .mbar-fill.sens { background: var(--tone-sens); }
@@ -224,16 +215,16 @@
 .add-sheet-titles { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .add-sheet-title { font-size: 30px; line-height: 34px; font-weight: 300; }
 .add-sheet-body { gap: 20px; padding-bottom: calc(28px + var(--safe-bottom)); }
-.pick-slider { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 20px; padding: 6px 20px calc(24px + var(--safe-bottom)); }
-.pick-card { flex: 0 0 74%; max-width: 300px; height: 300px; box-sizing: border-box; padding: 24px 22px; border-radius: 28px; border: 1px solid var(--line-2); background: var(--surface-1); color: var(--ink); text-align: left; display: flex; flex-direction: column; justify-content: space-between; scroll-snap-align: start; }
+.pick-slider { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 20px; padding: 6px 20px calc(24px + var(--safe-bottom)); }
+.pick-card { flex: 0 0 148px; height: 156px; box-sizing: border-box; padding: 16px; border-radius: 24px; border: 1px solid var(--line-2); background: var(--surface-1); color: var(--ink); text-align: left; display: flex; flex-direction: column; justify-content: space-between; scroll-snap-align: start; }
 .pick-card:active { background: var(--surface-3); }
-.pick-icon { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; }
+.pick-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
 .pick-icon.calm { background: rgba(211, 250, 157, .14); color: var(--tone-calm); }
 .pick-icon.mild { background: rgba(127, 168, 102, .16); color: var(--tone-mild); }
 .pick-icon.sens { background: rgba(167, 139, 250, .14); color: var(--tone-sens); }
-.pick-text { display: flex; flex-direction: column; gap: 8px; }
-.pick-title { font-size: 34px; line-height: 38px; font-weight: 300; display: flex; align-items: center; gap: 10px; }
-.pick-sub { font-size: 15px; line-height: 21px; color: var(--muted); }
+.pick-text { display: flex; flex-direction: column; gap: 4px; }
+.pick-title { font-size: 20px; line-height: 24px; font-weight: 400; display: flex; align-items: center; gap: 10px; }
+.pick-sub { font-size: 13px; line-height: 17px; color: var(--muted); }
 .pick-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tone-calm); }
 
 .water-now { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0; }

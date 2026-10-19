@@ -84,32 +84,18 @@ function arc(sc, tone) {
 
 const bar = (pct, tone) => ({ width: 'width: ' + Math.max(0, Math.min(100, Math.round(pct))) + '%', cls: 'mbar-fill ' + tone });
 
-/** Стул, форма, комфорт + плитки клетчатки и жидкости. Нет данных — «—», а не 0. */
+/** Стул, форма, комфорт + плитки клетчатки и жидкости. Нет данных — «—», а не 0.
+ *  У всех одна и та же тонкая полоска: насколько показатель близок к ровному дню (цвет — по тем же порогам, что у дуги). */
 function metrics(sc, day) {
-  const seg = (on, tone) => 'mseg' + (on ? ' on ' + tone : '');
+  // стул: сколько раз из обычных 1–3
+  const stool = !sc
+    ? { value: '—', unit: '', bar: bar(0, 'empty') }
+    : { value: String(sc.n), unit: sc.n > 1 && sc.n < 5 ? 'раза' : 'раз', bar: bar(Math.min(sc.n, 3) / 3 * 100, toneOf(sc.reg)) };
 
-  // стул: сколько раз, шкала 1–3. Подписей под цифрами нет — минимализм, смысл несут шкалы
-  let stool;
-  if (!sc) stool = { value: '—', unit: '', segs: [1, 2, 3].map(() => ({ cls: 'mseg' })) };
-  else {
-    const t = toneOf(sc.reg);
-    stool = {
-      value: String(sc.n),
-      unit: sc.n === 1 ? 'раз' : sc.n > 1 && sc.n < 5 ? 'раза' : 'раз',
-      segs: [1, 2, 3].map((i) => ({ cls: seg(i <= sc.n, t) }))
-    };
-  }
-
-  // форма: тип по Бристольской шкале на шкале 1–7, ровная зона 3–4
-  let form;
-  if (!sc || !sc.last) form = { value: '—', segs: [1, 2, 3, 4, 5, 6, 7].map((i) => ({ cls: 'mseg' + (i === 3 || i === 4 ? ' zone' : '') })) };
-  else {
-    const t = toneOf(sc.form);
-    form = {
-      value: String(sc.last),
-      segs: [1, 2, 3, 4, 5, 6, 7].map((i) => ({ cls: i === sc.last ? 'mseg wide on ' + t : 'mseg' + (i === 3 || i === 4 ? ' zone' : '') }))
-    };
-  }
+  // форма: тип по Бристольской шкале; полоска — насколько форма близка к ровной (score.js → form)
+  const form = !sc || !sc.last
+    ? { value: '—', bar: bar(0, 'empty') }
+    : { value: String(sc.last), bar: bar(sc.form, toneOf(sc.form)) };
 
   // комфорт: по отмеченному самочувствию
   const comfort = !sc

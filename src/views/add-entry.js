@@ -38,9 +38,9 @@ export function addEntryView(app) {
     closeAddSheet: () => app.closeAddSheet(),
     backToPicker: () => app.backToAddPicker(),
     pickCards: [
-      card('stool', 'Стул', 'Тип, цвет, самочувствие и стресс', 'calm', stoolFilled),
-      card('food', 'Питание', 'Фото или описание блюда — ИИ посчитает', 'mild', foodFilled),
-      card('water', 'Жидкости', 'Вода, чай, суп — сколько выпито', 'sens', waterFilled)
+      card('stool', 'Стул', 'Тип, самочувствие', 'calm', stoolFilled),
+      card('food', 'Питание', 'Фото или описание', 'mild', foodFilled),
+      card('water', 'Жидкости', 'Вода, чай, суп', 'sens', waterFilled)
     ],
     hasDraft: stoolFilled || foodFilled || waterFilled,
     sec: { stool: sheet === 'stool', food: sheet === 'food', water: sheet === 'water' },
