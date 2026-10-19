@@ -80,8 +80,7 @@
 .metric-empty-text { display: flex; flex-direction: column; gap: 2px; }
 .metric-empty-title { font-size: 17px; font-weight: 400; }
 .metric-empty-cta { height: 36px; padding: 0 16px; border-radius: 18px; background: var(--surface-4); display: inline-flex; align-items: center; font-size: 14px; font-weight: 500; flex-shrink: 0; }
-.home-empty { font-size: 28px; font-weight: 300; margin-top: 30px; }
-.home-empty-sub { max-width: 230px; text-align: center; font-size: 14px; line-height: 1.4; color: var(--muted); }
+.home-empty { font-size: 28px; font-weight: 300; margin-top: 44px; }
 
 /* «Что может помочь» */
 .tip-icon { width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
