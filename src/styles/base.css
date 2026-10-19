@@ -1,5 +1,7 @@
 /* Сброс, типографика, утилиты */
 html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); }
+/* Страница закреплена: в Telegram и Safari документ не тянется и не пружинит — прокручивается только .screen */
+html, body { position: fixed; inset: 0; overflow: hidden; overscroll-behavior: none; }
 body { font-family: var(--font); overflow: hidden; -webkit-tap-highlight-color: transparent; }
 button, input, textarea { font-family: inherit; color: inherit; }
 button { cursor: pointer; }

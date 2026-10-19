@@ -13,7 +13,7 @@ export function initTelegram() {
   app.expand();
   if (app.isVersionAtLeast('7.7')) app.disableVerticalSwipes();
   if (app.isVersionAtLeast('6.1')) {
-    app.setHeaderColor(app.isVersionAtLeast('6.9') ? '#141318' : 'bg_color');
+    app.setHeaderColor(app.isVersionAtLeast('6.9') ? '#26232D' : 'bg_color'); // верх фона (--bg-top)
     app.setBackgroundColor('#141318');
   }
 }

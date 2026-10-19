@@ -3,7 +3,7 @@
 /* ---------- оболочка ---------- */
 .shell { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 40%, var(--bg) 100%); }
 .screen {
-  position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: none;
   box-sizing: border-box; padding: calc(28px + var(--safe-top)) 16px calc(28px + var(--safe-bottom));
   display: flex; flex-direction: column; gap: 20px;
 }

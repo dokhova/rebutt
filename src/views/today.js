@@ -4,7 +4,7 @@ import { IS_DEMO } from '../config.js';
 import { BRISTOL_TYPES, FALLBACK_TIPS, SYMPTOM_OK, STOOL_COLORS, FIBER_GOAL_G, WATER_GOAL_ML, stressWord } from '../domain/catalog.js';
 import { mealSummary, mealTint } from '../domain/meal.js';
 import { parseKey, addDays, dayMonth, WEEKDAYS_SHORT, WEEKDAYS_FULL } from '../domain/dates.js';
-import { gutScore, toneOf, TONE_COLOR, fiberOf, waterOf } from '../domain/score.js';
+import { gutScore, toneOf, TONE_COLOR, fiberOf, waterOf, hasData } from '../domain/score.js';
 import { suggestionsFor, litres } from '../domain/suggestions.js';
 import { cycleDay, cyclePhase, isPeriodDay, PREGNANCY_NOTE } from '../domain/cycle.js';
 import { DEMO_TIP_CALM } from '../domain/demo.js';
@@ -43,15 +43,16 @@ export function todayView(app) {
     pickDay: (e) => app.pickDay(e.target.value),
 
     // дуга
-    idx: sc ? sc.idx : '—',
+    idx: sc ? sc.idx : '',
     hasScore: !!sc,
+    noScore: !sc,
     ...arc(sc, arcTone),
     goInsights: () => app.navigate('insights', 'today_summary'),
     showAddButton: isToday && !sc,
     goAddFromEmpty: () => app.openAddSheet('empty_day'),
 
     // показатели и подсказки
-    ...metrics(sc, day),
+    ...metrics(sc, day, app),
     tips: tipsOf(s, day, sc, tone, isToday, todayK),
     tipInfoOpen: !!s.tipInfo,
     tipInfoExpanded: s.tipInfo ? 'true' : 'false',
@@ -89,33 +90,36 @@ const bar = (pct, tone) => ({ width: 'width: ' + Math.max(0, Math.min(100, Math.
 
 /** Стул, форма, комфорт + плитки клетчатки и жидкости. Нет данных — «—», а не 0.
  *  У всех одна и та же тонкая полоска: насколько показатель близок к ровному дню (цвет — по тем же порогам, что у дуги). */
-function metrics(sc, day) {
-  // стул: сколько раз из обычных 1–3
-  const stool = !sc
-    ? { value: '—', unit: '', bar: bar(0, 'empty') }
-    : { value: String(sc.n), unit: sc.n > 1 && sc.n < 5 ? 'раза' : 'раз', bar: bar(Math.min(sc.n, 3) / 3 * 100, toneOf(sc.reg)) };
+function metrics(sc, day, app) {
+  const VAL = 'metric-value num', EMPTY = { text: 'не отмечено', cls: 'metric-value is-empty', unit: '', bar: bar(0, 'empty') };
+
+  // стул: сколько раз из обычных 1–3 («не было» — честный 0)
+  const stool = !sc || (!sc.n && !sc.had) ? EMPTY
+    : { text: String(sc.n), cls: VAL, unit: sc.n > 1 && sc.n < 5 ? ' раза' : ' раз', bar: bar(Math.min(sc.n, 3) / 3 * 100, toneOf(sc.reg)) };
 
   // форма: тип по Бристольской шкале; полоска — насколько форма близка к ровной (score.js → form)
-  const form = !sc || !sc.last
-    ? { value: '—', bar: bar(0, 'empty') }
-    : { value: String(sc.last), bar: bar(sc.form, toneOf(sc.form)) };
+  const form = !sc || !sc.last ? EMPTY : { text: String(sc.last), cls: VAL, unit: ' тип', bar: bar(sc.form, toneOf(sc.form)) };
 
   // комфорт: по отмеченному самочувствию
-  const comfort = !sc
-    ? { value: '—', bar: bar(0, 'empty') }
-    : {
-      value: String(sc.comfort),
-      bar: bar(sc.comfort, toneOf(sc.comfort))
-    };
+  const comfort = !sc ? EMPTY : { text: String(sc.comfort), cls: VAL, unit: ' %', bar: bar(sc.comfort, toneOf(sc.comfort)) };
 
-  // клетчатка и жидкость — к дневному ориентиру
+  // клетчатка и жидкость — к дневному ориентиру; не отмечено — подпись, а не «—» или 0
   const fiber = fiberOf(day), water = waterOf(day);
   const fiberPct = fiber == null ? 0 : fiber / FIBER_GOAL_G * 100, waterPct = water / WATER_GOAL_ML * 100;
   return {
+    // пустой день по стулу и самочувствию: вместо трёх прочерков — одна строка-приглашение
+    noGut: !sc,
+    hasGut: !!sc,
+    addStool: () => app.pickAddSection('stool'),
+    addFood: () => app.pickAddSection('food'),
+    addWater: () => app.pickAddSection('water'),
     stool, form, comfort,
-    hasComfort: !!sc,
-    fiber: { value: fiber == null ? '—' : String(fiber), goal: 'из ' + FIBER_GOAL_G + ' г', bar: bar(fiberPct, fiber == null ? 'empty' : toneOf(fiberPct)) },
-    water: { value: litres(water), goal: 'из ' + litres(WATER_GOAL_ML) + ' л', bar: bar(waterPct, water ? toneOf(waterPct) : 'empty') }
+    fiber: fiber == null
+      ? { text: 'нет еды', cls: 'metric-tile-value is-empty', unit: '', bar: bar(0, 'empty') }
+      : { text: String(fiber), cls: 'metric-tile-value num', unit: ' из ' + FIBER_GOAL_G + ' г', bar: bar(fiberPct, toneOf(fiberPct)) },
+    water: !water
+      ? { text: 'не отмечено', cls: 'metric-tile-value is-empty', unit: '', bar: bar(0, 'empty') }
+      : { text: litres(water), cls: 'metric-tile-value num', unit: ' из ' + litres(WATER_GOAL_ML) + ' л', bar: bar(waterPct, toneOf(waterPct)) }
   };
 }
 
@@ -124,9 +128,9 @@ function tipsOf(s, day, sc, tone, isToday, todayK) {
   const items = [];
   const ai = s.insights;
   if (isToday && sc && ai && ai.date === todayK && ai.tipTitle) items.push({ id: 'ai', icon: 'ai', tone: 'calm', title: ai.tipTitle, text: ai.tipText });
-  items.push(...suggestionsFor(day, sc));
+  if (hasData(day)) items.push(...suggestionsFor(day, sc)); // пустой день — без подсказок, только приглашение
   if (!items.length) {
-    const [title, text] = !sc ? EMPTY_TIPS[isToday ? 'today' : 'past'] : FALLBACK_TIPS[tone] || FALLBACK_TIPS.mild;
+    const [title, text] = !hasData(day) ? EMPTY_TIPS[isToday ? 'today' : 'past'] : FALLBACK_TIPS[tone] || FALLBACK_TIPS.mild;
     items.push({ id: 'fallback', icon: 'calm', tone: 'mild', title, text: IS_DEMO && tone === 'calm' && sc ? DEMO_TIP_CALM : text });
   }
   return items.slice(0, MAX_TIPS).map((t) => ({
