@@ -79,7 +79,6 @@
 .tip-icon.mild { background: rgba(127, 168, 102, .16); color: var(--tone-mild); }
 .tip-icon.sens { background: rgba(167, 139, 250, .14); color: var(--tone-sens); }
 .tip-title { font-size: 16px; line-height: 21px; }
-.small-note { padding: 0 4px; line-height: 1.35; }
 
 .empty { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .empty-art { opacity: .55; }
@@ -207,25 +206,43 @@
 .boot-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
 
 /* ================= «+»: разделы Стул / Питание / Жидкости ================= */
-/* шторка: заголовок, слайдер карточек */
-.sheet.short { height: auto; }
+/* «+»: три карточки всплывают над меню */
+.pick-backdrop { position: absolute; inset: 0; z-index: 20; background: rgba(10, 9, 12, .62); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.pick-float { position: absolute; left: 0; right: 0; bottom: calc(112px + var(--safe-bottom)); z-index: 21; display: flex; flex-direction: column; gap: 12px; }
+.pick-head { display: flex; align-items: center; justify-content: space-between; padding: 0 20px; min-height: 36px; }
+.pick-caption { font-size: 15px; color: var(--muted); }
+.pick-save { height: 36px; padding: 0 16px; border-radius: 18px; border: 0; background: var(--accent); color: var(--accent-ink); font-size: 14px; font-weight: 500; }
+.pick-slider { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 20px; padding: 2px 20px 8px; }
+.pick-card { flex: 0 0 148px; height: 156px; box-sizing: border-box; padding: 16px; border-radius: 24px; border: 1px solid var(--line-3); background: var(--surface-3); color: var(--ink); text-align: left; display: flex; flex-direction: column; justify-content: space-between; scroll-snap-align: start; box-shadow: 0 16px 40px rgba(0, 0, 0, .45); animation: pick-rise .32s cubic-bezier(.2, .8, .2, 1) both; }
+.pick-card:nth-child(2) { animation-delay: .05s; }
+.pick-card:nth-child(3) { animation-delay: .1s; }
+.pick-card:active { background: var(--surface-4); }
+@keyframes pick-rise { from { opacity: 0; transform: translateY(24px) scale(.96); } to { opacity: 1; transform: none; } }
+.dock { z-index: 22; }
+.plus svg { transition: transform .2s; }
+.plus.on svg { transform: rotate(45deg); }
+.pick-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.pick-icon.calm { background: rgba(211, 250, 157, .14); color: var(--tone-calm); }
+.pick-icon.mild { background: rgba(127, 168, 102, .16); color: var(--tone-mild); }
+.pick-icon.sens { background: rgba(167, 139, 250, .14); color: var(--tone-sens); }
+.pick-text { display: flex; flex-direction: column; gap: 4px; }
+.pick-title { font-size: 20px; line-height: 24px; font-weight: 400; display: flex; align-items: center; gap: 8px; }
+.pick-sub { font-size: 13px; line-height: 17px; color: var(--muted); }
+.pick-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tone-calm); }
+
+/* шторка с формой раздела */
 .add-sheet-head { gap: 8px; padding: 6px 8px 10px 20px; }
 .add-sheet-head .icon-btn { width: 40px; height: 40px; margin-right: 8px; background: var(--surface-3); flex-shrink: 0; }
 .add-sheet-head .sheet-back { margin: 0 4px 0 -8px; }
 .add-sheet-titles { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .add-sheet-title { font-size: 30px; line-height: 34px; font-weight: 300; }
 .add-sheet-body { gap: 20px; padding-bottom: calc(28px + var(--safe-bottom)); }
-.pick-slider { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 20px; padding: 6px 20px calc(24px + var(--safe-bottom)); }
-.pick-card { flex: 0 0 148px; height: 156px; box-sizing: border-box; padding: 16px; border-radius: 24px; border: 1px solid var(--line-2); background: var(--surface-1); color: var(--ink); text-align: left; display: flex; flex-direction: column; justify-content: space-between; scroll-snap-align: start; }
-.pick-card:active { background: var(--surface-3); }
-.pick-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
-.pick-icon.calm { background: rgba(211, 250, 157, .14); color: var(--tone-calm); }
-.pick-icon.mild { background: rgba(127, 168, 102, .16); color: var(--tone-mild); }
-.pick-icon.sens { background: rgba(167, 139, 250, .14); color: var(--tone-sens); }
-.pick-text { display: flex; flex-direction: column; gap: 4px; }
-.pick-title { font-size: 20px; line-height: 24px; font-weight: 400; display: flex; align-items: center; gap: 10px; }
-.pick-sub { font-size: 13px; line-height: 17px; color: var(--muted); }
-.pick-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tone-calm); }
+
+/* «?» у заголовка */
+.h2-row { position: relative; display: flex; align-items: center; gap: 10px; }
+.h2-row .home-h2 { margin-right: 0; }
+.info-btn { width: 28px; height: 28px; margin-top: 12px; border-radius: 50%; border: 1px solid var(--line-control); background: transparent; color: var(--muted); font-size: 14px; font-weight: 500; padding: 0; flex-shrink: 0; }
+.info-pop { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 5; padding: 14px 16px; border-radius: 18px; background: var(--surface-4); border: 1px solid var(--line-3); box-shadow: 0 12px 30px rgba(0, 0, 0, .45); font-size: 14px; line-height: 1.45; cursor: pointer; }
 
 .water-now { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0; }
 .water-value { font-size: 56px; font-weight: 200; line-height: 1; letter-spacing: -.03em; }

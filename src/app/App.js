@@ -89,6 +89,7 @@ export default class App extends Component {
       onbStep: 'consent', consent: false,
       legal: null,        // открытый документ: { id, title, html, error }
       assistant: false,   // открыта панель ИИ-помощника
+      tipInfo: false,     // открыта подсказка «?» у «Что может помочь»
       // шторка «+» поверх экрана: null | 'pick' — выбор из трёх карточек | 'stool' | 'food' | 'water' — форма раздела
       addSheet: IS_DEMO && location.hash === '#add' ? 'pick' : null,
       chat: [],           // диалог: [{ role: 'user' | 'ai', text, shown?, image? }]; shown — сколько текста уже показано
@@ -488,6 +489,13 @@ export default class App extends Component {
   }
 
   backToAddPicker() { this.setState({ addSheet: 'pick' }); }
+
+  /** «?» у «Что может помочь»: подсказки — не диагноз */
+  toggleTipInfo() {
+    const open = !this.state.tipInfo;
+    this.setState({ tipInfo: open });
+    if (open) track('tips_info_opened');
+  }
 
   closeAddSheet() {
     this.setState({ addSheet: null, keyboard: false });

@@ -45,9 +45,10 @@
 ### Запись дня (экран «+»)
 | Событие | Когда | Свойства |
 |---|---|---|
-| `nav_clicked` (`to: add_entry`) | открыта шторка «+» | `from` — экран под шторкой, `source` (`tab` / `empty_day`) |
-| `add_section_opened` | выбрана карточка в слайдере шторки | `section` (`stool` / `food` / `water`) |
-| `add_sheet_closed` | шторку закрыли без сохранения (крестик, затемнение, «Назад») | — |
+| `nav_clicked` (`to: add_entry`) | нажат «+» — показаны три карточки | `from` — экран под шторкой, `source` (`tab` / `empty_day`) |
+| `add_section_opened` | выбрана карточка «+» | `section` (`stool` / `food` / `water`) |
+| `add_sheet_closed` | «+» закрыли без сохранения («×», затемнение, крестик, «Назад») | — |
+| `tips_info_opened` | тап по «?» у «Что может помочь» | — |
 | `water_changed` | ± жидкость в разделе «Жидкости» | `step_ml` (250, 150, 500, −250), `draft_ml` — сколько добавится к дню |
 | `stool_status_selected` | «Был» / «Не было» | `value` (`had` / `none` / `cleared`) |
 | `bristol_type_selected` | выбор типа | `bristol_type` 1–7 |

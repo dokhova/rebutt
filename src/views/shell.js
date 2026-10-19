@@ -24,7 +24,8 @@ export function shellView(app, screen) {
     setScrollEl: app.setScrollEl,
 
     // пока открыта клавиатура или панель ИИ, меню не перекрывает поле ввода
-    showTabs: withTabs && !s.keyboard && !s.assistant && !s.addSheet,
+    // при выборе раздела «+» меню остаётся: «+» превращается в «×»
+    showTabs: withTabs && !s.keyboard && !s.assistant && (!s.addSheet || s.addSheet === 'pick'),
     showAddSheet: !!s.addSheet && withTabs,
     showAssistant: !!s.assistant && screen !== 'booting',
     openAssistantDock: () => app.openAssistant('dock'),
@@ -32,7 +33,7 @@ export function shellView(app, screen) {
     tabInsights: tab('insights'),
     tabAdd: 'plus' + (s.addSheet ? ' on' : ''),
     goToday: () => app.navigate('today'),
-    goAdd: () => app.openAddSheet('tab'),
+    goAdd: () => (s.addSheet ? app.closeAddSheet() : app.openAddSheet('tab')),
     goInsights: () => app.navigate('insights'),
 
     toast: s.toast,

@@ -64,7 +64,11 @@
 </div>
 
 <div class="section">
-  <h2 class="home-h2">Что может помочь</h2>
+  <div class="h2-row">
+    <h2 class="home-h2">Что может помочь</h2>
+    <button class="info-btn" onClick="{{toggleTipInfo}}" aria-label="Что это за подсказки" aria-expanded="{{tipInfoExpanded}}">?</button>
+    <sc-if value="{{tipInfoOpen}}"><div class="info-pop fade-in" role="note" onClick="{{toggleTipInfo}}">Это подсказки по твоим записям, а не диагноз. Если что-то беспокоит — лучше обсудить с врачом.</div></sc-if>
+  </div>
   <div class="card list">
     <sc-for list="{{tips}}" as="t">
       <div class="row">
@@ -80,7 +84,6 @@
       </div>
     </sc-for>
   </div>
-  <div class="hint small-note">Это подсказки по твоим записям, а не диагноз. Если что-то беспокоит — лучше обсудить с врачом.</div>
 </div>
 
 <sc-if value="{{showCycle}}">

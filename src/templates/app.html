@@ -11,6 +11,8 @@
     <sc-if value="{{is.profile}}"><sc-include name="profile"></sc-include></sc-if>
   </div>
 
+  <sc-if value="{{showAddSheet}}"><sc-include name="add-sheet"></sc-include></sc-if>
+
   <sc-if value="{{showTabs}}">
     <div class="tabbar-fade"></div>
     <div class="dock">
@@ -30,8 +32,6 @@
     </button>
     </div>
   </sc-if>
-
-  <sc-if value="{{showAddSheet}}"><sc-include name="add-sheet"></sc-include></sc-if>
 
   <sc-if value="{{showAssistant}}"><sc-include name="assistant"></sc-include></sc-if>
 

@@ -1,4 +1,4 @@
-// Шторка «+» поверх экрана: сначала слайдер из трёх карточек — «Стул», «Питание», «Жидкости», потом форма выбранного раздела.
+// «+»: над меню всплывают три отдельные карточки слайдером — «Стул», «Питание», «Жидкости»; выбранная открывает шторку с формой раздела.
 // Черновик общий: можно вернуться к карточкам и заполнить другой раздел, «Сохранить» сохраняет всё сразу.
 // Значения попадают в общий view вместе с экраном под шторкой — имена ключей не должны пересекаться с views/today.js и др.
 import { MEAL_TINT, WATER_STEPS, WATER_GOAL_ML } from '../domain/catalog.js';
@@ -34,7 +34,6 @@ export function addEntryView(app) {
     sheetPicking: sheet === 'pick',
     sheetForm: sheet !== 'pick',
     sheetTitle: { pick: 'Что добавить?', stool: 'Стул', food: 'Питание', water: 'Жидкости' }[sheet],
-    sheetCls: 'sheet slide-up' + (sheet === 'pick' ? ' short' : ''),
     closeAddSheet: () => app.closeAddSheet(),
     backToPicker: () => app.backToAddPicker(),
     pickCards: [

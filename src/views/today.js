@@ -53,6 +53,9 @@ export function todayView(app) {
     // показатели и подсказки
     ...metrics(sc, day),
     tips: tipsOf(s, day, sc, tone, isToday, todayK),
+    tipInfoOpen: !!s.tipInfo,
+    tipInfoExpanded: s.tipInfo ? 'true' : 'false',
+    toggleTipInfo: () => app.toggleTipInfo(),
 
     ...cycleCard(p, cd),
     timeline: timeline(app, sel, day, p)
