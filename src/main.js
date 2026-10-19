@@ -25,6 +25,7 @@ import assistantHtml from './templates/screens/assistant.html?raw';
 import entryHtml from './templates/screens/entry.html?raw';
 import gutFormHtml from './templates/partials/gut-form.html?raw';
 import mealCardHtml from './templates/partials/meal-card.html?raw';
+import addSheetHtml from './templates/partials/add-sheet.html?raw';
 
 initTelegram();
 initAnalytics();
@@ -44,5 +45,6 @@ registerPartial('assistant', assistantHtml);
 registerPartial('entry', entryHtml);
 registerPartial('gut-form', gutFormHtml);
 registerPartial('meal-card', mealCardHtml);
+registerPartial('add-sheet', addSheetHtml);
 
 mount('#app');

@@ -48,7 +48,7 @@ export function todayView(app) {
     ...arc(sc, arcTone),
     goInsights: () => app.navigate('insights', 'today_summary'),
     showAddButton: isToday && !sc,
-    goAddFromEmpty: () => app.navigate('add', 'empty_day'),
+    goAddFromEmpty: () => app.openAddSheet('empty_day'),
 
     // показатели и подсказки
     ...metrics(sc, day),
@@ -88,37 +88,34 @@ const bar = (pct, tone) => ({ width: 'width: ' + Math.max(0, Math.min(100, Math.
 function metrics(sc, day) {
   const seg = (on, tone) => 'mseg' + (on ? ' on ' + tone : '');
 
-  // стул: сколько раз, шкала 1–3
+  // стул: сколько раз, шкала 1–3. Подписей под цифрами нет — минимализм, смысл несут шкалы
   let stool;
-  if (!sc) stool = { value: '—', unit: '', sub: 'нет записи', segs: [1, 2, 3].map(() => ({ cls: 'mseg' })) };
+  if (!sc) stool = { value: '—', unit: '', segs: [1, 2, 3].map(() => ({ cls: 'mseg' })) };
   else {
     const t = toneOf(sc.reg);
     stool = {
       value: String(sc.n),
       unit: sc.n === 1 ? 'раз' : sc.n > 1 && sc.n < 5 ? 'раза' : 'раз',
-      sub: sc.n ? 'обычно 1–3 раза в день' : sc.had ? 'стула не было — так бывает' : 'стул не отмечен',
       segs: [1, 2, 3].map((i) => ({ cls: seg(i <= sc.n, t) }))
     };
   }
 
   // форма: тип по Бристольской шкале на шкале 1–7, ровная зона 3–4
   let form;
-  if (!sc || !sc.last) form = { value: '—', sub: sc ? 'стула не было' : 'нет записи', segs: [1, 2, 3, 4, 5, 6, 7].map((i) => ({ cls: 'mseg' + (i === 3 || i === 4 ? ' zone' : '') })) };
+  if (!sc || !sc.last) form = { value: '—', segs: [1, 2, 3, 4, 5, 6, 7].map((i) => ({ cls: 'mseg' + (i === 3 || i === 4 ? ' zone' : '') })) };
   else {
     const t = toneOf(sc.form);
     form = {
       value: String(sc.last),
-      sub: sc.last === 3 || sc.last === 4 ? 'в ровной зоне 3–4' : 'из 7, ровнее всего — 3–4',
       segs: [1, 2, 3, 4, 5, 6, 7].map((i) => ({ cls: i === sc.last ? 'mseg wide on ' + t : 'mseg' + (i === 3 || i === 4 ? ' zone' : '') }))
     };
   }
 
   // комфорт: по отмеченному самочувствию
   const comfort = !sc
-    ? { value: '—', sub: 'нет записи', bar: bar(0, 'empty') }
+    ? { value: '—', bar: bar(0, 'empty') }
     : {
       value: String(sc.comfort),
-      sub: sc.sym.length ? sc.sym.join(', ').toLowerCase() : 'без дискомфорта',
       bar: bar(sc.comfort, toneOf(sc.comfort))
     };
 

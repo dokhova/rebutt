@@ -1,15 +1,4 @@
-<!-- «+» Новая запись: три раздела — Стул, Питание, Жидкости. Значения: src/views/add-entry.js -->
-<div>
-  <div class="add-date">{{dateLong}}</div>
-  <h1 class="add-title">{{title.top}}<br><span class="muted">{{title.bottom}}</span></h1>
-</div>
-
-<div class="add-tabs" role="group" aria-label="Раздел записи">
-  <sc-for list="{{tabs}}" as="t">
-    <button class="{{t.cls}}" aria-pressed="{{t.pressed}}" onClick="{{t.pick}}">{{t.label}}<sc-if value="{{t.filled}}"><span class="add-tab-dot" aria-label="заполнено"></span></sc-if></button>
-  </sc-for>
-</div>
-
+<!-- Формы разделов шторки «+» (Стул / Питание / Жидкости). Шторка — partials/add-sheet.html, значения — src/views/add-entry.js -->
 <!-- Стул: форма + цикл -->
 <sc-if value="{{sec.stool}}">
 <sc-include name="gut-form"></sc-include>

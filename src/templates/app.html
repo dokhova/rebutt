@@ -7,7 +7,6 @@
     <sc-if value="{{is.entry}}"><sc-include name="entry"></sc-include></sc-if>
     <sc-if value="{{is.onboarding}}"><sc-include name="onboarding"></sc-include></sc-if>
     <sc-if value="{{is.today}}"><sc-include name="today"></sc-include></sc-if>
-    <sc-if value="{{is.add}}"><sc-include name="add"></sc-include></sc-if>
     <sc-if value="{{is.insights}}"><sc-include name="insights"></sc-include></sc-if>
     <sc-if value="{{is.profile}}"><sc-include name="profile"></sc-include></sc-if>
   </div>
@@ -31,6 +30,8 @@
     </button>
     </div>
   </sc-if>
+
+  <sc-if value="{{showAddSheet}}"><sc-include name="add-sheet"></sc-include></sc-if>
 
   <sc-if value="{{showAssistant}}"><sc-include name="assistant"></sc-include></sc-if>
 

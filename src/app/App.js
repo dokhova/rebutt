@@ -68,7 +68,7 @@ export default class App extends Component {
       // /?demo#today и т.п. открывает нужный экран с тестовым профилем, /?demo — онбординг
       log = demoLog();
       const hash = location.hash.slice(1) === 'home' ? 'today' : location.hash.slice(1);
-      if (['today', 'add', 'insights', 'profile'].includes(hash)) { screen = hash; profile = demoProfile(); }
+      if (['today', 'add', 'insights', 'profile'].includes(hash)) { screen = hash === 'add' ? 'today' : hash; profile = demoProfile(); }
     } else {
       const local = store.loadLocal();
       if (local && local.profile) {
@@ -89,6 +89,8 @@ export default class App extends Component {
       onbStep: 'consent', consent: false,
       legal: null,        // открытый документ: { id, title, html, error }
       assistant: false,   // открыта панель ИИ-помощника
+      // шторка «+» поверх экрана: null | 'pick' — выбор из трёх карточек | 'stool' | 'food' | 'water' — форма раздела
+      addSheet: IS_DEMO && location.hash === '#add' ? 'pick' : null,
       chat: [],           // диалог: [{ role: 'user' | 'ai', text, shown?, image? }]; shown — сколько текста уже показано
       chatLoading: false,
       chatImage: '',      // фото, приложенное к следующему вопросу (blob-ссылка)
@@ -161,10 +163,11 @@ export default class App extends Component {
         !!prev.legal !== !!s.legal || !!prev.mealEdit !== !!s.mealEdit || !!prev.entryEdit !== !!s.entryEdit) {
       if (this.scrollEl) this.scrollEl.scrollTop = 0;
       this.onScreenShown();
-    } else if (prev.assistant !== s.assistant) {
-      // панель ИИ открывается поверх — экран под ней не прокручиваем
+    } else if (prev.assistant !== s.assistant || prev.addSheet !== s.addSheet) {
+      // панель ИИ и шторка «+» открываются поверх — экран под ними не прокручиваем
       syncBackButton(this.canGoBack(), this.handleBack);
       if (s.assistant) setScreen('assistant');
+      else if (s.addSheet && !prev.addSheet) setScreen('add_entry');
     }
     if ((prev.log !== s.log || prev.profile !== s.profile) && s.profile.onboardedAt) store.saveLocal(s.profile, s.log);
   }
@@ -194,6 +197,7 @@ export default class App extends Component {
     return {
       ...shellView(this, screen),
       ...(VIEWS[screen] ? VIEWS[screen](this) : {}),
+      ...(s.addSheet ? VIEWS.add(this) : {}),
       ...(s.assistant ? VIEWS.assistant(this) : {})
     };
   }
@@ -236,6 +240,7 @@ export default class App extends Component {
   }
 
   navigate(screen, source = 'tab') {
+    if (screen === 'add') { this.openAddSheet(source); return; } // «+» — шторка поверх, не отдельный экран
     if (this.state.screen === screen) return;
     track('nav_clicked', { to: SCREEN_EVENT_NAME[screen], from: SCREEN_EVENT_NAME[this.state.screen], source });
     this.setState({ screen });
@@ -265,14 +270,15 @@ export default class App extends Component {
   /** Есть ли куда вернуться: документ, профиль, не первый шаг онбординга */
   canGoBack() {
     const s = this.state;
-    if (s.legal || s.mealEdit || s.entryEdit || s.assistant || s.screen === 'profile') return true;
+    if (s.legal || s.mealEdit || s.entryEdit || s.assistant || s.addSheet || s.screen === 'profile') return true;
     return s.screen === 'onboarding' && this.onboardingFlow().indexOf(s.onbStep) > 0;
   }
 
   /** «Назад» — и кнопка в интерфейсе, и нативная кнопка Telegram */
   back() {
     const s = this.state;
-    if (s.assistant) this.closeAssistant();
+    if (s.addSheet) { if (s.addSheet === 'pick') this.closeAddSheet(); else this.backToAddPicker(); }
+    else if (s.assistant) this.closeAssistant();
     else if (s.legal) this.closeLegalDoc();
     else if (s.mealEdit) this.closeMeal();
     else if (s.entryEdit) this.closeEntry();
@@ -467,11 +473,25 @@ export default class App extends Component {
 
   setForm(patch) { this.setState({ form: { ...this.state.form, ...patch } }); }
 
-  /** Раздел экрана «+»: стул, питание, жидкости. Заполненное в других разделах не теряется. */
-  setAddSection(section) {
-    if (this.state.form.section === section) return;
-    this.setForm({ section });
+  // ---------- шторка «+»: выбор из трёх карточек → форма раздела. Черновик живёт, пока его не сохранили. ----------
+
+  openAddSheet(from = 'tab') {
+    if (this.state.addSheet) return;
+    this.setState({ addSheet: 'pick', assistant: false });
+    track('nav_clicked', { to: 'add_entry', from: SCREEN_EVENT_NAME[this.state.screen], source: from });
+  }
+
+  /** Карточка в слайдере: стул, питание или жидкости */
+  pickAddSection(section) {
+    this.setState({ addSheet: section, form: { ...this.state.form, section } });
     track('add_section_opened', { section });
+  }
+
+  backToAddPicker() { this.setState({ addSheet: 'pick' }); }
+
+  closeAddSheet() {
+    this.setState({ addSheet: null, keyboard: false });
+    track('add_sheet_closed');
   }
 
   /** Жидкость: +ml или −ml к черновику. Минус может убрать и уже сохранённое за сегодня (исправить ошибку), но не ниже 0 за день. */
@@ -727,7 +747,7 @@ export default class App extends Component {
     const isFirstEntry = !Object.values(this.state.log).some(hasData);
     const log = { ...this.state.log, [k]: day };
 
-    this.setState({ log, form: blankForm(), screen: 'today', selected: k });
+    this.setState({ log, form: blankForm(), screen: 'today', selected: k, addSheet: null });
     this.showToast('Сохранено');
 
     if (!IS_DEMO) {

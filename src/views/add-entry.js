@@ -1,5 +1,6 @@
-// «+»: запись за сегодня в трёх разделах — «Стул» (стул, цвет, самочувствие, стресс, месячные), «Питание» (еда с ИИ), «Жидкости».
-// Разделы — вкладки одной формы: переключение ничего не стирает, «Сохранить» сохраняет всё заполненное сразу.
+// Шторка «+» поверх экрана: сначала слайдер из трёх карточек — «Стул», «Питание», «Жидкости», потом форма выбранного раздела.
+// Черновик общий: можно вернуться к карточкам и заполнить другой раздел, «Сохранить» сохраняет всё сразу.
+// Значения попадают в общий view вместе с экраном под шторкой — имена ключей не должны пересекаться с views/today.js и др.
 import { MEAL_TINT, WATER_STEPS, WATER_GOAL_ML } from '../domain/catalog.js';
 import { litres } from '../domain/suggestions.js';
 import { gutFormView } from './gut-form.js';
@@ -17,21 +18,32 @@ export function addEntryView(app) {
   const stoolFilled = !!(f.stool || f.sym.length || f.stress != null || f.period);
   const foodFilled = f.food === 'done';
   const waterFilled = !!f.water;
-  const tab = (id, label, filled) => ({
-    id, label, filled,
-    cls: 'add-tab' + (f.section === id ? ' on' : ''),
-    pressed: f.section === id ? 'true' : 'false',
-    pick: () => app.setAddSection(id)
+  const sheet = s.addSheet || 'pick';
+  const card = (id, title, sub, tone, filled) => ({
+    id, title, sub, filled,
+    cls: 'pick-card', iconCls: 'pick-icon ' + tone,
+    isStool: id === 'stool', isFood: id === 'food', isWater: id === 'water',
+    pick: () => app.pickAddSection(id)
   });
   const savedWater = today.water || 0, totalWater = Math.max(0, savedWater + (f.water || 0));
 
   return {
     dateLong: 'Сегодня, ' + dayMonth(todayK),
 
-    // разделы
-    tabs: [tab('stool', 'Стул', stoolFilled), tab('food', 'Питание', foodFilled), tab('water', 'Жидкости', waterFilled)],
-    sec: { stool: f.section === 'stool', food: f.section === 'food', water: f.section === 'water' },
-    title: { stool: { top: 'Как кишечник', bottom: 'сегодня?' }, food: { top: 'Что было', bottom: 'в тарелке?' }, water: { top: 'Сколько', bottom: 'выпито?' } }[f.section],
+    // шторка: выбор раздела или форма
+    sheetPicking: sheet === 'pick',
+    sheetForm: sheet !== 'pick',
+    sheetTitle: { pick: 'Что добавить?', stool: 'Стул', food: 'Питание', water: 'Жидкости' }[sheet],
+    sheetCls: 'sheet slide-up' + (sheet === 'pick' ? ' short' : ''),
+    closeAddSheet: () => app.closeAddSheet(),
+    backToPicker: () => app.backToAddPicker(),
+    pickCards: [
+      card('stool', 'Стул', 'Тип, цвет, самочувствие и стресс', 'calm', stoolFilled),
+      card('food', 'Питание', 'Фото или описание блюда — ИИ посчитает', 'mild', foodFilled),
+      card('water', 'Жидкости', 'Вода, чай, суп — сколько выпито', 'sens', waterFilled)
+    ],
+    hasDraft: stoolFilled || foodFilled || waterFilled,
+    sec: { stool: sheet === 'stool', food: sheet === 'food', water: sheet === 'water' },
 
     // жидкости
     waterTotal: litres(totalWater),

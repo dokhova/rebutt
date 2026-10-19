@@ -1,7 +1,7 @@
 // Общая оболочка: контейнер экрана, нижнее меню, тост. Значения нужны на всех экранах.
 import { APP_NAME } from '../config.js';
 
-const TAB_SCREENS = ['today', 'add', 'insights', 'profile'];
+const TAB_SCREENS = ['today', 'insights', 'profile'];
 
 /** screen — что показывается сейчас: 'booting' | 'legal' | 'meal' | 'entry' | 'onboarding' | экран с меню. ИИ-помощник — панель поверх. */
 export function shellView(app, screen) {
@@ -17,7 +17,6 @@ export function shellView(app, screen) {
       entry: screen === 'entry',
       onboarding: screen === 'onboarding',
       today: screen === 'today',
-      add: screen === 'add',
       insights: screen === 'insights',
       profile: screen === 'profile'
     },
@@ -25,14 +24,15 @@ export function shellView(app, screen) {
     setScrollEl: app.setScrollEl,
 
     // пока открыта клавиатура или панель ИИ, меню не перекрывает поле ввода
-    showTabs: withTabs && !s.keyboard && !s.assistant,
+    showTabs: withTabs && !s.keyboard && !s.assistant && !s.addSheet,
+    showAddSheet: !!s.addSheet && withTabs,
     showAssistant: !!s.assistant && screen !== 'booting',
     openAssistantDock: () => app.openAssistant('dock'),
     tabToday: tab('today'),
     tabInsights: tab('insights'),
-    tabAdd: 'plus' + (screen === 'add' ? ' on' : ''),
+    tabAdd: 'plus' + (s.addSheet ? ' on' : ''),
     goToday: () => app.navigate('today'),
-    goAdd: () => app.navigate('add'),
+    goAdd: () => app.openAddSheet('tab'),
     goInsights: () => app.navigate('insights'),
 
     toast: s.toast,

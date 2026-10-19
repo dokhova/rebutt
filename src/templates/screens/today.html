@@ -36,19 +36,16 @@
         <div class="metric-label">Стул</div>
         <div class="metric-value num">{{stool.value}}<span class="metric-unit"> {{stool.unit}}</span></div>
         <div class="mscale three" aria-hidden="true"><sc-for list="{{stool.segs}}" as="x"><span class="{{x.cls}}"></span></sc-for></div>
-        <div class="metric-sub">{{stool.sub}}</div>
       </div>
       <div class="metric">
         <div class="metric-label">Форма</div>
         <div class="metric-value num"><span class="metric-unit">тип </span>{{form.value}}</div>
         <div class="mscale seven" aria-hidden="true"><sc-for list="{{form.segs}}" as="x"><span class="{{x.cls}}"></span></sc-for></div>
-        <div class="metric-sub">{{form.sub}}</div>
       </div>
       <div class="metric">
         <div class="metric-label">Комфорт</div>
         <div class="metric-value num">{{comfort.value}}<sc-if value="{{hasComfort}}"><span class="metric-unit"> %</span></sc-if></div>
         <div class="mbar" aria-hidden="true"><div class="{{comfort.bar.cls}}" style="{{comfort.bar.width}}"></div></div>
-        <div class="metric-sub">{{comfort.sub}}</div>
       </div>
     </div>
     <div class="metric-tiles">
