@@ -527,14 +527,15 @@ export default class App extends Component {
     track('stool_status_selected', { value: v || 'cleared', where: target });
   }
 
+  /** Тип и цвет видны сразу — выбор любого из них значит «стул был» */
   pickBristolType(n, target = 'form') {
-    this.setGutDraft(target, { type: n });
+    this.setGutDraft(target, { type: n, stool: 'had' });
     track('bristol_type_selected', { bristol_type: n, where: target });
   }
 
   pickStoolColor(id, target = 'form') {
     const v = this.gutDraft(target).color === id ? '' : id;
-    this.setGutDraft(target, { color: v });
+    this.setGutDraft(target, v ? { color: v, stool: 'had' } : { color: v });
     track('stool_color_selected', { color: v || 'cleared', where: target });
   }
 

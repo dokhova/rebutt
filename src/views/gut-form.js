@@ -12,11 +12,12 @@ export function gutFormView(app, target) {
       stoolNone: seg(d.stool === 'none'),
       setHad: () => app.setStool('had', target),
       setNone: () => app.setStool('none', target),
-      showTypes: d.stool === 'had',
+      // тип и цвет показываем сразу, пока не выбрано «Не было»
+      showTypes: d.stool !== 'none',
       types: Object.keys(BRISTOL_TYPES).map(Number).map((n) => ({
-        type: String(n), short: BRISTOL_TYPES[n], on: d.type === n,
+        type: String(n), short: BRISTOL_TYPES[n], on: d.stool === 'had' && d.type === n,
         aria: 'Тип ' + n + ', ' + BRISTOL_TYPES[n],
-        cls: 'type-card' + (d.type === n ? ' on' : ''),
+        cls: 'type-card' + (d.stool === 'had' && d.type === n ? ' on' : ''),
         pick: () => app.pickBristolType(n, target)
       })),
       colors: STOOL_COLORS.map((c) => ({

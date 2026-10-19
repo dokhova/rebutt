@@ -212,8 +212,9 @@
 .pick-head { display: flex; align-items: center; justify-content: space-between; padding: 0 20px; min-height: 36px; }
 .pick-caption { font-size: 15px; color: var(--muted); }
 .pick-save { height: 36px; padding: 0 16px; border-radius: 18px; border: 0; background: var(--accent); color: var(--accent-ink); font-size: 14px; font-weight: 500; }
-.pick-slider { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 20px; padding: 2px 20px 8px; }
-.pick-card { flex: 0 0 148px; height: 156px; box-sizing: border-box; padding: 16px; border-radius: 24px; border: 1px solid var(--line-3); background: var(--surface-3); color: var(--ink); text-align: left; display: flex; flex-direction: column; justify-content: space-between; scroll-snap-align: start; box-shadow: 0 16px 40px rgba(0, 0, 0, .45); animation: pick-rise .32s cubic-bezier(.2, .8, .2, 1) both; }
+/* все три карточки помещаются в ширину экрана */
+.pick-slider { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 2px 16px 8px; }
+.pick-card { min-width: 0; height: 124px; box-sizing: border-box; padding: 14px 12px; border-radius: 22px; border: 1px solid var(--line-3); background: var(--surface-3); color: var(--ink); text-align: left; display: flex; flex-direction: column; justify-content: space-between; scroll-snap-align: start; box-shadow: 0 16px 40px rgba(0, 0, 0, .45); animation: pick-rise .32s cubic-bezier(.2, .8, .2, 1) both; }
 .pick-card:nth-child(2) { animation-delay: .05s; }
 .pick-card:nth-child(3) { animation-delay: .1s; }
 .pick-card:active { background: var(--surface-4); }
@@ -221,14 +222,14 @@
 .dock { z-index: 22; }
 .plus svg { transition: transform .2s; }
 .plus.on svg { transform: rotate(45deg); }
-.pick-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.pick-icon { width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
 .pick-icon.calm { background: rgba(211, 250, 157, .14); color: var(--tone-calm); }
 .pick-icon.mild { background: rgba(127, 168, 102, .16); color: var(--tone-mild); }
 .pick-icon.sens { background: rgba(167, 139, 250, .14); color: var(--tone-sens); }
 .pick-text { display: flex; flex-direction: column; gap: 4px; }
-.pick-title { font-size: 20px; line-height: 24px; font-weight: 400; display: flex; align-items: center; gap: 8px; }
-.pick-sub { font-size: 13px; line-height: 17px; color: var(--muted); }
-.pick-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tone-calm); }
+.pick-title { font-size: 16px; line-height: 20px; font-weight: 400; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.pick-sub { font-size: 13px; line-height: 17px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pick-dot { width: 6px; height: 6px; flex-shrink: 0; border-radius: 50%; background: var(--tone-calm); }
 
 /* шторка с формой раздела */
 .add-sheet-head { gap: 8px; padding: 6px 8px 10px 20px; }
@@ -239,9 +240,11 @@
 .add-sheet-body { gap: 20px; padding-bottom: calc(28px + var(--safe-bottom)); }
 
 /* «?» у заголовка */
-.h2-row { position: relative; display: flex; align-items: center; gap: 10px; }
+.h2-row { position: relative; display: flex; align-items: center; gap: 8px; }
 .h2-row .home-h2 { margin-right: 0; }
-.info-btn { width: 28px; height: 28px; margin-top: 12px; border-radius: 50%; border: 1px solid var(--line-control); background: transparent; color: var(--muted); font-size: 14px; font-weight: 500; padding: 0; flex-shrink: 0; }
+/* «?» маленький, но область нажатия 44px за счёт псевдоэлемента */
+.info-btn { position: relative; width: 20px; height: 20px; margin-top: 14px; border-radius: 50%; border: 1px solid var(--line-control); background: transparent; color: var(--muted); font-size: 12px; font-weight: 500; line-height: 1; padding: 0; flex-shrink: 0; }
+.info-btn::after { content: ""; position: absolute; inset: -12px; }
 .info-pop { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 5; padding: 14px 16px; border-radius: 18px; background: var(--surface-4); border: 1px solid var(--line-3); box-shadow: 0 12px 30px rgba(0, 0, 0, .45); font-size: 14px; line-height: 1.45; cursor: pointer; }
 
 .water-now { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0; }
