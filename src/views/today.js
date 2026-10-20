@@ -10,7 +10,8 @@ import { suggestionsFor, litres } from '../domain/suggestions.js';
 import { cycleDay, cyclePhase, isPeriodDay, PREGNANCY_NOTE } from '../domain/cycle.js';
 import { DEMO_TIP_CALM } from '../domain/demo.js';
 
-// Дуга: нижняя полуокружность в SVG 350×300, центр (175, 115), радиус 155 — те же числа в templates/screens/today.html
+// Дуга: нижняя полуокружность в SVG 350×300, центр (175, 115), радиус 155 — те же числа в templates/screens/today.html.
+// Заполняется слева направо: 0% — левый край, 100% — правый.
 const ARC = { cx: 175, cy: 115, r: 155 };
 const MAX_TIPS = 3;
 
@@ -55,9 +56,6 @@ export function todayView(app) {
     // показатели и подсказки
     ...metrics(sc, day, app, dailyTargets(p)),
     tips: tipsOf(s, day, sc, tone, isToday, todayK, { targets: dailyTargets(p), goals: p.goals }),
-    tipInfoOpen: !!s.tipInfo,
-    tipInfoExpanded: s.tipInfo ? 'true' : 'false',
-    toggleTipInfo: () => app.toggleTipInfo(),
 
     ...cycleCard(p, cd),
     timeline: timeline(app, sel, day, p)
@@ -78,7 +76,7 @@ function arc(sc, tone) {
   const a = (sc.idx / 100) * Math.PI, rgb = TONE_RGB[tone] || TONE_RGB.mild;
   return {
     arcDash: sc.idx + ' 100',
-    knobX: (ARC.cx + ARC.r * Math.cos(a)).toFixed(1),
+    knobX: (ARC.cx - ARC.r * Math.cos(a)).toFixed(1),
     knobY: (ARC.cy + ARC.r * Math.sin(a)).toFixed(1),
     knobR: 6.5,
     haloR: 12,

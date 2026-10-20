@@ -8,11 +8,9 @@ import { registerComponent, registerPartial, mount } from './core/runtime.js';
 import { initTelegram } from './services/telegram.js';
 import { initAnalytics } from './services/analytics.js';
 import App from './app/App.js';
-import Gut from './components/Gut.js';
 import Pebble from './components/Pebble.js';
 
 import appHtml from './templates/app.html?raw';
-import gutHtml from './templates/components/gut.html?raw';
 import pebbleHtml from './templates/components/pebble.html?raw';
 import onboardingHtml from './templates/screens/onboarding.html?raw';
 import todayHtml from './templates/screens/today.html?raw';
@@ -26,12 +24,12 @@ import entryHtml from './templates/screens/entry.html?raw';
 import gutFormHtml from './templates/partials/gut-form.html?raw';
 import mealCardHtml from './templates/partials/meal-card.html?raw';
 import addSheetHtml from './templates/partials/add-sheet.html?raw';
+import infoCardHtml from './templates/partials/info-card.html?raw';
 
 initTelegram();
 initAnalytics();
 
 registerComponent('App', App, appHtml);
-registerComponent('Gut', Gut, gutHtml);
 registerComponent('Pebble', Pebble, pebbleHtml);
 
 registerPartial('onboarding', onboardingHtml);
@@ -46,5 +44,6 @@ registerPartial('entry', entryHtml);
 registerPartial('gut-form', gutFormHtml);
 registerPartial('meal-card', mealCardHtml);
 registerPartial('add-sheet', addSheetHtml);
+registerPartial('info-card', infoCardHtml);
 
 mount('#app');

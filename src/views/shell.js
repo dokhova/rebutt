@@ -1,5 +1,9 @@
 // Общая оболочка: контейнер экрана, нижнее меню, тост. Значения нужны на всех экранах.
 import { APP_NAME } from '../config.js';
+import { SOURCES, infoCards } from '../domain/sources.js';
+import { dailyTargets } from '../domain/targets.js';
+
+const INFO_TOPICS = ['fiber', 'water', 'targets', 'bristol', 'tips'];
 
 const TAB_SCREENS = ['today', 'insights', 'profile'];
 
@@ -36,7 +40,25 @@ export function shellView(app, screen) {
     goAdd: () => (s.addSheet ? app.closeAddSheet() : app.openAddSheet('tab')),
     goInsights: () => app.navigate('insights'),
 
+    // «?» рядом с нормами и советами — на любом экране: onClick="{{info.fiber}}"
+    info: Object.fromEntries(INFO_TOPICS.map((id) => [id, () => app.openInfo(id)])),
+    ...infoCardView(app),
+
     toast: s.toast,
     hasToast: !!s.toast
+  };
+}
+
+/** Карточка «?»: что за норма, откуда она, ссылки на источники */
+function infoCardView(app) {
+  const topic = app.state.info;
+  const cards = topic ? infoCards(dailyTargets(app.state.profile))[topic] : null;
+  return {
+    showInfo: !!cards,
+    infoBlocks: (cards || []).map((c) => ({
+      ...c,
+      links: c.sources.map((id) => ({ ...SOURCES[id], open: (e) => app.openSource(id, SOURCES[id].url, e) }))
+    })),
+    closeInfo: () => app.closeInfo()
   };
 }

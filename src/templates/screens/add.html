@@ -77,7 +77,7 @@
     <button class="round-btn lg" onClick="{{waterPlus}}" aria-label="Добавить 250 мл">+</button>
   </div>
   <div class="mbar" aria-hidden="true"><div class="mbar-fill sens" style="{{waterBar}}"></div></div>
-  <div class="hint water-goal">{{waterGoal}}</div>
+  <div class="hint water-goal">{{waterGoal}} <button class="info-btn" onClick="{{info.water}}" aria-label="Откуда норма воды">?</button></div>
   <div class="water-steps">
     <sc-for list="{{waterSteps}}" as="w">
       <button class="water-step" onClick="{{w.add}}"><span>{{w.label}}</span><span class="muted num">{{w.ml}}</span></button>

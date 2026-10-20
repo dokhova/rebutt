@@ -69,6 +69,8 @@
 .row-time { color: var(--muted); font-size: 14px; }
 .icon-tile { width: 44px; height: 44px; border-radius: 14px; background: var(--surface-3); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
+.empty-text { color: var(--muted); font-size: 15px; text-align: center; }
+
 /* строка настройки: подпись слева, контрол справа */
 .list-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 56px; font-size: 15px; border-bottom: 1px solid var(--line); box-sizing: border-box; }
 .list-row > :first-child { min-width: 0; flex-shrink: 1; }
@@ -103,7 +105,6 @@
 /* ---------- метки ---------- */
 .tag { display: inline-flex; align-items: center; height: 32px; padding: 0 14px; border-radius: 16px; background: rgba(255, 255, 255, .08); border: 1px solid var(--line-control); font-size: 13px; white-space: nowrap; box-sizing: border-box; }
 .tag.on { background: var(--selected); border-color: var(--selected); color: var(--accent-ink); font-weight: 500; }
-.pill { display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 14px; font-size: 13px; font-weight: 500; white-space: nowrap; background: rgba(255, 255, 255, .1); flex-shrink: 0; }
 
 .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, .35); }
 .dot.lg { width: 8px; height: 8px; }
@@ -118,9 +119,7 @@
 
 .avatar { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; background: var(--surface-3); border: 1px solid var(--line-2); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 500; padding: 0; }
 
-/* ---------- компоненты Gut и Pebble ---------- */
-.gut { position: relative; flex-shrink: 0; }
-.gut-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+/* ---------- компонент Pebble (иконка типа стула) ---------- */
 .pebble { position: relative; flex-shrink: 0; }
 .pebble svg { display: block; overflow: visible; }
 
@@ -146,3 +145,33 @@
 .range.unset .range-fill { width: 0; }
 .range.unset .range-thumb { background: var(--surface-1); box-shadow: inset 0 0 0 2px var(--line-control); }
 .slider-scale { display: flex; justify-content: space-between; color: var(--muted); font-size: 13px; margin-top: -4px; }
+
+/* ---------- панель снизу (шторка): ИИ-помощник, форма «+», карточка «?» ---------- */
+.sheet-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, .55); z-index: 20; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 21; height: 86%; box-sizing: border-box;
+  display: flex; flex-direction: column; border-radius: 24px 24px 0 0; background: #1C1A21; border-top: 1px solid var(--line-3);
+}
+.slide-up { animation: slide-up .28s ease-out; }
+@keyframes slide-up { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
+.sheet-handle { width: 40px; height: 5px; border-radius: 3px; background: var(--dim); margin: 8px auto 0; flex-shrink: 0; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px 4px 20px; flex-shrink: 0; }
+.sheet-head .icon-btn { width: 36px; height: 36px; margin-right: 8px; background: var(--surface-3); }
+.sheet-title { font-size: 17px; font-weight: 600; }
+.sheet-body { flex-grow: 1; overflow-y: auto; overscroll-behavior: contain; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 14px; }
+.sheet-foot { flex-shrink: 0; padding: 10px 16px calc(12px + var(--safe-bottom)); display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); }
+
+/* ---------- «?» и карточка источников ---------- */
+/* «?» рядом с нормой или заголовком: маленький, но область нажатия 44px за счёт псевдоэлемента.
+   Открывает карточку источников (partials/info-card.html) */
+.info-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--line-control); background: transparent; color: var(--muted); font-size: 12px; font-weight: 500; line-height: 1; padding: 0; flex-shrink: 0; }
+.info-btn::after { content: ""; position: absolute; inset: -12px; }
+/* карточка «?» — поверх всего, в том числе поверх «+» */
+.info-backdrop { z-index: 30; }
+.info-sheet { z-index: 31; height: auto; max-height: 86%; }
+.info-body { overflow-y: auto; overscroll-behavior: contain; padding: 12px 20px calc(20px + var(--safe-bottom)); display: flex; flex-direction: column; gap: 20px; }
+.info-block { display: flex; flex-direction: column; gap: 8px; }
+.info-title { font-size: 22px; line-height: 28px; font-weight: 300; }
+.info-text { font-size: 15px; line-height: 1.5; color: #DCD9E2; }
+.info-link { display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; font-size: 13px; line-height: 1.4; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(168, 163, 179, .5); }
+.info-link svg { flex-shrink: 0; margin-top: 2px; }

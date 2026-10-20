@@ -15,8 +15,8 @@
 
 <button class="home-arc" onClick="{{goInsights}}" aria-label="Работа кишечника. Открыть инсайты">
   <svg viewBox="0 0 350 300" aria-hidden="true">
-    <path d="M 330 115 A 155 155 0 0 1 20 115" fill="none" stroke="rgba(248,247,242,.16)" stroke-width="2" stroke-linecap="round"></path>
-    <path d="M 330 115 A 155 155 0 0 1 20 115" fill="none" stroke="{{arcColor}}" stroke-width="3" stroke-linecap="round" pathLength="100" stroke-dasharray="{{arcDash}}"></path>
+    <path d="M 20 115 A 155 155 0 0 0 330 115" fill="none" stroke="rgba(248,247,242,.16)" stroke-width="2" stroke-linecap="round"></path>
+    <path d="M 20 115 A 155 155 0 0 0 330 115" fill="none" stroke="{{arcColor}}" stroke-width="3" stroke-linecap="round" pathLength="100" stroke-dasharray="{{arcDash}}"></path>
     <circle cx="{{knobX}}" cy="{{knobY}}" r="{{haloR}}" fill="{{arcColor}}" opacity=".25"></circle>
     <circle cx="{{knobX}}" cy="{{knobY}}" r="{{knobR}}" fill="#F8F7F2"></circle>
   </svg>
@@ -50,7 +50,7 @@
         <div class="mbar" aria-hidden="true"><div class="{{stool.bar.cls}}" style="{{stool.bar.width}}"></div></div>
       </div>
       <div class="metric">
-        <div class="metric-label">Форма</div>
+        <div class="metric-label">Форма <button class="info-btn" onClick="{{info.bristol}}" aria-label="Что значит тип стула">?</button></div>
         <div class="{{form.cls}}">{{form.text}}<span class="metric-unit">{{form.unit}}</span></div>
         <div class="mbar" aria-hidden="true"><div class="{{form.bar.cls}}" style="{{form.bar.width}}"></div></div>
       </div>
@@ -62,16 +62,21 @@
     </div>
     </sc-if>
     <div class="metric-tiles">
-      <button class="metric-tile" onClick="{{addFood}}" aria-label="Клетчатка: добавить еду">
-        <div class="metric-tile-head"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21V9M12 13c-3 0-5-2-5-5 3 0 5 2 5 5zM12 13c3 0 5-2 5-5-3 0-5 2-5 5zM12 9c-1.5-1-2-3-1-5 1.5 1 2 3 1 5z"></path></svg>Клетчатка</div>
-        <div class="{{fiber.cls}}">{{fiber.text}}<span class="metric-unit">{{fiber.unit}}</span></div>
-        <div class="mbar" aria-hidden="true"><div class="{{fiber.bar.cls}}" style="{{fiber.bar.width}}"></div></div>
-      </button>
-      <button class="metric-tile" onClick="{{addWater}}" aria-label="Жидкость: добавить">
-        <div class="metric-tile-head"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c3 4.2 6 7.6 6 11a6 6 0 0 1-12 0c0-3.4 3-6.8 6-11z"></path></svg>Жидкость</div>
-        <div class="{{water.cls}}">{{water.text}}<span class="metric-unit">{{water.unit}}</span></div>
-        <div class="mbar" aria-hidden="true"><div class="{{water.bar.cls}}" style="{{water.bar.width}}"></div></div>
-      </button>
+      <!-- плитка: шапка с «?» и кнопка, которая открывает нужный раздел «+» (кнопки не вкладываются друг в друга) -->
+      <div class="metric-tile">
+        <div class="metric-tile-head"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21V9M12 13c-3 0-5-2-5-5 3 0 5 2 5 5zM12 13c3 0 5-2 5-5-3 0-5 2-5 5zM12 9c-1.5-1-2-3-1-5 1.5 1 2 3 1 5z"></path></svg><span class="metric-tile-name">Клетчатка</span><button class="info-btn" onClick="{{info.fiber}}" aria-label="Откуда норма клетчатки">?</button></div>
+        <button class="metric-tile-body" onClick="{{addFood}}" aria-label="Клетчатка: добавить еду">
+          <span class="{{fiber.cls}}">{{fiber.text}}<span class="metric-unit">{{fiber.unit}}</span></span>
+          <span class="mbar" aria-hidden="true"><span class="{{fiber.bar.cls}}" style="{{fiber.bar.width}}"></span></span>
+        </button>
+      </div>
+      <div class="metric-tile">
+        <div class="metric-tile-head"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c3 4.2 6 7.6 6 11a6 6 0 0 1-12 0c0-3.4 3-6.8 6-11z"></path></svg><span class="metric-tile-name">Жидкость</span><button class="info-btn" onClick="{{info.water}}" aria-label="Откуда норма воды">?</button></div>
+        <button class="metric-tile-body" onClick="{{addWater}}" aria-label="Жидкость: добавить">
+          <span class="{{water.cls}}">{{water.text}}<span class="metric-unit">{{water.unit}}</span></span>
+          <span class="mbar" aria-hidden="true"><span class="{{water.bar.cls}}" style="{{water.bar.width}}"></span></span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -79,8 +84,7 @@
 <div class="section">
   <div class="h2-row">
     <h2 class="home-h2">Что может помочь</h2>
-    <button class="info-btn" onClick="{{toggleTipInfo}}" aria-label="Что это за подсказки" aria-expanded="{{tipInfoExpanded}}">?</button>
-    <sc-if value="{{tipInfoOpen}}"><div class="info-pop fade-in" role="note" onClick="{{toggleTipInfo}}">Это подсказки по твоим записям, а не диагноз. Если что-то беспокоит — лучше обсудить с врачом.</div></sc-if>
+    <button class="info-btn" onClick="{{info.tips}}" aria-label="Откуда подсказки">?</button>
   </div>
   <div class="card list">
     <sc-for list="{{tips}}" as="t">

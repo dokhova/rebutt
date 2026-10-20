@@ -1,0 +1,20 @@
+<!-- «?»: откуда норма или совет. Значения: infoCardView в src/views/shell.js, тексты — src/domain/sources.js -->
+<div class="sheet-backdrop info-backdrop fade-in" onClick="{{closeInfo}}"></div>
+<section class="sheet info-sheet slide-up" role="dialog" aria-label="Откуда эти данные">
+  <div class="sheet-handle"></div>
+  <div class="info-body">
+    <sc-for list="{{infoBlocks}}" as="b">
+      <div class="info-block">
+        <div class="info-title">{{b.title}}</div>
+        <div class="info-text">{{b.text}}</div>
+        <sc-for list="{{b.links}}" as="l">
+          <a class="info-link" href="{{l.url}}" target="_blank" rel="noopener" onClick="{{l.open}}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"></path></svg>
+            <span>{{l.label}}</span>
+          </a>
+        </sc-for>
+      </div>
+    </sc-for>
+    <button class="btn secondary" onClick="{{closeInfo}}">Понятно</button>
+  </div>
+</section>

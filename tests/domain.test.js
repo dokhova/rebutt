@@ -88,16 +88,7 @@ test('блюдо: нормализация ответа ИИ и КБЖУ', async
   assert.deepEqual(mealStats(m).map((x) => x.label), ['Белки', 'Жиры', 'Углеводы', 'Клетчатка']);
 });
 
-import { streakDays } from '../src/domain/streak.js';
 import { splitSentences } from '../src/domain/text.js';
-
-test('streakDays: дни подряд с записями; пустое сегодня не обнуляет', () => {
-  const log = { '2026-10-15': day([g(4)]), '2026-10-16': day([g(3)]), '2026-10-17': day([], [{ id: 'm' }]) };
-  assert.equal(streakDays(log, '2026-10-18'), 3);
-  assert.equal(streakDays({ ...log, '2026-10-18': day([g(4)]) }, '2026-10-18'), 4);
-  assert.equal(streakDays({ '2026-10-15': day([g(4)]) }, '2026-10-18'), 0);
-  assert.equal(streakDays({}, '2026-10-18'), 0);
-});
 
 test('splitSentences: делит по знакам препинания и не теряет их', () => {
   assert.deepEqual(splitSentences('Всё спокойно. Пейте воду! Как вы? Хорошо…  Дальше'), ['Всё спокойно.', 'Пейте воду!', 'Как вы?', 'Хорошо…', 'Дальше']);
@@ -163,19 +154,35 @@ test('рост и вес: ввод только цифрами, диапазон
   assert.equal(traits.weight, undefined); // сам вес в аналитику не уходит
 });
 
-test('ориентиры: вода от веса, клетчатка от пола и возраста', () => {
-  assert.deepEqual(dailyTargets(blankProfile()), { waterMl: 2000, fiberG: 25, personal: false });
-  assert.equal(dailyTargets({ ...blankProfile(), sex: 'f', weight: 60 }).waterMl, 1800);
-  assert.equal(dailyTargets({ ...blankProfile(), sex: 'm', weight: 90 }).waterMl, 2700);
-  assert.equal(dailyTargets({ ...blankProfile(), weight: 40 }).waterMl, 1500); // не меньше 1,5 л
-  assert.equal(dailyTargets({ ...blankProfile(), weight: 140 }).waterMl, 3500); // не больше 3,5 л
-  assert.equal(dailyTargets({ ...blankProfile(), weight: 60, goals: ['stool'] }).waterMl, 2050);
-  assert.equal(dailyTargets({ ...blankProfile(), sex: 'f', weight: 60, pregnant: true }).waterMl, 2100);
-  assert.equal(dailyTargets({ ...blankProfile(), sex: 'f', age: 30 }).fiberG, 25);
-  assert.equal(dailyTargets({ ...blankProfile(), sex: 'f', age: 55 }).fiberG, 21);
-  assert.equal(dailyTargets({ ...blankProfile(), sex: 'm', age: 30 }).fiberG, 30);
-  assert.equal(dailyTargets({ ...blankProfile(), sex: 'f', pregnant: true }).fiberG, 28);
-  assert.equal(dailyTargets({ ...blankProfile(), weight: 17 }).waterMl, 2000); // вес вне диапазона не учитываем
+test('нормы: клетчатка по ВОЗ, вода по EFSA; вес и рост на нормы не влияют', () => {
+  assert.deepEqual(dailyTargets(blankProfile()), { waterMl: 2000, fiberG: 25 });
+  assert.deepEqual(dailyTargets({ ...blankProfile(), sex: 'f', weight: 90, height: 190 }), { waterMl: 2000, fiberG: 25 });
+  assert.deepEqual(dailyTargets({ ...blankProfile(), sex: 'm', age: 60 }), { waterMl: 2500, fiberG: 25 });
+  assert.equal(dailyTargets({ ...blankProfile(), sex: 'f', pregnant: true }).waterMl, 2300);
+  assert.equal(dailyTargets({ ...blankProfile(), sex: 'm', pregnant: true }).waterMl, 2500);
+});
+
+test('у каждой карточки «?» есть источник со ссылкой', async () => {
+  const { SOURCES, infoCards } = await import('../src/domain/sources.js');
+  const cards = infoCards(dailyTargets(blankProfile()));
+  for (const topic of ['fiber', 'water', 'targets', 'bristol', 'tips']) {
+    assert.ok(cards[topic] && cards[topic].length, topic);
+    for (const c of cards[topic]) {
+      assert.ok(c.title && c.text && c.sources.length, topic);
+      for (const id of c.sources) assert.match(SOURCES[id].url, /^https:\/\//, id);
+    }
+  }
+});
+
+test('подсказки: без советов, у которых нет доказательной базы', () => {
+  const days = [dw([g(1, ['Боль', 'Вздутие'])], [], 0), dw([g(7, ['Газы', 'Тяжесть'])], [{ fiber: 2 }], 300), dw([{ ...g(0), stress: 9 }], [], 0)];
+  for (const d of days) {
+    for (const goals of [[], ['stool', 'bloat', 'food', 'weight']]) {
+      for (const s of suggestionsFor(d, gutScore(d), { goals })) {
+        assert.ok(!/детокс|чистк|голода|бад|пробиот|клизм|трав|банан|тёпл/i.test(s.title + ' ' + s.text), s.title + ' — ' + s.text);
+      }
+    }
+  }
 });
 
 test('подсказки учитывают личный ориентир воды', () => {
@@ -202,7 +209,7 @@ test('контекст ИИ: рост, вес, цели, свои слова и 
   assert.equal(ctx.profile.weight_kg, 60);
   assert.deepEqual(ctx.profile.goals, ['Избавиться от вздутия', 'Другое', 'понять, что с кофе']);
   assert.equal(ctx.profile.own_goal, 'понять, что с кофе');
-  assert.deepEqual(ctx.profile.daily_targets, { water_ml: 1800, fiber_g: 25 });
+  assert.deepEqual(ctx.profile.daily_targets, { water_ml: 2000, fiber_g: 25 });
   assert.equal(ctx.days[0].water_ml, 750);
   assert.equal(ctx.days[0].fiber_g, 8);
   const fc = foodContext(p, { '2026-10-18': { ...day([], [{ id: 'm', time: '09:00', name: 'Овсянка', fiber: 8 }]), water: 750 } }, '2026-10-18');

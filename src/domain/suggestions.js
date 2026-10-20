@@ -1,11 +1,15 @@
-// «Что может помочь» на главной: 1–3 мягкие подсказки по записям дня, личным ориентирам и целям пользователя.
+// «Что может помочь» на главной: 1–3 мягкие подсказки по записям дня, ориентирам и целям пользователя.
 // Мы не ставим диагнозов и не говорим «надо»: только предлагаем простой шаг и объясняем, почему он может помочь.
 // Правила идут по приоритету, повторы по id отбрасываются.
 //
+// Каждая подсказка — только из официальных рекомендаций (domain/sources.js, их видно по «?» у заголовка):
+//   клетчатка (ВОЗ), жидкость (EFSA; при жидком стуле — восполнять потери),
+//   движение, регулярная еда без спешки, время на отдых (NICE), поводы показаться врачу (NHS).
 // Порядок: что видно в записях сегодня (форма стула, симптомы, стресс) → цели из онбординга → вода и клетчатка к ориентиру.
-// Цель «Похудеть» намеренно не даёт подсказок про еду и калории — только общие (вода, клетчатка, движение).
+// Цель «Похудеть» намеренно не даёт подсказок про еду и калории.
 
-import { FIBER_GOAL_G, WATER_GOAL_ML, SYMPTOM_OK } from './catalog.js';
+import { SYMPTOM_OK } from './catalog.js';
+import { dailyTargets } from './targets.js';
 import { fiberOf, waterOf } from './score.js';
 
 const MAX = 3;
@@ -14,13 +18,13 @@ const GLASS_ML = 250;
 /**
  * @param day  — запись дня (score.js)
  * @param sc   — результат gutScore(day) или null
- * @param opts — { targets: { waterMl, fiberG } из domain/targets.js, goals: id целей из профиля }
+ * @param opts — { targets: dailyTargets(profile) из domain/targets.js, goals: id целей из профиля }
  * @returns [{ id, icon, tone, title, text }]; icon: water | fiber | walk | slow | warm | calm | photo; tone: calm | mild | sens
  */
 export function suggestionsFor(day, sc, opts = {}) {
   if (!day) return [];
-  const waterGoal = (opts.targets && opts.targets.waterMl) || WATER_GOAL_ML;
-  const fiberGoal = (opts.targets && opts.targets.fiberG) || FIBER_GOAL_G;
+  const targets = opts.targets || dailyTargets(null);
+  const waterGoal = targets.waterMl, fiberGoal = targets.fiberG;
   const goals = new Set(opts.goals || []);
 
   const water = waterOf(day), fiber = fiberOf(day);
@@ -29,7 +33,7 @@ export function suggestionsFor(day, sc, opts = {}) {
   const noStool = day.gut.some((g) => g.type === 0) && !typed.length;
   const sym = new Set(day.gut.flatMap((g) => g.sym).filter((s) => s !== SYMPTOM_OK));
   const stress = Math.max(-1, ...day.gut.map((g) => (g.stress == null ? -1 : g.stress)));
-  const glassesLeft = Math.max(1, Math.min(4, Math.ceil((waterGoal - water) / GLASS_ML)));
+  const glassesLeft = Math.max(1, Math.min(4, Math.round((waterGoal - water) / GLASS_ML)));
 
   const out = [];
   const add = (s) => { if (out.length < MAX && !out.some((x) => x.id === s.id)) out.push(s); };
@@ -39,7 +43,7 @@ export function suggestionsFor(day, sc, opts = {}) {
     id: 'fiber', icon: 'fiber', tone: 'sens', title: 'Можно добавить овощи к еде',
     text: goals.has('bloat')
       ? 'Добавляй клетчатку понемногу — так обычно меньше вздутия'
-      : fiber == null ? 'Еды за сегодня пока нет в записях — овощи или каша подойдут' : 'Клетчатки сегодня пока меньше твоего ориентира'
+      : fiber == null ? 'Еды за сегодня пока нет в записях — овощи, цельные злаки, бобовые' : 'Клетчатки сегодня пока меньше ориентира ВОЗ'
   });
   const waterLow = (share) => water < waterGoal * share;
   const fiberLow = (share) => fiber == null || fiber < fiberGoal * share;
@@ -48,26 +52,25 @@ export function suggestionsFor(day, sc, opts = {}) {
 
   // стул твёрже обычного (1–2) или его не было
   if (last === 1 || last === 2 || noStool) {
-    if (waterLow(0.75)) waterTip('Жидкость часто делает стул мягче');
+    if (waterLow(0.75)) waterTip('С клетчаткой и водой стул обычно мягче');
     if (fiberLow(0.6)) fiberTip();
-    if (noStool && goals.has('stool')) add({ id: 'morning', icon: 'warm', tone: 'mild', title: 'Тёплый напиток утром', text: 'Многим он помогает кишечнику проснуться' });
-    add({ id: 'walk', icon: 'walk', tone: 'mild', title: 'Если есть силы — прогулка', text: 'Лёгкое движение многим помогает кишечнику' });
+    add({ id: 'walk', icon: 'walk', tone: 'mild', title: 'Если есть силы — прогулка', text: 'Движение помогает кишечнику работать ровнее' });
   }
 
   // стул жидкий (6–7)
   if (last === 6 || last === 7) {
-    add({ id: 'sip', icon: 'water', tone: 'sens', title: 'Пей понемногу в течение дня', text: 'Так проще восполнить жидкость' });
-    add({ id: 'warm', icon: 'warm', tone: 'mild', title: 'Подойдёт простая тёплая еда', text: 'Рис, бананы, суп — многим так спокойнее' });
+    add({ id: 'sip', icon: 'water', tone: 'sens', title: 'Пей понемногу в течение дня', text: 'При жидком стуле важно восполнять жидкость' });
+    add({ id: 'eat', icon: 'warm', tone: 'mild', title: 'Можно есть как обычно', text: 'Если это держится несколько дней или есть кровь — лучше показаться врачу' });
   }
 
   if (sym.has('Вздутие') || sym.has('Газы')) {
-    add({ id: 'slow', icon: 'slow', tone: 'mild', title: 'Можно есть чуть медленнее', text: 'Спокойный темп иногда уменьшает вздутие' });
+    add({ id: 'slow', icon: 'slow', tone: 'mild', title: 'Можно есть чуть медленнее', text: 'Регулярная еда без спешки помогает при вздутии' });
   }
   if (sym.has('Боль') || sym.has('Тяжесть')) {
-    add({ id: 'rest', icon: 'warm', tone: 'mild', title: 'Тёплое питьё и отдых', text: 'Если боль сильная или повторяется — лучше обсудить с врачом' });
+    add({ id: 'pain', icon: 'calm', tone: 'mild', title: 'Прислушайся к боли', text: 'Если она сильная или повторяется — лучше показаться врачу' });
   }
   if (stress >= 6) {
-    add({ id: 'calm', icon: 'calm', tone: 'mild', title: 'Пара минут спокойного дыхания', text: 'Стресс часто отражается на кишечнике' });
+    add({ id: 'calm', icon: 'calm', tone: 'mild', title: 'Найди время на отдых', text: 'Стресс часто отражается на кишечнике' });
   }
 
   // ---------- цели из онбординга ----------
@@ -76,12 +79,12 @@ export function suggestionsFor(day, sc, opts = {}) {
     add({ id: 'photo', icon: 'photo', tone: 'mild', title: 'Сфотографируй, что ешь', text: 'Так проще увидеть, как еда влияет на самочувствие' });
   }
   if (goals.has('bloat') && !sym.has('Вздутие') && day.meals.length) {
-    add({ id: 'slow', icon: 'slow', tone: 'mild', title: 'Можно есть чуть медленнее', text: 'Спокойный темп часто помогает обойтись без вздутия' });
+    add({ id: 'slow', icon: 'slow', tone: 'mild', title: 'Можно есть чуть медленнее', text: 'Регулярная еда без спешки помогает обойтись без вздутия' });
   }
 
   // ---------- вода и клетчатка к личному ориентиру ----------
 
-  if (waterLow(goals.has('stool') ? 0.75 : 0.5)) waterTip('До твоего ориентира ещё ' + litres(waterGoal - water) + ' л');
+  if (waterLow(goals.has('stool') ? 0.75 : 0.5)) waterTip('До ориентира на день ещё ' + litres(waterGoal - water) + ' л');
   if (fiber != null && fiberLow(0.6)) fiberTip();
 
   if (!out.length && sc && sc.idx >= 80) {

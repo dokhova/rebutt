@@ -59,6 +59,8 @@
 .home-label { font-size: 17px; font-weight: 300; }
 
 .home-h2 { margin: 16px 0 4px 2px; font-size: 30px; line-height: 34px; font-weight: 300; letter-spacing: -.01em; }
+.h2-row { display: flex; align-items: center; gap: 8px; }
+.h2-row .info-btn { margin-top: 14px; }
 
 .metrics { padding: 24px 18px 18px; display: flex; flex-direction: column; gap: 20px; background: rgba(36, 33, 43, .72); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); }
 .metric-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 0 4px; }
@@ -77,9 +79,13 @@
 .mbar-fill.empty { background: transparent; }
 
 .metric-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.metric-tile { width: 100%; align-items: stretch; color: var(--ink); font: inherit; text-align: left; cursor: pointer; padding: 16px; border-radius: 20px; background: rgba(248, 247, 242, .05); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.metric-tile > * { width: 100%; box-sizing: border-box; }
+.metric-tile { padding: 16px; border-radius: 20px; background: rgba(248, 247, 242, .05); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .metric-tile-head { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+.metric-tile-name { flex-grow: 1; min-width: 0; }
+/* значение и полоска — одна кнопка: открывает нужный раздел «+» */
+.metric-tile-body { display: flex; flex-direction: column; gap: 12px; width: 100%; padding: 0; border: 0; background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.metric-tile-body .mbar { display: block; width: 100%; }
+.metric-tile-body .mbar-fill { display: block; }
 .metric-tile-value { font-size: 34px; font-weight: 200; line-height: 1; white-space: nowrap; }
 /* не отмечено: спокойная подпись вместо прочерка — той же высоты, что цифра, чтобы блоки не прыгали */
 .metric-value.is-empty, .metric-tile-value.is-empty { text-align: left; align-self: stretch; font-size: 15px; font-weight: 300; color: var(--muted); line-height: 38px; height: 38px; }
@@ -97,13 +103,8 @@
 .tip-icon.sens { background: rgba(167, 139, 250, .14); color: var(--tone-sens); }
 .tip-title { font-size: 16px; line-height: 21px; }
 
-.empty { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.empty-art { opacity: .55; }
-.empty-text { color: var(--muted); font-size: 15px; text-align: center; }
 
 /* ================= Новая запись ================= */
-.add-date { color: var(--muted); font-size: 13px; }
-.add-title { margin: 6px 0 0; font-size: 30px; font-weight: 500; line-height: 1.12; letter-spacing: -.6px; }
 
 .type-list { display: flex; gap: 8px; overflow-x: auto; margin: 0 -18px; padding: 2px 18px; scroll-snap-type: x mandatory; scroll-padding: 18px; }
 .type-card { width: 92px; min-height: 132px; border-radius: 22px; border: 1px solid rgba(255, 255, 255, .08); background: var(--surface-2); display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px 12px; box-sizing: border-box; scroll-snap-align: start; }
@@ -158,21 +159,7 @@
 .bar-value { font-size: 13px; font-weight: 500; }
 .stat { font-weight: 600; }
 
-/* ================= ИИ-помощник: панель снизу ================= */
-.sheet-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, .55); z-index: 20; }
-.sheet {
-  position: absolute; left: 0; right: 0; bottom: 0; z-index: 21; height: 86%; box-sizing: border-box;
-  display: flex; flex-direction: column; border-radius: 24px 24px 0 0; background: #1C1A21; border-top: 1px solid var(--line-3);
-}
-.slide-up { animation: slide-up .28s ease-out; }
-@keyframes slide-up { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
-.sheet-handle { width: 40px; height: 5px; border-radius: 3px; background: var(--dim); margin: 8px auto 0; flex-shrink: 0; }
-.sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px 4px 20px; flex-shrink: 0; }
-.sheet-head .icon-btn { width: 36px; height: 36px; margin-right: 8px; background: var(--surface-3); }
-.sheet-title { font-size: 17px; font-weight: 600; }
-.sheet-body { flex-grow: 1; overflow-y: auto; overscroll-behavior: contain; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 14px; }
-.sheet-foot { flex-shrink: 0; padding: 10px 16px calc(12px + var(--safe-bottom)); display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); }
-
+/* ================= ИИ-помощник ================= */
 .chat { display: flex; flex-direction: column; gap: 10px; }
 .bubble-q { align-self: flex-end; max-width: 80%; padding: 10px 14px; border-radius: 18px 18px 4px 18px; background: var(--surface-4); font-size: 15px; display: flex; flex-direction: column; gap: 8px; }
 .bubble-a { align-self: flex-start; max-width: 92%; padding: 2px 2px; font-size: 15px; line-height: 1.55; animation: fade-in .3s ease-out; }
@@ -205,7 +192,6 @@
 .version { color: var(--muted); font-size: 13px; text-align: center; margin-top: -12px; }
 .inline-unit { display: inline-flex; align-items: center; gap: 6px; }
 .inline-input.short { width: 64px; font-variant-numeric: tabular-nums; }
-.profile-targets { padding-top: 10px; }
 
 /* ================= Документ внутри приложения ================= */
 .legal-doc { font-size: 15px; line-height: 1.55; color: #DCD9E2; }
@@ -258,14 +244,6 @@
 .add-sheet-titles { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .add-sheet-title { font-size: 30px; line-height: 34px; font-weight: 300; }
 .add-sheet-body { gap: 20px; padding-bottom: calc(28px + var(--safe-bottom)); }
-
-/* «?» у заголовка */
-.h2-row { position: relative; display: flex; align-items: center; gap: 8px; }
-.h2-row .home-h2 { margin-right: 0; }
-/* «?» маленький, но область нажатия 44px за счёт псевдоэлемента */
-.info-btn { position: relative; width: 20px; height: 20px; margin-top: 14px; border-radius: 50%; border: 1px solid var(--line-control); background: transparent; color: var(--muted); font-size: 12px; font-weight: 500; line-height: 1; padding: 0; flex-shrink: 0; }
-.info-btn::after { content: ""; position: absolute; inset: -12px; }
-.info-pop { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 5; padding: 14px 16px; border-radius: 18px; background: var(--surface-4); border: 1px solid var(--line-3); box-shadow: 0 12px 30px rgba(0, 0, 0, .45); font-size: 14px; line-height: 1.45; cursor: pointer; }
 
 .water-now { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0; }
 .water-value { font-size: 56px; font-weight: 200; line-height: 1; letter-spacing: -.03em; }

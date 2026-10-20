@@ -48,7 +48,8 @@
 | `nav_clicked` (`to: add_entry`) | нажат «+» — показаны три карточки | `from` — экран под шторкой, `source` (`tab` / `empty_day`) |
 | `add_section_opened` | выбрана карточка «+» | `section` (`stool` / `food` / `water`) |
 | `add_sheet_closed` | «+» закрыли без сохранения («×», затемнение, крестик, «Назад») | — |
-| `tips_info_opened` | тап по «?» у «Что может помочь» | — |
+| `info_opened` | тап по «?» рядом с нормой или советом | `topic` (`fiber` / `water` / `targets` / `bristol` / `tips`), `screen` |
+| `source_opened` | переход по ссылке на источник в карточке «?» | `source` (`who_fiber` / `efsa_water` / `heaton` / `nice_ibs` / `nhs_bowel`), `topic` |
 | `water_changed` | ± жидкость в разделе «Жидкости» | `step_ml` (250, 150, 500, −250), `draft_ml` — сколько добавится к дню |
 | `stool_status_selected` | «Был» / «Не было» | `value` (`had` / `none` / `cleared`) |
 | `bristol_type_selected` | выбор типа | `bristol_type` 1–7 |

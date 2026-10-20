@@ -47,7 +47,7 @@ export function addEntryView(app) {
 
     // жидкости
     waterTotal: litres(totalWater),
-    waterGoal: 'из ' + litres(dailyTargets(p).waterMl) + ' л — твой ориентир на день',
+    waterGoal: 'из ' + litres(dailyTargets(p).waterMl) + ' л за день',
     waterBar: 'width: ' + Math.min(100, Math.round(totalWater / dailyTargets(p).waterMl * 100)) + '%',
     waterDelta: f.water ? (f.water > 0 ? '+' : '−') + Math.abs(f.water) + ' мл в этой записи' : savedWater ? 'уже записано ' + litres(savedWater) + ' л' : 'пока ничего не записано',
     waterSteps: WATER_STEPS.map(([ml, label]) => ({ label, ml: '+' + ml + ' мл', add: () => app.addWater(ml) })),

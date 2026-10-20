@@ -8,7 +8,7 @@
 //   <sc-if value="{{flag}}">         отрисовать содержимое, если flag истинно
 //   <sc-for list="{{arr}}" as="x">   повторить содержимое для каждого элемента, внутри доступны x и $index
 //   <sc-include name="today">        вставить фрагмент шаблона, зарегистрированный через registerPartial
-//   <sc-component name="Gut" tone="calm">  вложенный компонент; атрибуты → props (kebab-case → camelCase)
+//   <sc-component name="Pebble" type="4">  вложенный компонент; атрибуты → props (kebab-case → camelCase)
 //
 // Компонент — класс-наследник Component с методом view(), который возвращает значения для шаблона.
 // Корневой компонент хранит state; setState перерисовывает интерфейс в следующем микротаске.

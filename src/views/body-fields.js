@@ -1,4 +1,4 @@
-// Рост и вес — одни и те же поля в онбординге («О себе») и в профиле.
+// Рост и вес — одни и те же поля в онбординге («О себе») и в профиле. Нужны ИИ для советов; на нормы не влияют.
 import { HEIGHT_MIN, HEIGHT_MAX, WEIGHT_MIN, WEIGHT_MAX } from '../domain/catalog.js';
 import { validHeight, validWeight } from '../domain/profile.js';
 import { dailyTargets } from '../domain/targets.js';
@@ -17,8 +17,8 @@ export function bodyFieldsView(app) {
       heightCls: 'field-input body-input' + (badHeight ? ' invalid' : ''),
       weightCls: 'field-input body-input' + (badWeight ? ' invalid' : ''),
       error: badHeight ? 'Рост — от ' + HEIGHT_MIN + ' до ' + HEIGHT_MAX + ' см' : badWeight ? 'Вес — от ' + WEIGHT_MIN + ' до ' + WEIGHT_MAX + ' кг' : '',
-      // ориентир на день — сразу видно, зачем мы спрашиваем
-      targets: 'Ориентир на день: вода ' + litres(t.waterMl) + ' л, клетчатка ' + t.fiberG + ' г'
+      // нормы по ВОЗ и EFSA (зависят от пола и беременности, не от веса) — в профиле, с «?» и источниками
+      targets: 'вода ' + litres(t.waterMl) + ' л · клетчатка ' + t.fiberG + ' г'
     }
   };
 }

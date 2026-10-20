@@ -89,7 +89,7 @@ export default class App extends Component {
       onbStep: 'consent', consent: false,
       legal: null,        // открытый документ: { id, title, html, error }
       assistant: false,   // открыта панель ИИ-помощника
-      tipInfo: false,     // открыта подсказка «?» у «Что может помочь»
+      info: null,         // открытая карточка «?» — откуда норма или совет: id из domain/sources.js → infoCards
       // шторка «+» поверх экрана: null | 'pick' — выбор из трёх карточек | 'stool' | 'food' | 'water' — форма раздела
       addSheet: IS_DEMO && location.hash === '#add' ? 'pick' : null,
       chat: [],           // диалог: [{ role: 'user' | 'ai', text, shown?, image? }]; shown — сколько текста уже показано
@@ -164,7 +164,7 @@ export default class App extends Component {
         !!prev.legal !== !!s.legal || !!prev.mealEdit !== !!s.mealEdit || !!prev.entryEdit !== !!s.entryEdit) {
       if (this.scrollEl) this.scrollEl.scrollTop = 0;
       this.onScreenShown();
-    } else if (prev.assistant !== s.assistant || prev.addSheet !== s.addSheet) {
+    } else if (prev.assistant !== s.assistant || prev.addSheet !== s.addSheet || prev.info !== s.info) {
       // панель ИИ и шторка «+» открываются поверх — экран под ними не прокручиваем
       syncBackButton(this.canGoBack(), this.handleBack);
       if (s.assistant) setScreen('assistant');
@@ -271,14 +271,15 @@ export default class App extends Component {
   /** Есть ли куда вернуться: документ, профиль, не первый шаг онбординга */
   canGoBack() {
     const s = this.state;
-    if (s.legal || s.mealEdit || s.entryEdit || s.assistant || s.addSheet || s.screen === 'profile') return true;
+    if (s.info || s.legal || s.mealEdit || s.entryEdit || s.assistant || s.addSheet || s.screen === 'profile') return true;
     return s.screen === 'onboarding' && this.onboardingFlow().indexOf(s.onbStep) > 0;
   }
 
   /** «Назад» — и кнопка в интерфейсе, и нативная кнопка Telegram */
   back() {
     const s = this.state;
-    if (s.addSheet) { if (s.addSheet === 'pick') this.closeAddSheet(); else this.backToAddPicker(); }
+    if (s.info) this.closeInfo();
+    else if (s.addSheet) { if (s.addSheet === 'pick') this.closeAddSheet(); else this.backToAddPicker(); }
     else if (s.assistant) this.closeAssistant();
     else if (s.legal) this.closeLegalDoc();
     else if (s.mealEdit) this.closeMeal();
@@ -497,11 +498,19 @@ export default class App extends Component {
   /** Лёгкая отдача при каждом шаге ползунка (в Telegram) */
   hapticTick() { hapticSelection(); }
 
-  /** «?» у «Что может помочь»: подсказки — не диагноз */
-  toggleTipInfo() {
-    const open = !this.state.tipInfo;
-    this.setState({ tipInfo: open });
-    if (open) track('tips_info_opened');
+  // ---------- «?»: откуда норма или совет ----------
+
+  openInfo(topic) {
+    this.setState({ info: topic });
+    track('info_opened', { topic, screen: SCREEN_EVENT_NAME[this.state.screen] || this.state.screen });
+  }
+
+  closeInfo() { this.setState({ info: null }); }
+
+  /** Ссылка на источник: в Telegram — через openLink, в браузере — обычная ссылка в новой вкладке */
+  openSource(id, url, event) {
+    track('source_opened', { source: id, topic: this.state.info });
+    openTelegramLink(url, event);
   }
 
   closeAddSheet() {

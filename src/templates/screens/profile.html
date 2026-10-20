@@ -19,7 +19,7 @@
   <div class="list-row"><label class="muted" for="profHeight">Рост</label><span class="inline-unit"><input id="profHeight" class="inline-input short" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" placeholder="—" value="{{body.height}}" onChange="{{body.setHeight}}"><span class="muted">см</span></span></div>
   <div class="list-row"><label class="muted" for="profWeight">Вес</label><span class="inline-unit"><input id="profWeight" class="inline-input short" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" placeholder="—" value="{{body.weight}}" onChange="{{body.setWeight}}"><span class="muted">кг</span></span></div>
   <sc-if value="{{body.error}}"><div class="hint body-error">{{body.error}}</div></sc-if>
-  <div class="hint profile-targets">{{body.targets}}</div>
+  <div class="list-row"><span class="muted">Нормы на день <button class="info-btn" onClick="{{info.targets}}" aria-label="Откуда нормы воды и клетчатки">?</button></span><span class="num">{{body.targets}}</span></div>
 </div>
 
 <div class="settings">

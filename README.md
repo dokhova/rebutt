@@ -66,7 +66,8 @@ npx vercel dev               # фронт + /api на http://localhost:3000
 | Тексты документов | `public/legal/*.html`; после правки поднять `LEGAL_VERSION` в `src/config.js` |
 | Цели, симптомы, типы стула, блюда-примеры | `src/domain/catalog.js` |
 | Формула «работы кишечника» | `src/domain/score.js` |
-| Личные ориентиры клетчатки и воды (от веса, пола, возраста, целей) | `src/domain/targets.js`; значения по умолчанию — `FIBER_GOAL_G`, `WATER_GOAL_ML` в `src/domain/catalog.js` |
+| Нормы клетчатки (ВОЗ) и воды (EFSA) | `src/domain/targets.js` |
+| Источники норм и советов, тексты карточек «?» | `src/domain/sources.js` |
 | Кнопки «Стакан / Чашка / Бутылка» | `src/domain/catalog.js` → `WATER_STEPS` |
 | Что ИИ знает о пользователе | `src/domain/ai-context.js` |
 | Подсказки «Что может помочь» на главной | `src/domain/suggestions.js` |
