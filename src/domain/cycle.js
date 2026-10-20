@@ -6,7 +6,7 @@ import { diffDays } from './dates.js';
  * profile.lastAgo — сколько дней назад от сегодня начались последние месячные.
  */
 export function cycleDay(profile, dayK, todayK) {
-  if (!profile.cycle || profile.lastUnknown || profile.pregnant) return 0;
+  if (!profile.cycle || profile.lastUnknown || profile.pregnant || profile.menopause) return 0;
   const sinceStart = diffDays(dayK, todayK) + profile.lastAgo;
   const len = profile.len;
   return ((sinceStart % len) + len) % len + 1;
@@ -14,6 +14,8 @@ export function cycleDay(profile, dayK, todayK) {
 
 /** День считается днём месячных: первые 5 дней цикла или отмечено вручную */
 export const isPeriodDay = (profile, day, cd) => profile.cycle && ((cd >= 1 && cd <= 5) || !!day.period);
+
+export const MENOPAUSE_NOTE = ['Менопауза', 'Когда эстрогена становится меньше, кишечник у многих работает медленнее — вздутие и запоры в этот период бывают чаще. Помогают вода, клетчатка и движение. Если что-то беспокоит — это стоит обсудить с врачом.'];
 
 export const PREGNANCY_NOTE = ['Беременность', 'Прогестерон немного замедляет кишечник, поэтому вздутие и более редкий стул — частая история. Помогают вода, клетчатка и прогулки. Добавки и любые средства лучше обсудить с врачом, который ведёт беременность.'];
 

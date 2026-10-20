@@ -9,6 +9,7 @@ import { legalView } from './legal.js';
 import { mealView } from './meal.js';
 import { assistantView } from './assistant.js';
 import { entryView } from './entry.js';
+import { waterView } from './water.js';
 
 export { shellView } from './shell.js';
 
@@ -22,6 +23,7 @@ export const VIEWS = {
   legal: legalView,
   meal: mealView,
   entry: entryView,
+  water: waterView,
   // панель поверх экрана
   assistant: assistantView
 };

@@ -3,6 +3,7 @@ import { LEGAL_DOCS } from '../config.js';
 import { AGE_MIN, AGE_MAX, GOALS, LAST_PERIOD_OPTIONS, CYCLE_OPTIONS } from '../domain/catalog.js';
 import { yearsWord } from '../domain/dates.js';
 import { bodyFieldsView } from './body-fields.js';
+import { noCyclePhases } from '../domain/profile.js';
 
 export function onboardingView(app) {
   const s = app.state, p = s.profile, step = s.onbStep;
@@ -63,6 +64,6 @@ export function onboardingView(app) {
       return { label, on, cls: 'chip' + (on ? ' on' : ''), pick: () => app.setLastPeriod(daysAgo) };
     }),
     cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: 'chip' + (p[id] ? ' on' : ''), pick: () => app.toggleCycleOption(id) })),
-    askLastPeriod: !p.pregnant
+    askLastPeriod: !noCyclePhases(p)
   };
 }

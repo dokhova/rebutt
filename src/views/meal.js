@@ -10,7 +10,6 @@ export function mealView(app) {
     mealFound: true,
     mealWhen: dayMonth(me.day) + ', ' + meal.time,
     card: mealCard(meal),
-    noteText: meal.note,
     fix: me.fix,
     onFix: (e) => app.setMealFix(e.target.value),
     fixCls: 'btn secondary' + (me.fix.trim() && !me.fixing ? '' : ' off'),

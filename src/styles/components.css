@@ -26,7 +26,8 @@
   background: rgba(43, 40, 51, .72); border: 1px solid rgba(255, 255, 255, .12); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
 }
 
-.toast { position: absolute; left: 50%; top: 52px; transform: translateX(-50%); padding: 12px 20px; border-radius: 22px; background: var(--ink); color: var(--accent-ink); font-size: 14px; white-space: nowrap; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
+/* тост поверх всего — и шторки «+», и карточки «?»; длинный текст переносится, а не обрезается */
+.toast { position: absolute; left: 50%; top: 52px; transform: translateX(-50%); z-index: 50; width: max-content; max-width: calc(100% - 32px); box-sizing: border-box; padding: 12px 20px; border-radius: 22px; background: var(--ink); color: var(--accent-ink); font-size: 14px; line-height: 1.35; text-align: center; white-space: normal; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
 
 /* ---------- заголовки ---------- */
 .topbar { display: flex; align-items: center; justify-content: space-between; height: 44px; }
@@ -66,6 +67,7 @@
 .row-title.strong { font-weight: 500; }
 .row-sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
 .row-sub.wrap { line-height: 1.4; }
+.row-title.wrap { line-height: 1.3; overflow-wrap: anywhere; }
 .row-time { color: var(--muted); font-size: 14px; }
 .icon-tile { width: 44px; height: 44px; border-radius: 14px; background: var(--surface-3); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
@@ -164,8 +166,8 @@
 /* ---------- «?» и карточка источников ---------- */
 /* «?» рядом с нормой или заголовком: маленький, но область нажатия 44px за счёт псевдоэлемента.
    Открывает карточку источников (partials/info-card.html) */
-.info-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--line-control); background: transparent; color: var(--muted); font-size: 12px; font-weight: 500; line-height: 1; padding: 0; flex-shrink: 0; }
-.info-btn::after { content: ""; position: absolute; inset: -12px; }
+.info-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--line-control); background: transparent; color: var(--muted); font-size: 10px; font-weight: 500; line-height: 1; padding: 0; flex-shrink: 0; }
+.info-btn::after { content: ""; position: absolute; inset: -14px; } /* кружок маленький, а нажимать удобно */
 /* карточка «?» — поверх всего, в том числе поверх «+» */
 .info-backdrop { z-index: 30; }
 .info-sheet { z-index: 31; height: auto; max-height: 86%; }

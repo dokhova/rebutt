@@ -75,6 +75,7 @@ function profileToRow(p, todayK) {
     cycle_length: p.len || 28,
     pregnant: !!p.pregnant,
     coc: !!p.coc,
+    menopause: !!p.menopause,
     reminder_am: !!p.am,
     reminder_pm: !!p.pm,
     onboarded_at: p.onboardedAt || null,
@@ -97,6 +98,7 @@ function rowToProfile(r, todayK) {
     len: r.cycle_length || 28,
     pregnant: !!r.pregnant,
     coc: !!r.coc,
+    menopause: !!r.menopause,
     am: !!r.reminder_am,
     pm: !!r.reminder_pm,
     onboardedAt: r.onboarded_at,
@@ -166,18 +168,20 @@ async function withUser(fn) {
   return user ? fn(user) : true;
 }
 
+// колонки из поздних миграций: если миграция ещё не применена, сохраняем профиль без них
+const OPTIONAL_PROFILE_COLUMNS = ['height_cm', 'weight_kg', 'menopause'];
+
 export const saveProfile = (p, todayK) =>
   withUser(async (u) => {
-    const row = { id: u.id, ...profileToRow(p, todayK) };
-    const { error } = await supabase.from('profiles').upsert(row);
-    if (!error) return true;
-    // миграция с ростом и весом ещё не применена — сохраняем остальное, чтобы профиль не терялся
-    if (/height_cm|weight_kg/.test(error.message || '')) {
-      console.warn('[store] нет колонок height_cm / weight_kg — примените миграцию 20261020100000_profile_body.sql');
-      const { height_cm: _h, weight_kg: _w, ...rest } = row; // eslint-disable-line no-unused-vars
-      return run('profile', supabase.from('profiles').upsert(rest));
+    let row = { id: u.id, ...profileToRow(p, todayK) };
+    for (let attempt = 0; attempt <= OPTIONAL_PROFILE_COLUMNS.length; attempt++) {
+      const { error } = await supabase.from('profiles').upsert(row);
+      if (!error) return true;
+      const missing = OPTIONAL_PROFILE_COLUMNS.filter((c) => c in row && (error.message || '').includes(c));
+      if (!missing.length) { console.warn('[store] profile:', error.message); return false; }
+      console.warn('[store] нет колонок ' + missing.join(', ') + ' — примените миграции из supabase/migrations');
+      row = Object.fromEntries(Object.entries(row).filter(([k]) => !missing.includes(k)));
     }
-    console.warn('[store] profile:', error.message);
     return false;
   });
 

@@ -30,6 +30,7 @@ const PROFILE_SAVE_DELAY_MS = 700;
 const DRUM_ROW_PX = 40;
 const BOOT_TIMEOUT_MS = 6000;
 const SENTENCE_DELAY_MS = 900;
+const WATER_MAX_ML = 20000;
 
 /** Имена экранов в аналитике */
 const SCREEN_EVENT_NAME = { today: 'today', add: 'add_entry', insights: 'insights', profile: 'profile' };
@@ -52,6 +53,21 @@ const blankForm = () => ({
   fix: '',            // текст уточнения
   fixing: false       // идёт пересчёт
 });
+
+/** Понятный текст ошибки ИИ вместо технического («Failed to fetch», «Сервер ответил 502» и т.п.) */
+function friendlyAiError(e, what = 'разобрать блюдо') {
+  const msg = String((e && e.message) || e || '');
+  if (/Не похоже на еду|Добавьте фото|Слишком много запросов|Фото слишком большое|Нужно фото|не ответил за/.test(msg)) return msg;
+  if (/Нет авторизации|Сессия недействительна|401/.test(msg)) return 'Не получилось ' + what + ': перезапустите приложение из Telegram-бота';
+  if (/fetch|network|Load failed|NetworkError/i.test(msg)) return 'Не получилось ' + what + ': нет связи с сервером. Проверьте интернет и попробуйте ещё раз';
+  return 'Не получилось ' + what + '. Попробуйте ещё раз через минуту';
+}
+
+/** Текущее значение поля из DOM: onChange срабатывает только при потере фокуса, а нажать «Сохранить» можно раньше */
+function liveValue(id, fallback) {
+  const el = typeof document !== 'undefined' && document.getElementById(id);
+  return el ? el.value : fallback;
+}
 
 const isTextField = (el) => !!el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && el.type === 'text'));
 
@@ -97,6 +113,7 @@ export default class App extends Component {
       chatImage: '',      // фото, приложенное к следующему вопросу (blob-ссылка)
       entryEdit: null,    // правка записи о стуле: { day, id, draft }
       mealEdit: null,     // открытое сохранённое блюдо: { day, id, fix, fixing }
+      waterEdit: null,    // правка жидкости за день: { day, ml }
       keyboard: false,    // в фокусе текстовое поле — прячем нижнее меню
       avatarUrl: (tg && tg.photo_url) || '',
       profile, log,
@@ -160,9 +177,19 @@ export default class App extends Component {
 
   componentDidUpdate(prev) {
     const s = this.state;
+    const overlay = (x) => !!(x.mealEdit || x.entryEdit || x.waterEdit);
     if (prev.screen !== s.screen || prev.onbStep !== s.onbStep || prev.booting !== s.booting ||
-        !!prev.legal !== !!s.legal || !!prev.mealEdit !== !!s.mealEdit || !!prev.entryEdit !== !!s.entryEdit) {
-      if (this.scrollEl) this.scrollEl.scrollTop = 0;
+        !!prev.legal !== !!s.legal || !!prev.mealEdit !== !!s.mealEdit || !!prev.entryEdit !== !!s.entryEdit || !!prev.waterEdit !== !!s.waterEdit) {
+      // закрыли запись, блюдо или жидкость — возвращаемся туда же, где были на «Сегодня»; иначе — наверх
+      const backFromOverlay = overlay(prev) && !overlay(s) && prev.screen === s.screen && !s.legal;
+      if (this.scrollEl) {
+        if (backFromOverlay && this.savedScroll != null) {
+          const top = this.savedScroll, el = this.scrollEl;
+          el.scrollTop = top;
+          requestAnimationFrame(() => { if (this.scrollEl === el) el.scrollTop = top; });
+        } else this.scrollEl.scrollTop = 0;
+      }
+      if (!overlay(s)) this.savedScroll = null;
       this.onScreenShown();
     } else if (prev.assistant !== s.assistant || prev.addSheet !== s.addSheet || prev.info !== s.info) {
       // панель ИИ и шторка «+» открываются поверх — экран под ними не прокручиваем
@@ -181,6 +208,7 @@ export default class App extends Component {
     if (s.assistant) { setScreen('assistant'); return; }
     if (s.mealEdit) { setScreen('meal'); return; }
     if (s.entryEdit) { setScreen('entry'); return; }
+    if (s.waterEdit) { setScreen('water_edit'); return; }
     if (s.screen === 'onboarding') {
       setScreen('onboarding_' + s.onbStep);
       track('onboarding_step_viewed', { step: s.onbStep, step_index: this.onboardingFlow().indexOf(s.onbStep) + 1 });
@@ -194,7 +222,7 @@ export default class App extends Component {
   view() {
     const s = this.state;
     // Поверх экранов: загрузка → документ → блюдо → запись. ИИ-помощник — выезжающая панель поверх всего.
-    const screen = s.booting ? 'booting' : s.legal ? 'legal' : s.mealEdit ? 'meal' : s.entryEdit ? 'entry' : s.screen;
+    const screen = s.booting ? 'booting' : s.legal ? 'legal' : s.mealEdit ? 'meal' : s.entryEdit ? 'entry' : s.waterEdit ? 'water' : s.screen;
     return {
       ...shellView(this, screen),
       ...(VIEWS[screen] ? VIEWS[screen](this) : {}),
@@ -271,7 +299,7 @@ export default class App extends Component {
   /** Есть ли куда вернуться: документ, профиль, не первый шаг онбординга */
   canGoBack() {
     const s = this.state;
-    if (s.info || s.legal || s.mealEdit || s.entryEdit || s.assistant || s.addSheet || s.screen === 'profile') return true;
+    if (s.info || s.legal || s.mealEdit || s.entryEdit || s.waterEdit || s.assistant || s.addSheet || s.screen === 'profile') return true;
     return s.screen === 'onboarding' && this.onboardingFlow().indexOf(s.onbStep) > 0;
   }
 
@@ -284,6 +312,7 @@ export default class App extends Component {
     else if (s.legal) this.closeLegalDoc();
     else if (s.mealEdit) this.closeMeal();
     else if (s.entryEdit) this.closeEntry();
+    else if (s.waterEdit) this.closeWater();
     else if (s.screen === 'profile') this.navigate('today', 'back');
     else if (s.screen === 'onboarding') this.onboardingBack();
   }
@@ -427,10 +456,14 @@ export default class App extends Component {
     track('cycle_toggled', { enabled });
   }
 
-  /** Беременность или приём КОК (option: 'pregnant' | 'coc') */
+  /** Беременность, приём КОК или менопауза (option: 'pregnant' | 'coc' | 'menopause').
+   *  Менопауза не сочетается с беременностью и КОК — включение одного снимает другое. */
   toggleCycleOption(option) {
     const enabled = !this.state.profile[option];
-    this.updateProfile({ [option]: enabled }, option);
+    const patch = { [option]: enabled };
+    if (enabled && option === 'menopause') Object.assign(patch, { pregnant: false, coc: false });
+    if (enabled && option !== 'menopause') patch.menopause = false;
+    this.updateProfile(patch, option);
     track('cycle_option_toggled', { option, enabled });
   }
 
@@ -469,7 +502,7 @@ export default class App extends Component {
     if (!IS_DEMO) await signOut();
     this.onboardingStartedAt = Date.now();
     this.setState({
-      screen: 'onboarding', onbStep: 'consent', consent: false, legal: null, assistant: false, mealEdit: null, entryEdit: null, chat: [],
+      screen: 'onboarding', onbStep: 'consent', consent: false, legal: null, assistant: false, mealEdit: null, entryEdit: null, waterEdit: null, chat: [],
       profile: blankProfile(), log: {}, form: blankForm(), insights: null
     });
     this.showToast(ok ? 'Данные удалены' : 'Удалено на устройстве, сервер не ответил');
@@ -513,8 +546,11 @@ export default class App extends Component {
     openTelegramLink(url, event);
   }
 
+  /** Закрыли шторку без сохранения — черновик сбрасываем: в следующий раз форма открывается чистой */
   closeAddSheet() {
-    this.setState({ addSheet: null, keyboard: false });
+    clearTimeout(this.exampleTimer);
+    this.scanId = null;
+    this.setState({ addSheet: null, keyboard: false, form: blankForm() });
     track('add_sheet_closed');
   }
 
@@ -593,6 +629,7 @@ export default class App extends Component {
       type: g.type > 0 ? g.type : 4,
       sym: [...g.sym], color: g.color || '', stress: g.stress == null ? null : g.stress
     };
+    this.rememberScroll();
     this.setState({ entryEdit: { day: dayK, id, time: g.time, draft } });
     track('entry_opened');
   }
@@ -620,6 +657,61 @@ export default class App extends Component {
     if (!IS_DEMO) store.deleteGutEntry(e.id);
     this.showToast('Удалено');
     track('entry_deleted');
+  }
+
+  /** Запоминаем, где был экран «Сегодня», чтобы вернуться туда после записи */
+  rememberScroll() { if (this.scrollEl) this.savedScroll = this.scrollEl.scrollTop; }
+
+  // ---------- жидкость за любой день: поправить или удалить ----------
+
+  openWater(dayK) {
+    this.rememberScroll();
+    this.setState({ waterEdit: { day: dayK, ml: this.day(dayK).water || 0 } });
+    track('water_opened', { is_today: dayK === this.today() });
+  }
+
+  closeWater() { this.setState({ waterEdit: null }); }
+
+  stepWaterEdit(ml) {
+    const w = this.state.waterEdit, next = Math.max(0, Math.min(WATER_MAX_ML, w.ml + ml));
+    if (next !== w.ml) this.setState({ waterEdit: { ...w, ml: next } });
+  }
+
+  /** Ввод числа вручную, в мл */
+  setWaterEditMl(raw) {
+    const n = parseInt(String(raw).replace(/\D/g, ''), 10);
+    this.setState({ waterEdit: { ...this.state.waterEdit, ml: Number.isFinite(n) ? Math.min(WATER_MAX_ML, n) : 0 } });
+  }
+
+  writeWater(dayK, ml) {
+    const day = this.day(dayK), before = day.water || 0;
+    this.setState({ log: { ...this.state.log, [dayK]: { ...day, water: ml } }, waterEdit: null });
+    if (!IS_DEMO) store.setWaterDay(dayK, ml);
+    return before;
+  }
+
+  saveWaterEdit() {
+    const w = this.state.waterEdit, before = this.writeWater(w.day, w.ml);
+    this.showToast(w.ml ? 'Сохранено' : 'Удалено');
+    track('water_updated', { ml_before: before, ml_after: w.ml, is_today: w.day === this.today() });
+  }
+
+  deleteWater() {
+    const w = this.state.waterEdit;
+    if (!window.confirm('Удалить запись о жидкости за этот день?')) return;
+    this.writeWater(w.day, 0);
+    this.showToast('Удалено');
+    track('water_deleted', { is_today: w.day === this.today() });
+  }
+
+  /** Отметка «Месячные» в записях дня: удалить */
+  deletePeriod(dayK) {
+    if (!window.confirm('Убрать отметку о месячных за этот день?')) return;
+    const day = this.day(dayK);
+    this.setState({ log: { ...this.state.log, [dayK]: { ...day, period: false } } });
+    if (!IS_DEMO) store.setPeriodDay(dayK, false);
+    this.showToast('Удалено');
+    track('period_deleted');
   }
 
   setPeriodMark(value) {
@@ -654,7 +746,9 @@ export default class App extends Component {
 
   /** «Разобрать»: фото и/или описание → ИИ */
   async analyzeFoodDraft() {
-    const f = this.state.form, note = f.note.trim();
+    const typed = liveValue('foodNote', this.state.form.note);
+    if (typed !== this.state.form.note) this.setForm({ note: typed });
+    const f = this.state.form, note = typed.trim();
     if (!f.photo && !note) { this.showToast('Добавьте фото или опишите блюдо'); return; }
     if (IS_DEMO) { this.tryExampleMeal(f.photo ? 'photo' : 'text'); return; }
     const source = f.photo ? 'photo' : 'text';
@@ -670,7 +764,7 @@ export default class App extends Component {
     } catch (e) {
       if (this.scanId !== scanId) return;
       this.setForm({ food: 'pick' });
-      this.showToast(String(e.message || e).slice(0, 140));
+      this.showToast(friendlyAiError(e));
       track('food_analysis_failed', { source, reason: String(e.message || e).slice(0, 120), latency_ms: Date.now() - startedAt });
     }
   }
@@ -706,7 +800,7 @@ export default class App extends Component {
       track('food_reanalyzed', { where: 'draft', kcal: result.kcal });
     } catch (e) {
       this.setForm({ fixing: false });
-      this.showToast(String(e.message || e).slice(0, 140));
+      this.showToast(friendlyAiError(e, 'пересчитать блюдо'));
       track('food_reanalyze_failed', { where: 'draft', reason: String(e.message || e).slice(0, 120) });
     }
   }
@@ -716,6 +810,7 @@ export default class App extends Component {
   findMeal(dayK, id) { return this.day(dayK).meals.find((m) => m.id === id) || null; }
 
   openMeal(dayK, id) {
+    this.rememberScroll();
     this.setState({ mealEdit: { day: dayK, id, fix: '', fixing: false } });
     track('meal_opened');
   }
@@ -745,7 +840,7 @@ export default class App extends Component {
       track('food_reanalyzed', { where: 'saved', kcal: result.kcal });
     } catch (e) {
       this.setState({ mealEdit: { ...this.state.mealEdit, fixing: false } });
-      this.showToast(String(e.message || e).slice(0, 140));
+      this.showToast(friendlyAiError(e, 'пересчитать блюдо'));
       track('food_reanalyze_failed', { where: 'saved', reason: String(e.message || e).slice(0, 120) });
     }
   }
@@ -761,6 +856,19 @@ export default class App extends Component {
   }
 
   saveEntry() {
+    // Описание блюда набрано (или фото добавлено), но «Разобрать с ИИ» не нажали — разбираем сами,
+    // показываем результат, сохранить можно следующим нажатием
+    const typed = liveValue('foodNote', this.state.form.note);
+    if (typed !== this.state.form.note) this.setForm({ note: typed });
+    const draft = this.state.form;
+    if (draft.food === 'scan' || draft.fixing) { this.showToast('ИИ ещё разбирает блюдо — подождите пару секунд'); return; }
+    if (draft.food === 'pick' && (draft.photo || typed.trim())) {
+      track('food_autoanalyze_on_save', { has_photo: !!draft.photo });
+      if (this.state.addSheet !== 'food') this.setState({ addSheet: 'food', form: { ...this.state.form, section: 'food' } });
+      this.showToast('Разбираем блюдо — проверьте результат и нажмите «Сохранить»');
+      this.analyzeFoodDraft();
+      return;
+    }
     const f = this.state.form, k = this.today();
     if (!f.stool && !f.sym.length && f.stress == null && f.food !== 'done' && !f.period && !f.water) {
       this.showToast('Отметьте хотя бы что-то одно');

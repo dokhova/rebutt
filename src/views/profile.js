@@ -3,6 +3,7 @@ import { APP_VERSION, SUPPORT_URL, LEGAL_DOCS } from '../config.js';
 import { GOALS, CYCLE_OPTIONS } from '../domain/catalog.js';
 import { yearsWord, dayMonthShort, addDays } from '../domain/dates.js';
 import { bodyFieldsView } from './body-fields.js';
+import { noCyclePhases } from '../domain/profile.js';
 
 export function profileView(app) {
   const p = app.state.profile;
@@ -42,7 +43,7 @@ export function profileView(app) {
     cycleSwitch: sw(p.cycle),
     toggleCycle: () => app.toggleCycle(),
     cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: sw(p[id]), toggle: () => app.toggleCycleOption(id) })),
-    showCycleDates: p.cycle && !p.pregnant,
+    showCycleDates: p.cycle && !noCyclePhases(p),
     lastPeriod: p.lastUnknown ? 'не знаю' : dayMonthShort(addDays(app.today(), -p.lastAgo)),
     lastEarlier: () => app.setLastPeriod((p.lastUnknown ? 11 : p.lastAgo) + 1),
     lastLater: () => app.setLastPeriod((p.lastUnknown ? 11 : p.lastAgo) - 1),

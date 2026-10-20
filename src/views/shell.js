@@ -19,6 +19,7 @@ export function shellView(app, screen) {
       legal: screen === 'legal',
       meal: screen === 'meal',
       entry: screen === 'entry',
+      water: screen === 'water',
       onboarding: screen === 'onboarding',
       today: screen === 'today',
       insights: screen === 'insights',

@@ -28,6 +28,7 @@ function aiProfile(profile, todayK) {
     own_goal: (p.goals || []).includes('other') && p.other ? p.other : null,
     pregnant: !!p.pregnant,
     hormonal_contraception: p.coc ? 'КОК' : null,
+    menopause: !!p.menopause,
     cycle: cd ? { day: cd, length: p.len, phase: cyclePhase(cd, p.len, p.coc)[0] } : null,
     daily_targets: { water_ml: t.waterMl, fiber_g: t.fiberG },
     using_app_since: p.since ? p.since.slice(0, 10) : null

@@ -7,7 +7,7 @@ import { mealSummary, mealTint } from '../domain/meal.js';
 import { parseKey, addDays, dayMonth, WEEKDAYS_SHORT, WEEKDAYS_FULL } from '../domain/dates.js';
 import { gutScore, toneOf, TONE_COLOR, fiberOf, waterOf, hasData } from '../domain/score.js';
 import { suggestionsFor, litres } from '../domain/suggestions.js';
-import { cycleDay, cyclePhase, isPeriodDay, PREGNANCY_NOTE } from '../domain/cycle.js';
+import { cycleDay, cyclePhase, isPeriodDay, PREGNANCY_NOTE, MENOPAUSE_NOTE } from '../domain/cycle.js';
 import { DEMO_TIP_CALM } from '../domain/demo.js';
 
 // Дуга: нижняя полуокружность в SVG 350×300, центр (175, 115), радиус 155 — те же числа в templates/screens/today.html.
@@ -142,6 +142,7 @@ function tipsOf(s, day, sc, tone, isToday, todayK, opts) {
 
 /** Карточка цикла: беременность, фаза (на КОК — упрощённо) или ничего */
 function cycleCard(p, cd) {
+  if (p.cycle && p.menopause) return { showCycle: true, cycle: { caption: 'Цикл', phase: MENOPAUSE_NOTE[0], note: MENOPAUSE_NOTE[1] } };
   if (p.cycle && p.pregnant) return { showCycle: true, cycle: { caption: 'Цикл', phase: PREGNANCY_NOTE[0], note: PREGNANCY_NOTE[1] } };
   if (!cd) return { showCycle: false, cycle: null };
   const [phase, note] = cyclePhase(cd, p.len, p.coc);
@@ -150,7 +151,7 @@ function cycleCard(p, cd) {
 
 const colorLabel = (id) => ((STOOL_COLORS.find((c) => c.id === id) || {}).label || '').toLowerCase();
 
-/** Записи дня по времени. Стул, самочувствие и еду можно открыть и поправить. */
+/** Записи дня по времени. Любую запись можно открыть: поправить или удалить. */
 function timeline(app, dayK, day, profile) {
   const items = [];
   for (const g of day.gut) {
@@ -165,12 +166,13 @@ function timeline(app, dayK, day, profile) {
   for (const m of day.meals) {
     items.push({ kind: 'meal', tint: mealTint(m), photo: m.photo, title: m.name, sub: mealSummary(m), time: m.time, open: () => app.openMeal(dayK, m.id) });
   }
-  if (day.water > 0) items.push({ kind: 'water', title: 'Жидкость', sub: litres(day.water) + ' л за день', time: 'день', sortKey: '00:01' });
-  if (profile.cycle && day.period) items.push({ kind: 'period', title: 'Месячные', sub: 'отмечено вручную', time: 'день', sortKey: '00:00' });
+  if (day.water > 0) items.push({ kind: 'water', title: 'Жидкость', sub: litres(day.water) + ' л за день', time: 'день', sortKey: '00:01', open: () => app.openWater(dayK) });
+  if (profile.cycle && day.period) items.push({ kind: 'period', title: 'Месячные', sub: 'нажмите, чтобы убрать отметку', time: 'день', sortKey: '00:00', open: () => app.deletePeriod(dayK) });
   items.sort((a, b) => (a.sortKey || a.time).localeCompare(b.sortKey || b.time));
   return items.map((e) => ({
     ...e,
     rowCls: 'row' + (e.open ? ' tappable' : ''),
+    titleCls: 'row-title' + (e.kind === 'meal' ? ' wrap' : ' nowrap'),
     hasOpen: !!e.open,
     isStool: e.kind === 'stool', isMeal: e.kind === 'meal', isFeel: e.kind === 'feel', isPeriod: e.kind === 'period', isWater: e.kind === 'water'
   }));

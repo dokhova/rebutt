@@ -9,6 +9,7 @@ import { mealCard } from './meal-card.js';
 import { dayMonth } from '../domain/dates.js';
 import { gutScore } from '../domain/score.js';
 import { cycleDay } from '../domain/cycle.js';
+import { noCyclePhases } from '../domain/profile.js';
 
 export function addEntryView(app) {
   const s = app.state, f = s.form, p = s.profile, todayK = app.today();
@@ -57,7 +58,7 @@ export function addEntryView(app) {
 
     ...gutFormView(app, 'form'),
 
-    cycleEnabled: p.cycle && !p.pregnant,
+    cycleEnabled: p.cycle && !noCyclePhases(p),
     cycleDayKnown: cycleDay(p, todayK, todayK) > 0,
     cycleDay: cycleDay(p, todayK, todayK),
     periodNo: seg(f.period === 'no'),
@@ -79,7 +80,7 @@ export function addEntryView(app) {
     analyzeCls: 'btn secondary' + (f.photo || f.note.trim() ? '' : ' off'),
     analyze: () => app.analyzeFoodDraft(),
     scanTint: MEAL_TINT.mild,
-    card: f.result ? mealCard({ ...f.result, note: f.note }, f.photo) : null,
+    card: f.result ? mealCard(f.result, f.photo) : null,
     removeFood: () => app.removeFood(),
     fixOpen: f.fixOpen,
     fixClosed: !f.fixOpen,

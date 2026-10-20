@@ -71,6 +71,11 @@
 | `entry_updated` | запись исправлена | `stool_status`, `bristol_type`, `has_color`, `stress` |
 | `entry_deleted` | запись удалена | — |
 | `entry_save_blocked` | «Сохранить» без данных | `reason` |
+| `food_autoanalyze_on_save` | нажали «Сохранить» с описанием/фото блюда без разбора — ИИ запускается сам | `has_photo` |
+| `water_opened` | открыта запись «Жидкость» из «Записей дня» | `is_today` |
+| `water_updated` | количество жидкости за день исправлено | `ml_before`, `ml_after`, `is_today` |
+| `water_deleted` | запись о жидкости удалена | `is_today` |
+| `period_deleted` | отметка «Месячные» убрана из «Записей дня» | — |
 | `entry_saved` | запись сохранена | `stool_status`, `bristol_type`, `symptoms`, `symptoms_count`, `has_food`, `food_source`, `food_tone`, `period_mark`, `water_ml_added`, `water_ml_day`, `gut_score`, `score_before`, `score_delta`, `days_logged_last7`, `hour` |
 | `first_entry_saved` | первая запись пользователя | как у `entry_saved` |
 

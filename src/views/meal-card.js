@@ -8,7 +8,6 @@ export function mealCard(meal, photo) {
     stats: mealStats(meal),
     verdict: (meal.kcal || 0) + ' ккал · ' + meal.verdict,
     tip: meal.tip,
-    note: meal.note || '',
     tint: mealTint(meal),
     photo: photo || meal.photo || ''
   };

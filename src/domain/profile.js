@@ -7,14 +7,15 @@ import { GOALS, HEIGHT_MIN, HEIGHT_MAX, WEIGHT_MIN, WEIGHT_MAX } from './catalog
  *   height — рост, см; weight — вес, кг (по желанию, целые числа или null)
  *   cycle — учитывать цикл, lastUnknown — дата начала неизвестна,
  *   lastAgo — дней назад начались месячные, len — длина цикла
- *   pregnant — беременность (фазы цикла не считаются), coc — приём КОК (фазы сглажены)
+ *   pregnant — беременность (фазы цикла не считаются), coc — приём КОК (фазы сглажены),
+ *   menopause — менопауза (фазы цикла и даты месячных не считаются)
  *   am / pm — напоминания утром / вечером
  *   onboardedAt — ISO-время завершения онбординга (null — ещё не прошёл)
  *   since — 'YYYY-MM-DD', дата начала использования
  */
 export const blankProfile = () => ({
   name: '', age: 28, sex: '', height: null, weight: null, goals: [], other: '',
-  cycle: false, lastUnknown: false, lastAgo: 11, len: 28, pregnant: false, coc: false,
+  cycle: false, lastUnknown: false, lastAgo: 11, len: 28, pregnant: false, coc: false, menopause: false,
   am: true, pm: false, onboardedAt: null, since: ''
 });
 
@@ -46,10 +47,14 @@ export const profileTraits = (p) => ({
   cycle_enabled: !!p.cycle,
   pregnant: !!p.pregnant,
   coc: !!p.coc,
+  menopause: !!p.menopause,
   reminder_am: !!p.am,
   reminder_pm: !!p.pm,
   onboarded_at: p.onboardedAt
 });
+
+/** Беременность или менопауза: фазы цикла и даты месячных не считаем */
+export const noCyclePhases = (p) => !!(p.pregnant || p.menopause);
 
 /** Онбординг: согласие → о себе → цели → цикл (только для женщин) */
 export function onboardingFlow(profile) {

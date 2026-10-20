@@ -13,7 +13,7 @@ const num = (v, digits = 0) => {
 export function normalizeMeal(r) {
   const tone = TONES.includes(r.tone) ? r.tone : 'mild';
   return {
-    name: String(r.name || 'Блюдо').slice(0, 60),
+    name: String(r.name || 'Блюдо').slice(0, 80),
     kcal: num(r.kcal),
     protein: num(r.protein, 1),
     fat: num(r.fat, 1),
