@@ -2,6 +2,7 @@
 import { LEGAL_DOCS } from '../config.js';
 import { AGE_MIN, AGE_MAX, GOALS, LAST_PERIOD_OPTIONS, CYCLE_OPTIONS } from '../domain/catalog.js';
 import { yearsWord } from '../domain/dates.js';
+import { bodyFieldsView } from './body-fields.js';
 
 export function onboardingView(app) {
   const s = app.state, p = s.profile, step = s.onbStep;
@@ -44,6 +45,7 @@ export function onboardingView(app) {
       return { n, on: n === p.age, cls: 'drum-item' + (n === p.age ? ' on' : ''), pick: () => app.scrollAgeDrumTo(n) };
     }),
     setAgeDrum: app.setAgeDrum,
+    ...bodyFieldsView(app),
     onAgeScroll: (e) => app.onAgeDrumScroll(e.target.scrollTop),
 
     // цели

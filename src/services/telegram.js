@@ -18,6 +18,12 @@ export function initTelegram() {
   }
 }
 
+/** Лёгкий «щелчок» при выборе (шаг ползунка). Вне Telegram и на старых клиентах — ничего. */
+export function hapticSelection() {
+  const app = getTelegram();
+  if (app && app.isVersionAtLeast('6.1') && app.HapticFeedback) app.HapticFeedback.selectionChanged();
+}
+
 /** В браузере сохраняем стандартное поведение ссылки, включая модификаторы клика. */
 export function openTelegramLink(url, event, support = false) {
   const app = getTelegram();

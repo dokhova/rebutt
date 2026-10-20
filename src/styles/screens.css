@@ -21,6 +21,14 @@
 .drum-item { height: 40px; display: flex; align-items: center; justify-content: center; scroll-snap-align: center; font-size: 18px; color: var(--faint); cursor: pointer; transition: color .15s, font-size .15s; }
 .drum-item.on { color: var(--ink); font-size: 24px; font-weight: 500; }
 
+/* рост и вес */
+.body-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.body-field { position: relative; display: block; }
+.body-input { padding-right: 44px; font-variant-numeric: tabular-nums; }
+.body-unit { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 15px; pointer-events: none; }
+.field-input.invalid, .inline-input.invalid { border-color: var(--danger); }
+.body-error { color: var(--danger); }
+
 /* цели */
 .goal-list { display: flex; flex-direction: column; gap: 8px; }
 .goal { width: 100%; min-height: 60px; border-radius: 20px; border: 1px solid var(--line-control); background: transparent; display: flex; align-items: center; gap: 14px; padding: 0 18px; font-size: 15px; text-align: left; box-sizing: border-box; }
@@ -195,6 +203,9 @@
 .settings .chips { padding-top: 12px; }
 .danger-btn { border: 0; background: transparent; color: var(--danger); font-size: 14px; height: 48px; }
 .version { color: var(--muted); font-size: 13px; text-align: center; margin-top: -12px; }
+.inline-unit { display: inline-flex; align-items: center; gap: 6px; }
+.inline-input.short { width: 64px; font-variant-numeric: tabular-nums; }
+.profile-targets { padding-top: 10px; }
 
 /* ================= Документ внутри приложения ================= */
 .legal-doc { font-size: 15px; line-height: 1.55; color: #DCD9E2; }

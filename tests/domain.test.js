@@ -66,11 +66,15 @@ test('цикл: беременность отключает фазы, на КО�
   assert.equal(cyclePhase(20, 28, true)[0], 'Приём таблеток');
 });
 
-test('контекст для ИИ: только дни с данными за 14 дней', () => {
-  const log = { '2026-10-18': day([g(4)]), '2026-10-01': day([g(3)]), '2026-10-10': day([]) };
+test('контекст для ИИ: подробно — дни с данными за 30 дней, в сводке — всё время', () => {
+  const log = { '2026-10-18': day([g(4)]), '2026-10-01': day([g(3)]), '2026-09-01': day([g(2, ['Вздутие'])]), '2026-10-10': day([]) };
   const ctx = buildAiContext({ ...blankProfile(), name: 'А', sex: 'f', goals: ['stool'] }, log, '2026-10-18');
-  assert.deepEqual(ctx.days.map((d) => d.date), ['2026-10-18']);
+  assert.deepEqual(ctx.days.map((d) => d.date), ['2026-10-01', '2026-10-18']);
   assert.deepEqual(ctx.profile.goals, ['Наладить стул']);
+  assert.equal(ctx.summary.days_logged, 3);
+  assert.deepEqual(ctx.summary.bristol_type_counts, { 2: 1, 3: 1, 4: 1 });
+  assert.deepEqual(ctx.summary.symptom_days, { 'Вздутие': 1 });
+  assert.equal(ctx.profile.name, undefined); // имя ИИ не нужно
 });
 
 test('блюдо: нормализация ответа ИИ и КБЖУ', async () => {
@@ -136,4 +140,78 @@ test('подсказки: ровный день без пробелов — «м
 test('подсказки: тон бережный — без «надо» и «нужно»', () => {
   const d = dw([{ ...g(1, ['Боль', 'Вздутие']), stress: 9 }], [], 0);
   for (const s of suggestionsFor(d, gutScore(d))) assert.ok(!/(^|[^а-яё])(надо|нужно|должн)/i.test(s.title + ' ' + s.text), s.title);
+});
+
+
+// ---------- рост, вес, личные ориентиры, контекст ИИ ----------
+import { dailyTargets } from '../src/domain/targets.js';
+import { parseBodyInput, validHeight, validWeight, profileTraits } from '../src/domain/profile.js';
+import { foodContext, aiContextHash } from '../src/domain/ai-context.js';
+
+test('рост и вес: ввод только цифрами, диапазон проверяется отдельно', () => {
+  assert.equal(parseBodyInput('172 см'), 172);
+  assert.equal(parseBodyInput('62,5'), 625); // запятую выкидываем: вес — целые кг, 625 потом не пройдёт проверку
+  assert.equal(parseBodyInput(''), null);
+  assert.equal(parseBodyInput('12345'), 123);
+  assert.equal(validHeight(172), 172);
+  assert.equal(validHeight(17), null);
+  assert.equal(validWeight(62), 62);
+  assert.equal(validWeight(625), null);
+  const traits = profileTraits({ ...blankProfile(), height: 172, weight: 62 });
+  assert.equal(traits.has_height, true);
+  assert.equal(traits.has_weight, true);
+  assert.equal(traits.weight, undefined); // сам вес в аналитику не уходит
+});
+
+test('ориентиры: вода от веса, клетчатка от пола и возраста', () => {
+  assert.deepEqual(dailyTargets(blankProfile()), { waterMl: 2000, fiberG: 25, personal: false });
+  assert.equal(dailyTargets({ ...blankProfile(), sex: 'f', weight: 60 }).waterMl, 1800);
+  assert.equal(dailyTargets({ ...blankProfile(), sex: 'm', weight: 90 }).waterMl, 2700);
+  assert.equal(dailyTargets({ ...blankProfile(), weight: 40 }).waterMl, 1500); // не меньше 1,5 л
+  assert.equal(dailyTargets({ ...blankProfile(), weight: 140 }).waterMl, 3500); // не больше 3,5 л
+  assert.equal(dailyTargets({ ...blankProfile(), weight: 60, goals: ['stool'] }).waterMl, 2050);
+  assert.equal(dailyTargets({ ...blankProfile(), sex: 'f', weight: 60, pregnant: true }).waterMl, 2100);
+  assert.equal(dailyTargets({ ...blankProfile(), sex: 'f', age: 30 }).fiberG, 25);
+  assert.equal(dailyTargets({ ...blankProfile(), sex: 'f', age: 55 }).fiberG, 21);
+  assert.equal(dailyTargets({ ...blankProfile(), sex: 'm', age: 30 }).fiberG, 30);
+  assert.equal(dailyTargets({ ...blankProfile(), sex: 'f', pregnant: true }).fiberG, 28);
+  assert.equal(dailyTargets({ ...blankProfile(), weight: 17 }).waterMl, 2000); // вес вне диапазона не учитываем
+});
+
+test('подсказки учитывают личный ориентир воды', () => {
+  const d = dw([g(4)], [{ fiber: 20 }], 1500);
+  assert.deepEqual(suggestionsFor(d, gutScore(d), { targets: { waterMl: 1600, fiberG: 25 } }).map((x) => x.id), ['keep']);
+  assert.deepEqual(suggestionsFor(d, gutScore(d), { targets: { waterMl: 3500, fiberG: 25 } }).map((x) => x.id), ['water']);
+});
+
+test('подсказки учитывают цели: «реакция на еду» без блюд — сфотографировать еду', () => {
+  const d = dw([g(4)], [], 1800);
+  assert.ok(suggestionsFor(d, gutScore(d), { goals: ['food'] }).some((x) => x.id === 'photo'));
+  assert.ok(!suggestionsFor(d, gutScore(d), {}).some((x) => x.id === 'photo'));
+});
+
+test('подсказки: цель «Похудеть» не добавляет советов про калории', () => {
+  const d = dw([g(4)], [{ fiber: 20 }], 1800);
+  for (const s of suggestionsFor(d, gutScore(d), { goals: ['weight'] })) assert.ok(!/калори|похуд|вес/i.test(s.title + ' ' + s.text), s.title);
+});
+
+test('контекст ИИ: рост, вес, цели, свои слова и ориентиры', () => {
+  const p = { ...blankProfile(), sex: 'f', age: 31, height: 168, weight: 60, goals: ['bloat', 'other'], other: 'понять, что с кофе' };
+  const ctx = buildAiContext(p, { '2026-10-18': { ...day([g(4)], [{ id: 'm', time: '09:00', name: 'Овсянка', kcal: 300, fiber: 8 }]), water: 750 } }, '2026-10-18');
+  assert.equal(ctx.profile.height_cm, 168);
+  assert.equal(ctx.profile.weight_kg, 60);
+  assert.deepEqual(ctx.profile.goals, ['Избавиться от вздутия', 'Другое', 'понять, что с кофе']);
+  assert.equal(ctx.profile.own_goal, 'понять, что с кофе');
+  assert.deepEqual(ctx.profile.daily_targets, { water_ml: 1800, fiber_g: 25 });
+  assert.equal(ctx.days[0].water_ml, 750);
+  assert.equal(ctx.days[0].fiber_g, 8);
+  const fc = foodContext(p, { '2026-10-18': { ...day([], [{ id: 'm', time: '09:00', name: 'Овсянка', fiber: 8 }]), water: 750 } }, '2026-10-18');
+  assert.deepEqual(fc.today_so_far, { fiber_g: 8, water_ml: 750, meals: ['Овсянка'], symptoms: [] });
+});
+
+test('кэш инсайтов сбрасывается, когда меняется профиль', () => {
+  const log = { '2026-10-18': day([g(4)]) };
+  const a = aiContextHash(buildAiContext({ ...blankProfile(), weight: 60 }, log, '2026-10-18'));
+  const b = aiContextHash(buildAiContext({ ...blankProfile(), weight: 80 }, log, '2026-10-18'));
+  assert.notEqual(a, b);
 });

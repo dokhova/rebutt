@@ -8,7 +8,7 @@ export const DEMO_TODAY = '2026-09-26';
 
 export const demoProfile = () => ({
   ...blankProfile(),
-  name: 'Маша', age: 29, sex: 'f', goals: ['stool', 'bloat'], cycle: true,
+  name: 'Маша', age: 29, sex: 'f', height: 168, weight: 60, goals: ['stool', 'bloat'], cycle: true,
   onboardedAt: '2026-09-21', since: '2026-09-21'
 });
 

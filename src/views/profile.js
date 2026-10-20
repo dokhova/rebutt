@@ -2,6 +2,7 @@
 import { APP_VERSION, SUPPORT_URL, LEGAL_DOCS } from '../config.js';
 import { GOALS, CYCLE_OPTIONS } from '../domain/catalog.js';
 import { yearsWord, dayMonthShort, addDays } from '../domain/dates.js';
+import { bodyFieldsView } from './body-fields.js';
 
 export function profileView(app) {
   const p = app.state.profile;
@@ -25,6 +26,7 @@ export function profileView(app) {
     age: p.age,
     ageMinus: () => app.setAge(p.age - 1),
     agePlus: () => app.setAge(p.age + 1),
+    ...bodyFieldsView(app),
     sexF: chip(p.sex === 'f'),
     sexM: chip(p.sex === 'm'),
     pickF: () => app.setSex('f'),

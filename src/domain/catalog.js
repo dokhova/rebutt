@@ -2,6 +2,12 @@
 
 export const AGE_MIN = 18;
 export const AGE_MAX = 90;
+
+/** Рост и вес — по желанию, целыми числами. Вне диапазона считаем, что не указано. */
+export const HEIGHT_MIN = 120;
+export const HEIGHT_MAX = 230;
+export const WEIGHT_MIN = 30;
+export const WEIGHT_MAX = 250;
 export const CYCLE_LEN_MIN = 21;
 export const CYCLE_LEN_MAX = 40;
 
@@ -90,7 +96,7 @@ export const STOOL_COLOR_NOTES = {
 /** Стресс 0–10 → слово */
 export const stressWord = (v) => (v <= 2 ? 'Спокойно' : v <= 5 ? 'Немного' : v <= 8 ? 'Заметно' : 'Сильно');
 
-/** Дневные ориентиры для плиток «Клетчатка» и «Жидкость» на главной. Это ориентиры, не нормы для всех. */
+/** Ориентиры по умолчанию — пока нет веса, пола и возраста. Личные считает domain/targets.js. */
 export const FIBER_GOAL_G = 25;
 export const WATER_GOAL_ML = 2000;
 

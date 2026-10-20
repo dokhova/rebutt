@@ -1,7 +1,8 @@
 // «+»: над меню всплывают три отдельные карточки слайдером — «Стул», «Питание», «Жидкости»; выбранная открывает шторку с формой раздела.
 // Черновик общий: можно вернуться к карточкам и заполнить другой раздел, «Сохранить» сохраняет всё сразу.
 // Значения попадают в общий view вместе с экраном под шторкой — имена ключей не должны пересекаться с views/today.js и др.
-import { MEAL_TINT, WATER_STEPS, WATER_GOAL_ML } from '../domain/catalog.js';
+import { MEAL_TINT, WATER_STEPS } from '../domain/catalog.js';
+import { dailyTargets } from '../domain/targets.js';
 import { litres } from '../domain/suggestions.js';
 import { gutFormView } from './gut-form.js';
 import { mealCard } from './meal-card.js';
@@ -46,8 +47,8 @@ export function addEntryView(app) {
 
     // жидкости
     waterTotal: litres(totalWater),
-    waterGoal: 'из ' + litres(WATER_GOAL_ML) + ' л за день',
-    waterBar: 'width: ' + Math.min(100, Math.round(totalWater / WATER_GOAL_ML * 100)) + '%',
+    waterGoal: 'из ' + litres(dailyTargets(p).waterMl) + ' л — твой ориентир на день',
+    waterBar: 'width: ' + Math.min(100, Math.round(totalWater / dailyTargets(p).waterMl * 100)) + '%',
     waterDelta: f.water ? (f.water > 0 ? '+' : '−') + Math.abs(f.water) + ' мл в этой записи' : savedWater ? 'уже записано ' + litres(savedWater) + ' л' : 'пока ничего не записано',
     waterSteps: WATER_STEPS.map(([ml, label]) => ({ label, ml: '+' + ml + ' мл', add: () => app.addWater(ml) })),
     waterMinus: () => app.addWater(-250),

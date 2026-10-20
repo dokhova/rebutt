@@ -8,8 +8,8 @@ import { APP_NAME, SUPPORT_URL, LEGAL_DOCS, LEGAL_VERSION, IS_DEMO } from '../co
 import { keyOf, addDays, nowHM } from '../domain/dates.js';
 import { AGE_MIN, AGE_MAX, CYCLE_LEN_MIN, CYCLE_LEN_MAX, EXAMPLE_MEALS, SYMPTOM_OK } from '../domain/catalog.js';
 import { gutScore, emptyDay, hasData } from '../domain/score.js';
-import { blankProfile, profileTraits, onboardingFlow, goalLabels } from '../domain/profile.js';
-import { buildAiContext, aiContextHash } from '../domain/ai-context.js';
+import { blankProfile, profileTraits, onboardingFlow, parseBodyInput, validHeight, validWeight } from '../domain/profile.js';
+import { buildAiContext, foodContext, aiContextHash } from '../domain/ai-context.js';
 import { normalizeMeal } from '../domain/meal.js';
 import { splitSentences } from '../domain/text.js';
 import { DEMO_TODAY, demoLog, demoProfile, DEMO_ANSWERS, DEMO_ANSWER_DEFAULT } from '../domain/demo.js';
@@ -18,7 +18,7 @@ import { track, flush, identifyUser, setPersonProps, setScreen, resetAnalytics }
 import { analyzeFood, askAI, getInsights } from '../services/ai.js';
 import { compressImage } from '../services/image.js';
 import { exportCSV, openDoctorReport } from '../services/export.js';
-import { isTelegram, openTelegramLink, syncBackButton, telegramUser } from '../services/telegram.js';
+import { isTelegram, openTelegramLink, syncBackButton, telegramUser, hapticSelection } from '../services/telegram.js';
 import { loadLegalHtml, legalIdByHref } from '../services/legal.js';
 import { supabase, signOut } from '../services/supabase.js';
 import { VIEWS, shellView } from '../views/index.js';
@@ -348,7 +348,7 @@ export default class App extends Component {
     }
 
     const props = { step };
-    if (step === 'about') Object.assign(props, { sex: p.sex, age: p.age });
+    if (step === 'about') Object.assign(props, { sex: p.sex, age: p.age, has_height: validHeight(p.height) != null, has_weight: validWeight(p.weight) != null });
     if (step === 'goals') Object.assign(props, { goals: p.goals, goals_count: p.goals.length, has_custom_goal: !!p.other.trim() });
     if (step === 'cycle') Object.assign(props, { cycle_enabled: cycleAnswer, last_period: p.lastUnknown ? 'unknown' : p.lastAgo, pregnant: !!p.pregnant, coc: !!p.coc });
     track('onboarding_step_completed', props);
@@ -401,6 +401,10 @@ export default class App extends Component {
 
   onAgeDrumScroll(scrollTop) { this.setAge(AGE_MIN + Math.round(scrollTop / DRUM_ROW_PX)); }
   scrollAgeDrumTo(age) { if (this.ageDrum) this.ageDrum.scrollTo({ top: (age - AGE_MIN) * DRUM_ROW_PX, behavior: 'smooth' }); }
+
+  /** Рост и вес: только цифры; в аналитику уходит лишь факт, что поле заполнено */
+  setHeight(raw) { this.updateProfile({ height: parseBodyInput(raw) }, 'height'); }
+  setWeight(raw) { this.updateProfile({ weight: parseBodyInput(raw) }, 'weight'); }
 
   setSex(sex) { this.updateProfile(sex === 'm' ? { sex, cycle: false } : { sex }, 'sex'); }
 
@@ -489,6 +493,9 @@ export default class App extends Component {
   }
 
   backToAddPicker() { this.setState({ addSheet: 'pick' }); }
+
+  /** Лёгкая отдача при каждом шаге ползунка (в Telegram) */
+  hapticTick() { hapticSelection(); }
 
   /** «?» у «Что может помочь»: подсказки — не диагноз */
   toggleTipInfo() {
@@ -618,7 +625,8 @@ export default class App extends Component {
   async requestMeal({ photo, note, previous }) {
     let image;
     if (photo) image = await compressImage(await (await fetch(photo)).blob());
-    const r = await analyzeFood({ image, note, previous, goals: goalLabels(this.state.profile) });
+    const s = this.state;
+    const r = await analyzeFood({ image, note, previous, context: foodContext(s.profile, s.log, this.today()) });
     if (r.is_food === false) throw new Error('Не похоже на еду — попробуйте другое фото или опишите блюдо словами');
     return normalizeMeal(r);
   }

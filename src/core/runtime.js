@@ -2,7 +2,7 @@
 //
 // Синтаксис шаблонов (src/templates):
 //   {{path}}                         подстановка значения (в тексте и атрибутах), path может быть a.b.c
-//   onClick="{{fn}}"                 обработчик события (click, input, change, keydown, scroll); onChange у текстовых input и textarea = input
+//   onClick="{{fn}}"                 обработчик события (click, input, change, keydown, scroll, pointerdown/move/up/cancel); onChange у текстовых input и textarea = input
 //   ref="{{fn}}"                     fn(element) вызывается после каждой отрисовки
 //   html="{{markup}}"               вставить готовый HTML внутрь элемента (только для своего контента, например документов из public/legal)
 //   <sc-if value="{{flag}}">         отрисовать содержимое, если flag истинно
@@ -17,7 +17,8 @@ import morphdom from 'morphdom';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
 const WHOLE = /^\s*\{\{\s*([^}]+?)\s*\}\}\s*$/;
-const DELEGATED = ['click', 'input', 'change', 'keydown'];
+// pointer* — для ползунков (core/range.js): движение пальца обрабатывается без перерисовки
+const DELEGATED = ['click', 'input', 'change', 'keydown', 'pointerdown', 'pointermove', 'pointerup', 'pointercancel'];
 
 const components = {};
 const partials = {};

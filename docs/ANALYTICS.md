@@ -13,7 +13,7 @@
 | `platform` | `telegram` или `web` |
 | `tg_language`, `tg_is_premium` | в PostHog при наличии Telegram user; id и username не передаются |
 
-**Пользователь.** `distinct_id` = id пользователя Supabase (в Telegram — один и тот же для аккаунта на любом устройстве). После онбординга на персону ставятся свойства: `sex`, `age`, `goals`, `goals_count`, `has_custom_goal`, `cycle_enabled`, `pregnant`, `coc`, `reminder_am`, `reminder_pm`, `onboarded_at`. Обновляются при изменении профиля.
+**Пользователь.** `distinct_id` = id пользователя Supabase (в Telegram — один и тот же для аккаунта на любом устройстве). После онбординга на персону ставятся свойства: `sex`, `age`, `has_height`, `has_weight` (сами рост и вес не передаются), `goals`, `goals_count`, `has_custom_goal`, `cycle_enabled`, `pregnant`, `coc`, `reminder_am`, `reminder_pm`, `onboarded_at`. Обновляются при изменении профиля.
 
 **Экраны.** На каждый экран шлётся `$pageview` с `$current_url = …/#<screen>` — работает стандартная Web Analytics и Paths в PostHog.
 
@@ -33,7 +33,7 @@
 | `onboarding_started` | показан первый шаг онбординга новому пользователю | — |
 | `onboarding_skipped` | «Не сейчас» на шаге цикла | `step` (`cycle`) |
 | `onboarding_step_viewed` | показ шага | `step`, `step_index` |
-| `onboarding_step_completed` | «Дальше» на шаге | `step` + `sex`, `age` (about) / `goals`, `goals_count`, `has_custom_goal` (goals) / `cycle_enabled`, `last_period` (cycle) |
+| `onboarding_step_completed` | «Дальше» на шаге | `step` + `sex`, `age`, `has_height`, `has_weight` (about) / `goals`, `goals_count`, `has_custom_goal` (goals) / `cycle_enabled`, `last_period` (cycle) |
 | `onboarding_validation_error` | не заполнены имя/пол | `step`, `missing` |
 | `onboarding_back` | кнопка «Назад» | `step` |
 | `consent_checkbox_toggled` | клик по чекбоксу | `checked` |
@@ -87,7 +87,7 @@
 ### Профиль
 | Событие | Когда | Свойства |
 |---|---|---|
-| `profile_updated` | изменения профиля (с задержкой 0,7 с) | `fields` |
+| `profile_updated` | изменения профиля (с задержкой 0,7 с) | `fields` (в т. ч. `height`, `weight` — только названия полей, без значений) |
 | `cycle_toggled` | переключатель цикла | `enabled` |
 | `cycle_option_toggled` | беременность / КОК (онбординг и профиль) | `option` (`pregnant` / `coc`), `enabled` |
 | `reminder_toggled` | напоминания | `slot` (`morning` / `evening`), `enabled` |

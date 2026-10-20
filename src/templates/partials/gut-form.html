@@ -32,7 +32,10 @@
 </div>
 
 <div class="card form-card">
-  <div class="card-head"><div class="caption">Стресс</div><div class="hint num">{{gf.stressLabel}}</div></div>
-  <input class="{{gf.stressCls}}" type="range" min="0" max="10" step="1" value="{{gf.stress}}" onInput="{{gf.onStress}}" aria-label="Уровень стресса от 0 до 10">
+  <div class="card-head"><div class="caption">Стресс</div><div class="hint num" data-range-label>{{gf.stressLabel}}</div></div>
+  <div class="{{gf.stressCls}}" data-range style="{{gf.stressPct}}" onPointerDown="{{gf.stressDrag}}" onPointerMove="{{gf.stressDrag}}" onPointerUp="{{gf.stressDrag}}" onPointerCancel="{{gf.stressDrag}}">
+    <input class="range-input" type="range" min="0" max="10" step="1" value="{{gf.stress}}" onInput="{{gf.onStress}}" aria-label="Уровень стресса от 0 до 10" aria-valuetext="{{gf.stressLabel}}">
+    <div class="range-track" aria-hidden="true"><div class="range-fill"></div><div class="range-thumb"></div></div>
+  </div>
   <div class="slider-scale"><span>спокойно</span><span>сильно</span></div>
 </div>

@@ -1,10 +1,11 @@
 // POST /api/food — разбор блюда: КБЖУ, клетчатка, оценка для кишечника, мягкий совет.
-// Тело: { image?: dataURL, note?: string, previous?: прошлый разбор, goals?: string[] }
+// Тело: { image?: dataURL, note?: string, previous?: прошлый разбор, context?: { profile, today_so_far } }
 //   image          — фото блюда (JPEG/PNG/WEBP)
 //   note           — комментарий пользователя: что на тарелке, размер порции, или уточнение к разбору
 //   previous       — прошлый разбор, если пользователь его уточняет
+//   context        — профиль (возраст, пол, рост, вес, цели, ориентиры) и что уже съедено и выпито сегодня (domain/ai-context.js → foodContext)
 // Нужно хотя бы фото или текст.
-import { chatJSON, handler, SAFETY, VISION_MODEL } from './_lib/openai.js';
+import { chatJSON, handler, SAFETY, VISION_MODEL, ctxText } from './_lib/openai.js';
 
 export const config = { maxDuration: 60 };
 
@@ -30,6 +31,8 @@ const bad = (msg, status = 400) => Object.assign(new Error(msg), { status });
 export default handler(async (body) => {
   const image = body.image ? String(body.image) : '';
   const note = String(body.note || '').trim().slice(0, 500);
+  const context = body.context && typeof body.context === 'object' ? body.context : null;
+  // старые клиенты присылали только goals
   const goals = Array.isArray(body.goals) ? body.goals.slice(0, 10).map(String) : [];
   const previous = body.previous && typeof body.previous === 'object' ? body.previous : null;
 
@@ -44,7 +47,8 @@ export default handler(async (body) => {
     }) + '. Пользователь уточняет — пересчитай с учётом уточнения.');
   }
   if (note) parts.push((previous ? 'Уточнение пользователя: ' : 'Комментарий пользователя: ') + note);
-  if (goals.length) parts.push('Цели пользователя: ' + goals.join(', ') + '.');
+  if (context) parts.push('О пользователе и его дне (JSON): ' + ctxText(context));
+  else if (goals.length) parts.push('Цели пользователя: ' + goals.join(', ') + '.');
 
   const content = [{ type: 'text', text: parts.join('\n') }];
   if (image) content.push({ type: 'image_url', image_url: { url: image, detail: 'low' } });
@@ -53,7 +57,7 @@ export default handler(async (body) => {
     model: VISION_MODEL,
     schemaName: 'food',
     schema,
-    system: SAFETY + ' Оцени блюдо: калории, белки, жиры, углеводы и клетчатку для видимой или описанной порции, числа округляй. Комментарий и уточнения пользователя важнее того, что видно на фото. Оценка tone — про комфорт кишечника (клетчатка, жирность, острота, газообразующие продукты), а не про «полезно/вредно». Совет — один, мягкий, без запретов. Если это не еда — is_food=false, числа 0, name "Не еда", tone "mild", tip пустой.',
+    system: SAFETY + ' Оцени блюдо: калории, белки, жиры, углеводы и клетчатку для видимой или описанной порции, числа округляй. Комментарий и уточнения пользователя важнее того, что видно на фото. Оценка tone — про комфорт кишечника (клетчатка, жирность, острота, газообразующие продукты), а не про «полезно/вредно». Совет — один, мягкий, без запретов; если есть данные о человеке — свяжи совет с его целями и с тем, сколько клетчатки и воды он уже набрал сегодня относительно своего ориентира. Если это не еда — is_food=false, числа 0, name "Не еда", tone "mild", tip пустой.',
     user: content
   });
 });

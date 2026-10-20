@@ -34,7 +34,7 @@ async function post(path, body) {
 
 /**
  * Разбор блюда → { is_food, name, kcal, protein, fat, carbs, fiber, tone, tip }
- * @param {{ image?: string, note?: string, previous?: object, goals?: string[] }} input
+ * @param {{ image?: string, note?: string, previous?: object, context?: object }} input — context из domain/ai-context.js → foodContext
  */
 export const analyzeFood = (input) => post('/api/food', input);
 

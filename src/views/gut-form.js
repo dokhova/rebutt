@@ -1,6 +1,10 @@
 // Форма «стул, цвет, самочувствие, стресс» — одна для новой записи и для правки сохранённой.
 // target: 'form' — экран «+», 'edit' — правка записи. Шаблон — src/templates/partials/gut-form.html (значения в gf).
 import { BRISTOL_TYPES, SYMPTOMS, STOOL_COLORS, STOOL_COLOR_NOTES, stressWord } from '../domain/catalog.js';
+import { rangeDrag } from '../core/range.js';
+
+const STRESS_MAX = 10;
+const stressText = (v) => v + ' · ' + stressWord(v);
 
 export function gutFormView(app, target) {
   const d = app.gutDraft(target);
@@ -31,8 +35,12 @@ export function gutFormView(app, target) {
         return { label, on, cls: 'chip' + (on ? ' on' : ''), pick: () => app.toggleSymptom(label, target) };
       }),
       stress: stressSet ? d.stress : 0,
-      stressLabel: stressSet ? d.stress + ' · ' + stressWord(d.stress) : 'не отмечено',
-      stressCls: 'slider' + (stressSet ? '' : ' unset'),
+      stressPct: '--p: ' + (stressSet ? d.stress / STRESS_MAX * 100 : 0),
+      stressLabel: stressSet ? stressText(d.stress) : 'не отмечено',
+      stressCls: 'range' + (stressSet ? '' : ' unset'),
+      // палец: двигаем только сам ползунок, сохраняем, когда отпустили
+      stressDrag: (e) => rangeDrag(e, { max: STRESS_MAX, label: stressText, onStep: () => app.hapticTick(), onCommit: (v) => app.setStress(v, target) }),
+      // клавиатура и экранный диктор: шаги дискретные, можно сохранять сразу
       onStress: (e) => app.setStress(e.target.value, target)
     }
   };

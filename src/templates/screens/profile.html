@@ -16,6 +16,10 @@
   <div class="list-row"><label class="muted" for="profName">Имя</label><input id="profName" class="inline-input" type="text" autocapitalize="words" value="{{name}}" onChange="{{setName}}"></div>
   <div class="list-row"><span class="muted">Возраст</span><div class="controls"><button class="round-btn" onClick="{{ageMinus}}" aria-label="Меньше">−</button><span class="control-value num">{{age}}</span><button class="round-btn" onClick="{{agePlus}}" aria-label="Больше">+</button></div></div>
   <div class="list-row"><span class="muted">Пол</span><div class="controls"><button class="{{sexF}}" onClick="{{pickF}}">Жен</button><button class="{{sexM}}" onClick="{{pickM}}">Муж</button></div></div>
+  <div class="list-row"><label class="muted" for="profHeight">Рост</label><span class="inline-unit"><input id="profHeight" class="inline-input short" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" placeholder="—" value="{{body.height}}" onChange="{{body.setHeight}}"><span class="muted">см</span></span></div>
+  <div class="list-row"><label class="muted" for="profWeight">Вес</label><span class="inline-unit"><input id="profWeight" class="inline-input short" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" placeholder="—" value="{{body.weight}}" onChange="{{body.setWeight}}"><span class="muted">кг</span></span></div>
+  <sc-if value="{{body.error}}"><div class="hint body-error">{{body.error}}</div></sc-if>
+  <div class="hint profile-targets">{{body.targets}}</div>
 </div>
 
 <div class="settings">

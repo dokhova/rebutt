@@ -6,6 +6,7 @@ import { supabase, getUser } from './supabase.js';
 import { IS_DEMO } from '../config.js';
 import { addDays, diffDays } from '../domain/dates.js';
 import { normalizeMeal } from '../domain/meal.js';
+import { validHeight, validWeight } from '../domain/profile.js';
 
 const LS_STATE = 'gt_state_v1';
 const LS_PREFIX = 'gt_';
@@ -65,6 +66,8 @@ function profileToRow(p, todayK) {
     name: p.name || null,
     age: p.age || null,
     sex: p.sex || null,
+    height_cm: validHeight(p.height),
+    weight_kg: validWeight(p.weight),
     goals: p.goals || [],
     goal_other: p.other || null,
     cycle_enabled: !!p.cycle,
@@ -84,6 +87,8 @@ function rowToProfile(r, todayK) {
     name: r.name || '',
     age: r.age || 28,
     sex: r.sex || '',
+    height: r.height_cm || null,
+    weight: r.weight_kg || null,
     goals: r.goals || [],
     other: r.goal_other || '',
     cycle: !!r.cycle_enabled,
@@ -162,7 +167,19 @@ async function withUser(fn) {
 }
 
 export const saveProfile = (p, todayK) =>
-  withUser((u) => run('profile', supabase.from('profiles').upsert({ id: u.id, ...profileToRow(p, todayK) })));
+  withUser(async (u) => {
+    const row = { id: u.id, ...profileToRow(p, todayK) };
+    const { error } = await supabase.from('profiles').upsert(row);
+    if (!error) return true;
+    // миграция с ростом и весом ещё не применена — сохраняем остальное, чтобы профиль не терялся
+    if (/height_cm|weight_kg/.test(error.message || '')) {
+      console.warn('[store] нет колонок height_cm / weight_kg — примените миграцию 20261020100000_profile_body.sql');
+      const { height_cm: _h, weight_kg: _w, ...rest } = row; // eslint-disable-line no-unused-vars
+      return run('profile', supabase.from('profiles').upsert(rest));
+    }
+    console.warn('[store] profile:', error.message);
+    return false;
+  });
 
 export const saveConsents = (documents, version) =>
   withUser((u) => {
