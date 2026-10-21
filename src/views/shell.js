@@ -28,9 +28,9 @@ export function shellView(app, screen) {
     screenCls: 'screen scroller' + (withTabs ? ' with-tabs' : ''),
     setScrollEl: app.setScrollEl,
 
-    // пока открыта клавиатура или панель ИИ, меню не перекрывает поле ввода
+    // пока открыта клавиатура, панель ИИ или модалка «На главный экран», меню не показываем
     // при выборе раздела «+» меню остаётся: «+» превращается в «×»
-    showTabs: withTabs && !s.keyboard && !s.assistant && (!s.addSheet || s.addSheet === 'pick'),
+    showTabs: withTabs && !s.keyboard && !s.assistant && !s.homePrompt && (!s.addSheet || s.addSheet === 'pick'),
     showAddSheet: !!s.addSheet && withTabs,
     showAssistant: !!s.assistant && screen !== 'booting',
     openAssistantDock: () => app.openAssistant('dock'),
