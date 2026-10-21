@@ -68,3 +68,41 @@ export function telegramUser() {
   const app = getTelegram();
   return (app && app.initDataUnsafe && app.initDataUnsafe.user) || null;
 }
+
+// ---------- «На главный экран» (Bot API 8.0) ----------
+
+/** 'ios' | 'android' — только на телефоне ярлык имеет смысл; иначе '' */
+export function homeScreenPlatform() {
+  const p = (getTelegram() || {}).platform || '';
+  return p === 'ios' ? 'ios' : p.startsWith('android') ? 'android' : '';
+}
+
+export function canAddToHomeScreen() {
+  const app = getTelegram();
+  return !!(app && homeScreenPlatform() && app.isVersionAtLeast('8.0') &&
+    typeof app.addToHomeScreen === 'function' && typeof app.checkHomeScreenStatus === 'function');
+}
+
+/** 'added' | 'missed' | 'unknown' | 'unsupported'. Не ждём ответа дольше 3 с. */
+export function checkHomeScreenStatus() {
+  return new Promise((resolve) => {
+    if (!canAddToHomeScreen()) { resolve('unsupported'); return; }
+    let done = false;
+    const finish = (status) => { if (!done) { done = true; clearTimeout(timer); resolve(status || 'unknown'); } };
+    const timer = setTimeout(() => finish('unknown'), 3000);
+    try { getTelegram().checkHomeScreenStatus(finish); } catch (_) { finish('unsupported'); }
+  });
+}
+
+/** Android добавляет ярлык сразу, iOS показывает подтверждение Telegram. false — не поддерживается. */
+export function addToHomeScreen() {
+  if (!canAddToHomeScreen()) return false;
+  getTelegram().addToHomeScreen();
+  return true;
+}
+
+/** Telegram сообщает, что ярлык добавлен */
+export function onHomeScreenAdded(callback) {
+  const app = getTelegram();
+  if (app && typeof app.onEvent === 'function') app.onEvent('homeScreenAdded', callback);
+}

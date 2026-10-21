@@ -79,6 +79,14 @@
 | `entry_saved` | запись сохранена | `stool_status`, `bristol_type`, `symptoms`, `symptoms_count`, `has_food`, `food_source`, `food_tone`, `period_mark`, `water_ml_added`, `water_ml_day`, `gut_score`, `score_before`, `score_delta`, `days_logged_last7`, `hour` |
 | `first_entry_saved` | первая запись пользователя | как у `entry_saved` |
 
+### «На главный экран»
+| Событие | Когда | Свойства |
+|---|---|---|
+| `home_prompt_shown` | показана модалка (Telegram на телефоне, Bot API 8.0+, есть хотя бы одна запись, ярлыка нет, не откладывали) | `os` (`ios` / `android`), `status` (`missed` / `unknown` — ответ `checkHomeScreenStatus`) |
+| `home_prompt_add_clicked` | «Добавить на экран» | `os` |
+| `home_prompt_added` | Telegram сообщил, что ярлык добавлен (`homeScreenAdded`) | — |
+| `home_prompt_dismissed` | модалку закрыли | `how` (`later` — «Напомнить позже», 3 дня / `close` — крестик или затемнение, 14 дней / `back` — «Назад», 14 дней) |
+
 ### ИИ и инсайты
 | Событие | Когда | Свойства |
 |---|---|---|
@@ -108,7 +116,8 @@
 3. **Удержание:** Retention по `entry_saved` (день 1 / 7 / 21 — обещание «за 21 день»).
 4. **Использование ИИ:** тренды `food_analysis_completed`, `ai_question_asked`; медиана `latency_ms`; доля `*_failed`.
 5. **Качество дня:** среднее `gut_score` из `entry_saved` по неделям; разбивка по `food_tone`.
-6. **Документы и поддержка:** `legal_doc_opened` по `doc`, `support_clicked`.
+6. **Ярлык на экране «Домой»:** воронка `home_prompt_shown` → `home_prompt_add_clicked` → `home_prompt_added` с разбивкой по `os`.
+7. **Документы и поддержка:** `legal_doc_opened` по `doc`, `support_clicked`.
 
 ## SQL в Supabase
 

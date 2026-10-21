@@ -44,6 +44,7 @@ export function shellView(app, screen) {
     // «?» рядом с нормами и советами — на любом экране: onClick="{{info.fiber}}"
     info: Object.fromEntries(INFO_TOPICS.map((id) => [id, () => app.openInfo(id)])),
     ...infoCardView(app),
+    ...homePromptView(app),
 
     toast: s.toast,
     hasToast: !!s.toast
@@ -61,5 +62,19 @@ function infoCardView(app) {
       links: c.sources.map((id) => ({ ...SOURCES[id], open: (e) => app.openSource(id, SOURCES[id].url, e) }))
     })),
     closeInfo: () => app.closeInfo()
+  };
+}
+
+/** Модалка «На главный экран»: ярлык с круглыми иконками на Android, со скруглёнными — на iOS */
+function homePromptView(app) {
+  const open = !!app.state.homePrompt;
+  return {
+    showHomePrompt: open,
+    homePrompt: open ? {
+      artCls: 'hp-art ' + app.state.homePrompt,
+      add: () => app.addToHomeScreen(),
+      later: () => app.dismissHomePrompt('later'),
+      close: () => app.dismissHomePrompt('close')
+    } : null
   };
 }

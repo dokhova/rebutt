@@ -26,6 +26,7 @@ import gutFormHtml from './templates/partials/gut-form.html?raw';
 import mealCardHtml from './templates/partials/meal-card.html?raw';
 import addSheetHtml from './templates/partials/add-sheet.html?raw';
 import infoCardHtml from './templates/partials/info-card.html?raw';
+import homePromptHtml from './templates/partials/home-prompt.html?raw';
 
 initTelegram();
 initAnalytics();
@@ -47,5 +48,6 @@ registerPartial('gut-form', gutFormHtml);
 registerPartial('meal-card', mealCardHtml);
 registerPartial('add-sheet', addSheetHtml);
 registerPartial('info-card', infoCardHtml);
+registerPartial('home-prompt', homePromptHtml);
 
 mount('#app');

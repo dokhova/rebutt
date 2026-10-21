@@ -177,3 +177,36 @@
 .info-text { font-size: 15px; line-height: 1.5; color: #DCD9E2; }
 .info-link { display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; font-size: 13px; line-height: 1.4; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(168, 163, 179, .5); }
 .info-link svg { flex-shrink: 0; margin-top: 2px; }
+
+/* ---------- модалка «На главный экран» (partials/home-prompt.html) ---------- */
+.home-prompt-backdrop { position: absolute; inset: 0; z-index: 40; background: rgba(12, 11, 15, .72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.home-prompt {
+  position: absolute; left: 16px; right: 16px; top: 50%; z-index: 41; transform: translateY(-50%); box-sizing: border-box;
+  max-width: 420px; margin: 0 auto; padding: 20px; border-radius: 28px; background: var(--surface-1); border: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 20px; box-shadow: 0 30px 60px rgba(0, 0, 0, .5);
+}
+.home-prompt.slide-up { animation: home-prompt-in .28s ease-out; }
+@keyframes home-prompt-in { from { transform: translateY(calc(-50% + 40px)); opacity: .4; } to { transform: translateY(-50%); opacity: 1; } }
+.home-prompt-close { position: absolute; top: 14px; right: 14px; z-index: 2; background: var(--surface-3); }
+.home-prompt-text { display: flex; flex-direction: column; gap: 8px; padding: 0 4px; }
+.home-prompt-title { margin: 0; font-size: 22px; line-height: 28px; font-weight: 600; }
+.home-prompt-sub { margin: 0; font-size: 15px; line-height: 22px; color: var(--muted); }
+.home-prompt-actions { display: flex; flex-direction: column; gap: 4px; }
+.home-prompt-later { height: 48px; border: 0; border-radius: 24px; background: none; color: var(--muted); font-size: 15px; font-weight: 500; }
+
+/* иллюстрация: телефон с сеткой иконок и карточка приложения поверх */
+.hp-art { position: relative; height: 230px; border-radius: 20px; background: var(--bg-mid); overflow: hidden; }
+.hp-phone { position: absolute; top: 22px; left: 50%; width: 184px; margin-left: -92px; height: 240px; box-sizing: border-box; border: 7px solid var(--surface-4); border-bottom: 0; border-radius: 38px 38px 0 0; padding: 24px 14px 0; }
+.hp-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 12px; column-gap: 8px; justify-items: center; }
+.hp-app { width: 32px; height: 32px; border-radius: 9px; background: var(--surface-4); }
+.hp-app.alt { background: var(--surface-3); }
+.hp-app.slot { box-sizing: border-box; background: none; border: 2px dashed var(--accent); }
+.hp-search { display: none; margin-top: 16px; height: 26px; border-radius: 13px; background: var(--surface-3); }
+.hp-art.android .hp-app { border-radius: 50%; }
+.hp-art.android .hp-search { display: block; }
+.hp-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 120px; background: linear-gradient(to bottom, rgba(28, 26, 34, 0), var(--bg-mid) 75%); }
+.hp-card { position: absolute; top: 118px; left: 16px; right: 16px; height: 80px; box-sizing: border-box; padding: 0 14px; border-radius: 22px; background: var(--surface-3); border: 1px solid var(--line-2); display: flex; align-items: center; gap: 14px; box-shadow: 0 16px 32px rgba(0, 0, 0, .45); }
+.hp-logo { width: 52px; height: 52px; flex-shrink: 0; border-radius: 14px; background: var(--accent); color: var(--accent-ink); font-size: 28px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.hp-card-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.hp-card-title { font-size: 17px; line-height: 22px; font-weight: 600; }
+.hp-card-sub { font-size: 13px; line-height: 18px; color: var(--muted); }

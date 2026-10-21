@@ -1,0 +1,38 @@
+<!-- Модалка «На главный экран». Значения: homePromptView в src/views/shell.js, логика — App.maybeShowHomePrompt -->
+<div class="home-prompt-backdrop fade-in" onClick="{{homePrompt.close}}"></div>
+<section class="home-prompt slide-up" role="dialog" aria-modal="true" aria-labelledby="home-prompt-title">
+  <button class="icon-btn home-prompt-close" onClick="{{homePrompt.close}}" aria-label="Закрыть">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+  </button>
+
+  <div class="{{homePrompt.artCls}}" aria-hidden="true">
+    <div class="hp-phone">
+      <div class="hp-grid">
+        <span class="hp-app"></span><span class="hp-app alt"></span><span class="hp-app"></span><span class="hp-app alt"></span>
+        <span class="hp-app alt"></span><span class="hp-app slot"></span><span class="hp-app"></span><span class="hp-app alt"></span>
+      </div>
+      <div class="hp-search"></div>
+    </div>
+    <div class="hp-fade"></div>
+    <div class="hp-card">
+      <span class="hp-logo">R</span>
+      <span class="hp-card-text">
+        <span class="hp-card-title">{{appName}}</span>
+        <span class="hp-card-sub">Дневник пищеварения</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="home-prompt-text">
+    <h2 id="home-prompt-title" class="home-prompt-title">{{appName}} на экране «Домой»</h2>
+    <p class="home-prompt-sub">Открывайте в одно касание.</p>
+  </div>
+
+  <div class="home-prompt-actions">
+    <button class="btn" onClick="{{homePrompt.add}}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+      Добавить на экран
+    </button>
+    <button class="home-prompt-later" onClick="{{homePrompt.later}}">Напомнить позже</button>
+  </div>
+</section>

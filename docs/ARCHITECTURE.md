@@ -42,6 +42,7 @@ src/
     partials/add-sheet.html    шторка «+»: слайдер «Стул / Питание / Жидкости» → форма раздела (screens/add.html)
     components/pebble.html     разметка компонента Pebble
     partials/info-card.html    карточка «?»: откуда норма или совет, со ссылками на источники
+    partials/home-prompt.html  модалка «На главный экран»
   components/                  Pebble.js (иконка типа стула)
   services/                    всё, что ходит наружу
     supabase.js                клиент и анонимный вход
@@ -214,6 +215,8 @@ SDK инициализируется перед аналитикой (`src/servi
 **Профиль.** Имя по умолчанию и аватар берутся из `initDataUnsafe.user` (аватар не сохраняется в базе).
 
 **Назад.** Нативная BackButton видна, когда есть куда возвращаться: открыт документ, профиль или не первый шаг онбординга (`App.canGoBack` / `App.back`).
+
+**На главный экран.** Модалка `partials/home-prompt.html` (`state.homePrompt` = `'ios'` / `'android'`) предлагает добавить ярлык через `addToHomeScreen()` (Bot API 8.0): Android добавляет сразу, iOS показывает подтверждение Telegram. Показывается один раз за запуск на «Сегодня», только в Telegram на телефоне, после первой записи и если `checkHomeScreenStatus` не ответил `added` (`App.maybeShowHomePrompt`). Ответ человека хранится в `localStorage` (`gt_home_prompt`): «Напомнить позже» — спросим через 3 дня, крестик или «Назад» — через 14, ярлык добавлен — больше не спрашиваем (`domain/home-prompt.js`). Посмотреть в браузере: `?demo#a2hs`.
 
 **Документы** открываются внутри приложения (экран `legal`): текст берётся из `<main>` файлов `public/legal/*.html` (`src/services/legal.js`) и вставляется через привязку `html="{{…}}"`. Ссылки между документами тоже открываются внутри, остальные — через `openLink` / `openTelegramLink`.
 

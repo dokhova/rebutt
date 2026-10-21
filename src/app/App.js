@@ -18,12 +18,14 @@ import { track, flush, identifyUser, setPersonProps, setScreen, resetAnalytics }
 import { analyzeFood, askAI, getInsights } from '../services/ai.js';
 import { compressImage } from '../services/image.js';
 import { exportCSV, openDoctorReport } from '../services/export.js';
-import { isTelegram, openTelegramLink, syncBackButton, telegramUser, hapticSelection } from '../services/telegram.js';
+import { isTelegram, openTelegramLink, syncBackButton, telegramUser, hapticSelection, homeScreenPlatform, canAddToHomeScreen, checkHomeScreenStatus, addToHomeScreen, onHomeScreenAdded } from '../services/telegram.js';
+import { homePromptSnoozed } from '../domain/home-prompt.js';
 import { loadLegalHtml, legalIdByHref } from '../services/legal.js';
 import { supabase, signOut } from '../services/supabase.js';
 import { VIEWS, shellView } from '../views/index.js';
 
 const LS_INSIGHTS = 'gt_insights';
+const LS_HOME_PROMPT = 'gt_home_prompt';
 const TOAST_MS = 3500;
 const EXAMPLE_SCAN_MS = 1600;
 const PROFILE_SAVE_DELAY_MS = 700;
@@ -71,6 +73,17 @@ function liveValue(id, fallback) {
 
 const isTextField = (el) => !!el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && el.type === 'text'));
 
+function readHomePrompt() {
+  try { return JSON.parse(localStorage.getItem(LS_HOME_PROMPT) || 'null'); } catch (_) { return null; }
+}
+
+function writeHomePrompt(state) {
+  try { localStorage.setItem(LS_HOME_PROMPT, JSON.stringify({ state, at: Date.now() })); } catch (_) { /* приватный режим */ }
+}
+
+/** В демо (?demo#a2hs) показываем модалку под платформу браузера */
+const demoHomePlatform = () => (/android/i.test(navigator.userAgent) ? 'android' : 'ios');
+
 function readInsightsCache() {
   try { return JSON.parse(localStorage.getItem(LS_INSIGHTS) || 'null'); } catch (_) { return null; }
 }
@@ -83,7 +96,8 @@ export default class App extends Component {
     if (IS_DEMO) {
       // /?demo#today и т.п. открывает нужный экран с тестовым профилем, /?demo — онбординг
       log = demoLog();
-      const hash = location.hash.slice(1) === 'home' ? 'today' : location.hash.slice(1);
+      const raw = location.hash.slice(1);
+      const hash = raw === 'home' || raw === 'a2hs' ? 'today' : raw;
       if (['today', 'add', 'insights', 'profile'].includes(hash)) { screen = hash === 'add' ? 'today' : hash; profile = demoProfile(); }
     } else {
       const local = store.loadLocal();
@@ -105,6 +119,8 @@ export default class App extends Component {
       onbStep: 'consent', consent: false,
       legal: null,        // открытый документ: { id, title, html, error }
       assistant: false,   // открыта панель ИИ-помощника
+      // модалка «На главный экран»: null | 'ios' | 'android' (как рисовать иконки)
+      homePrompt: IS_DEMO && location.hash === '#a2hs' ? demoHomePlatform() : null,
       info: null,         // открытая карточка «?» — откуда норма или совет: id из domain/sources.js → infoCards
       // шторка «+» поверх экрана: null | 'pick' — выбор из трёх карточек | 'stool' | 'food' | 'water' — форма раздела
       addSheet: IS_DEMO && location.hash === '#add' ? 'pick' : null,
@@ -144,6 +160,7 @@ export default class App extends Component {
       if (isTextField(e.target)) setTimeout(() => { if (!isTextField(document.activeElement)) this.setState({ keyboard: false }); }, 50);
     });
 
+    onHomeScreenAdded(() => this.homeScreenAdded());
     if (!this.state.booting) this.onScreenShown();
     const bootTimer = setTimeout(() => this.finishBoot({}), BOOT_TIMEOUT_MS);
     await identifyUser();
@@ -191,7 +208,7 @@ export default class App extends Component {
       }
       if (!overlay(s)) this.savedScroll = null;
       this.onScreenShown();
-    } else if (prev.assistant !== s.assistant || prev.addSheet !== s.addSheet || prev.info !== s.info) {
+    } else if (prev.assistant !== s.assistant || prev.addSheet !== s.addSheet || prev.info !== s.info || prev.homePrompt !== s.homePrompt) {
       // панель ИИ и шторка «+» открываются поверх — экран под ними не прокручиваем
       syncBackButton(this.canGoBack(), this.handleBack);
       if (s.assistant) setScreen('assistant');
@@ -217,6 +234,7 @@ export default class App extends Component {
     setScreen(SCREEN_EVENT_NAME[s.screen]);
     track('screen_viewed', { screen_name: SCREEN_EVENT_NAME[s.screen] });
     if (s.screen === 'today' || s.screen === 'insights') this.refreshInsights();
+    if (s.screen === 'today') this.maybeShowHomePrompt();
   }
 
   view() {
@@ -299,14 +317,15 @@ export default class App extends Component {
   /** Есть ли куда вернуться: документ, профиль, не первый шаг онбординга */
   canGoBack() {
     const s = this.state;
-    if (s.info || s.legal || s.mealEdit || s.entryEdit || s.waterEdit || s.assistant || s.addSheet || s.screen === 'profile') return true;
+    if (s.homePrompt || s.info || s.legal || s.mealEdit || s.entryEdit || s.waterEdit || s.assistant || s.addSheet || s.screen === 'profile') return true;
     return s.screen === 'onboarding' && this.onboardingFlow().indexOf(s.onbStep) > 0;
   }
 
   /** «Назад» — и кнопка в интерфейсе, и нативная кнопка Telegram */
   back() {
     const s = this.state;
-    if (s.info) this.closeInfo();
+    if (s.homePrompt) this.dismissHomePrompt('back');
+    else if (s.info) this.closeInfo();
     else if (s.addSheet) { if (s.addSheet === 'pick') this.closeAddSheet(); else this.backToAddPicker(); }
     else if (s.assistant) this.closeAssistant();
     else if (s.legal) this.closeLegalDoc();
@@ -539,6 +558,50 @@ export default class App extends Component {
   }
 
   closeInfo() { this.setState({ info: null }); }
+
+  // ---------- «На главный экран» ----------
+
+  /** Один раз за запуск, на «Сегодня»: в Telegram на телефоне, после первой записи, ярлыка ещё нет и не откладывали */
+  async maybeShowHomePrompt() {
+    if (IS_DEMO || this.homePromptChecked) return;
+    const s = this.state;
+    if (!s.profile.onboardedAt || !Object.values(s.log).some(hasData) || !canAddToHomeScreen()) return;
+    this.homePromptChecked = true;
+    if (homePromptSnoozed(readHomePrompt())) return;
+    const status = await checkHomeScreenStatus();
+    if (status === 'added') { writeHomePrompt('added'); return; }
+    if (status === 'unsupported') return;
+    // пока ждали ответа, человек мог уйти с «Сегодня» или открыть что-то поверх — тогда не мешаем
+    const t = this.state;
+    if (t.screen !== 'today' || t.booting || t.addSheet || t.assistant || t.info || t.legal || t.mealEdit || t.entryEdit || t.waterEdit) return;
+    const platform = homeScreenPlatform();
+    this.setState({ homePrompt: platform });
+    track('home_prompt_shown', { os: platform, status });
+  }
+
+  addToHomeScreen() {
+    const os = this.state.homePrompt;
+    track('home_prompt_add_clicked', { os });
+    if (IS_DEMO) { this.homeScreenAdded(); return; }
+    writeHomePrompt('later'); // если на iOS передумают в окне Telegram — спросим через 3 дня
+    this.setState({ homePrompt: null });
+    if (!addToHomeScreen()) this.showToast('Обновите Telegram, чтобы добавить ярлык');
+  }
+
+  /** Событие Telegram homeScreenAdded (и «Добавить» в демо) */
+  homeScreenAdded() {
+    if (!IS_DEMO) writeHomePrompt('added');
+    track('home_prompt_added');
+    this.setState({ homePrompt: null });
+    this.showToast(APP_NAME + ' теперь на экране «Домой»');
+  }
+
+  /** how: 'later' — «Напомнить позже», 'close' — крестик или затемнение, 'back' — «Назад» */
+  dismissHomePrompt(how) {
+    if (!IS_DEMO) writeHomePrompt(how === 'later' ? 'later' : 'close');
+    track('home_prompt_dismissed', { how });
+    this.setState({ homePrompt: null });
+  }
 
   /** Ссылка на источник: в Telegram — через openLink, в браузере — обычная ссылка в новой вкладке */
   openSource(id, url, event) {
