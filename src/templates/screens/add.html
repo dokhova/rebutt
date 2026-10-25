@@ -3,7 +3,7 @@
 <sc-if value="{{sec.stool}}">
 <sc-include name="gut-form"></sc-include>
 
-<sc-if value="{{cycleEnabled}}">
+<sc-if value="{{periodFull}}">
   <div class="card form-card">
     <div class="card-head"><div class="caption">Цикл</div><sc-if value="{{cycleDayKnown}}"><div class="hint num">день {{cycleDay}}</div></sc-if></div>
     <div class="segments">
@@ -11,6 +11,9 @@
       <button class="{{periodYes}}" onClick="{{setPeriodYes}}">Месячные</button>
     </div>
   </div>
+</sc-if>
+<sc-if value="{{periodLink}}">
+  <button class="text-link" onClick="{{setPeriodYes}}">Начались месячные? Отметить</button>
 </sc-if>
 
 </sc-if>

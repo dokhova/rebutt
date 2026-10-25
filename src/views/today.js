@@ -7,7 +7,7 @@ import { mealSummary, mealTint, mealPhoto } from '../domain/meal.js';
 import { parseKey, addDays, dayMonth, WEEKDAYS_SHORT, WEEKDAYS_FULL } from '../domain/dates.js';
 import { gutScore, toneOf, TONE_COLOR, fiberOf, waterOf, hasData } from '../domain/score.js';
 import { suggestionsFor, litres } from '../domain/suggestions.js';
-import { cycleDay, cyclePhase, isPeriodDay, PREGNANCY_NOTE, MENOPAUSE_NOTE } from '../domain/cycle.js';
+import { cycleDay, cycleAlert, isPeriodDay, PREGNANCY_NOTE, MENOPAUSE_NOTE } from '../domain/cycle.js';
 import { DEMO_TIP_CALM } from '../domain/demo.js';
 
 // Дуга: нижняя полуокружность в SVG 350×300, центр (175, 115), радиус 155 — те же числа в templates/screens/today.html.
@@ -59,7 +59,7 @@ export function todayView(app) {
     ...metrics(sc, day, app, dailyTargets(p)),
     tips: tipsOf(s, day, sc, tone, isToday, todayK, { targets: dailyTargets(p), goals: p.goals }),
 
-    ...cycleCard(p, cd),
+    ...cycleCard(p, day, cd),
     timeline: timeline(app, sel, day, p)
   };
 }
@@ -143,12 +143,13 @@ function tipsOf(s, day, sc, tone, isToday, todayK, opts) {
 }
 
 /** Карточка цикла: беременность, фаза (на КОК — упрощённо) или ничего */
-function cycleCard(p, cd) {
+function cycleCard(p, day, cd) {
   if (p.cycle && p.menopause) return { showCycle: true, cycle: { caption: 'Цикл', phase: MENOPAUSE_NOTE[0], note: MENOPAUSE_NOTE[1] } };
   if (p.cycle && p.pregnant) return { showCycle: true, cycle: { caption: 'Цикл', phase: PREGNANCY_NOTE[0], note: PREGNANCY_NOTE[1] } };
-  if (!cd) return { showCycle: false, cycle: null };
-  const [phase, note] = cyclePhase(cd, p.len, p.coc);
-  return { showCycle: true, cycle: { caption: 'Цикл · день ' + cd + ' из ' + p.len + (p.coc ? ' · КОК' : ''), phase, note } };
+  // фазы — только в важные дни (месячные, овуляция, скоро месячные), а не каждый день
+  const alert = cycleAlert(p, day, cd);
+  if (!alert) return { showCycle: false, cycle: null };
+  return { showCycle: true, cycle: { caption: 'Цикл · день ' + cd + (p.coc ? ' · КОК' : ''), phase: alert.phase, note: alert.note } };
 }
 
 const colorLabel = (id) => ((STOOL_COLORS.find((c) => c.id === id) || {}).label || '').toLowerCase();

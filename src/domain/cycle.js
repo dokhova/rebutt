@@ -31,5 +31,38 @@ export function cyclePhase(d, len, coc = false) {
   return ['Перед месячными', 'Прогестерон немного замедляет кишечник — вздутие и более редкий стул в эти дни частые и нормальные. Помогут вода и клетчатка.'];
 }
 
+/** Через сколько дней по расчёту начнутся следующие месячные (1 — завтра) */
+export const daysToPeriod = (cd, len) => len - cd + 1;
+
+/** За сколько дней до месячных предупреждаем */
+export const PERIOD_WARN_DAYS = 3;
+
+/**
+ * Предупреждение о цикле на главной — только в важные дни, а не постоянно:
+ * месячные (по расчёту или отмечены), овуляция, за PERIOD_WARN_DAYS дня до месячных.
+ * На КОК — только дни кровотечения отмены. null — сегодня показывать нечего.
+ * @returns {{ kind: 'period'|'soon'|'ovulation', phase: string, note: string } | null}
+ */
+export function cycleAlert(profile, day, cd) {
+  if (!cd) return null;
+  const len = profile.len;
+  if (isPeriodDay(profile, day, cd)) {
+    const [phase, note] = cyclePhase(cd <= 5 ? cd : 1, len, profile.coc);
+    return { kind: 'period', phase: day.period ? phase : phase + ' по расчёту', note };
+  }
+  if (profile.coc) return null;
+  const left = daysToPeriod(cd, len);
+  if (left <= PERIOD_WARN_DAYS) {
+    return { kind: 'soon', phase: left === 1 ? 'Месячные, скорее всего, завтра' : 'Месячные примерно через ' + left + ' дн.', note: cyclePhase(cd, len)[1] };
+  }
+  const [phase, note] = cyclePhase(cd, len);
+  if (phase === 'Овуляция') return { kind: 'ovulation', phase: 'Овуляция примерно сейчас', note };
+  return null;
+}
+
+/** Показывать ли в «+» отметку месячных целиком: за пару дней до, во время и сразу после; иначе — короткая ссылка */
+export const periodMarkExpected = (profile, cd) =>
+  cd > 0 && (cd <= 7 || daysToPeriod(cd, profile.len) <= PERIOD_WARN_DAYS);
+
 /** Сколько дней до фазы «перед месячными» (минимум 1) */
 export const daysToLuteal = (cd, len) => Math.max(1, (len - 11) - cd);

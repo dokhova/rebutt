@@ -8,7 +8,7 @@ import { gutFormView } from './gut-form.js';
 import { mealCard } from './meal-card.js';
 import { dayMonth, addDays, parseKey, WEEKDAYS_FULL, nowHM } from '../domain/dates.js';
 import { gutScore } from '../domain/score.js';
-import { cycleDay } from '../domain/cycle.js';
+import { cycleDay, periodMarkExpected } from '../domain/cycle.js';
 import { noCyclePhases } from '../domain/profile.js';
 
 export function addEntryView(app) {
@@ -29,6 +29,8 @@ export function addEntryView(app) {
     isStool: id === 'stool', isFood: id === 'food', isWater: id === 'water',
     pick: () => app.pickAddSection(id)
   });
+  const periodOn = p.cycle && !noCyclePhases(p);
+  const periodNear = periodMarkExpected(p, cycleDay(p, dayK, todayK)) || !!f.period || !!today.period;
   const savedWater = today.water || 0, totalWater = Math.max(0, savedWater + (f.water || 0));
 
   return {
@@ -62,7 +64,9 @@ export function addEntryView(app) {
 
     ...gutFormView(app, 'form'),
 
-    cycleEnabled: p.cycle && !noCyclePhases(p),
+    // блок «Месячные» целиком — только около ожидаемых месячных или если уже отмечено; в остальные дни — короткая ссылка
+    periodFull: periodOn && periodNear,
+    periodLink: periodOn && !periodNear,
     cycleDayKnown: cycleDay(p, dayK, todayK) > 0,
     cycleDay: cycleDay(p, dayK, todayK),
     periodNo: seg(f.period === 'no'),

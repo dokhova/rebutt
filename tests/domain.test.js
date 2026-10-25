@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { keyOf, parseKey, addDays, diffDays, mondayOf, yearsWord } from '../src/domain/dates.js';
 import { gutScore, toneOf, symptomsOf } from '../src/domain/score.js';
-import { cycleDay, cyclePhase, isPeriodDay } from '../src/domain/cycle.js';
+import { cycleDay, cyclePhase, isPeriodDay, cycleAlert, periodMarkExpected } from '../src/domain/cycle.js';
 import { blankProfile, onboardingFlow } from '../src/domain/profile.js';
 import { buildAiContext } from '../src/domain/ai-context.js';
 
@@ -221,4 +221,21 @@ test('кэш инсайтов сбрасывается, когда меняет�
   const a = aiContextHash(buildAiContext({ ...blankProfile(), weight: 60 }, log, '2026-10-18'));
   const b = aiContextHash(buildAiContext({ ...blankProfile(), weight: 80 }, log, '2026-10-18'));
   assert.notEqual(a, b);
+});
+
+test('цикл: предупреждения только в важные дни', () => {
+  const p = { ...blankProfile(), cycle: true, lastAgo: 0, len: 28 };
+  const d = (period = false) => ({ gut: [], meals: [], period });
+  assert.equal(cycleAlert(p, d(), 2).kind, 'period');
+  assert.equal(cycleAlert(p, d(), 9), null);             // ровный период — молчим
+  assert.equal(cycleAlert(p, d(), 14).kind, 'ovulation');
+  assert.equal(cycleAlert(p, d(), 20), null);
+  assert.equal(cycleAlert(p, d(), 26).kind, 'soon');      // через 3 дня
+  assert.match(cycleAlert(p, d(), 28).phase, /завтра/);
+  assert.equal(cycleAlert(p, d(true), 20).kind, 'period'); // отмечено вручную
+  assert.equal(cycleAlert({ ...p, coc: true }, d(), 14), null);
+  assert.equal(cycleAlert(p, d(), 0), null);
+  assert.equal(periodMarkExpected(p, 3), true);
+  assert.equal(periodMarkExpected(p, 15), false);
+  assert.equal(periodMarkExpected(p, 27), true);
 });
