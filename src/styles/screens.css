@@ -115,8 +115,11 @@
 .photo-drop { position: relative; height: 112px; border-radius: 22px; border: 1px dashed var(--line-control); background: var(--surface-2); display: flex; align-items: center; justify-content: center; gap: 14px; font-size: 15px; cursor: pointer; }
 .photo-drop .icon-btn { background: var(--surface-4); }
 .file-input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-.photo-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.photo-drop.half { flex-direction: column; gap: 8px; height: 112px; }
+
+/* время приёма пищи: подпись слева, поле справа */
+.time-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 15px; }
+.time-input { height: 44px; min-width: 104px; border-radius: 14px; border: 1px solid var(--line-control); background: var(--surface-1); color: var(--ink); padding: 0 12px; font-size: 16px; font-family: inherit; box-sizing: border-box; color-scheme: dark; }
+.time-input:focus { outline: none; border-color: rgba(248, 247, 242, .5); }
 
 .scan { position: relative; height: 140px; border-radius: 22px; overflow: hidden; }
 .scan img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -130,10 +133,6 @@
 /* карточка блюда: название и оценка → КБЖУ → совет */
 .meal-card { display: flex; flex-direction: column; gap: 14px; }
 .meal-head { display: flex; gap: 12px; align-items: center; }
-.meal-photo { position: relative; aspect-ratio: 4 / 3; border-radius: 18px; overflow: hidden; background: var(--surface-2); }
-.meal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.meal-photo.drawing { animation: pulse 1.6s ease-in-out infinite alternate; }
-.meal-photo-tag { position: absolute; left: 10px; bottom: 10px; padding: 4px 10px; border-radius: 999px; background: rgba(20, 19, 24, .72); color: var(--ink); font-size: 12px; }
 .meal-info { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .meal-name { font-size: 17px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
 .meal-verdict { color: var(--muted); font-size: 14px; }

@@ -1,16 +1,7 @@
-<!-- Карточка блюда. Значения: card из src/views/meal-card.js -->
+<!-- Карточка блюда. Значения: card из src/views/meal-card.js. С фото и без — одна раскладка: миниатюра слева, название и калории справа -->
 <div class="meal-card">
-  <sc-if value="{{card.hasPhoto}}">
-    <div class="meal-photo">
-      <img src="{{card.photo}}" alt="{{card.name}}">
-      <sc-if value="{{card.aiArt}}"><span class="meal-photo-tag">Картинка ИИ</span></sc-if>
-    </div>
-  </sc-if>
-  <sc-if value="{{card.drawing}}">
-    <div class="meal-photo drawing" style="background: {{card.tint}}"><span class="meal-photo-tag">ИИ рисует картинку…</span></div>
-  </sc-if>
   <div class="meal-head">
-    <sc-if value="{{card.showThumb}}"><span class="thumb lg" style="background: {{card.tint}}"></span></sc-if>
+    <span class="thumb lg" style="background: {{card.tint}}"><sc-if value="{{card.hasPhoto}}"><img src="{{card.photo}}" alt=""></sc-if></span>
     <div class="meal-info">
       <div class="meal-name">{{card.name}}</div>
       <div class="meal-verdict">{{card.verdict}}</div>

@@ -15,7 +15,7 @@ import { splitSentences } from '../domain/text.js';
 import { DEMO_TODAY, demoLog, demoProfile, DEMO_ANSWERS, DEMO_ANSWER_DEFAULT } from '../domain/demo.js';
 import * as store from '../services/store.js';
 import { track, flush, identifyUser, setPersonProps, setScreen, resetAnalytics } from '../services/analytics.js';
-import { analyzeFood, askAI, getInsights, generateMealImage } from '../services/ai.js';
+import { analyzeFood, askAI, getInsights } from '../services/ai.js';
 import { compressImage, photoForStorage } from '../services/image.js';
 import { putPhoto, deletePhoto, getPhotos, withPhotos, mealIds } from '../services/photos.js';
 import { exportCSV, openDoctorReport } from '../services/export.js';
@@ -48,8 +48,8 @@ const blankForm = () => ({
   stress: null,       // стресс 0–10; null — не отмечали
   period: '',         // '' | 'yes' | 'no'
   food: 'pick',       // 'pick' — фото и/или описание, 'scan' — ИИ разбирает, 'done' — результат
-  photo: '',          // фото блюда: blob-ссылка (своё фото) или data URL (картинка ИИ); при сохранении уменьшается и уходит в IndexedDB + Storage
-  art: '',            // '' | 'loading' — ИИ рисует картинку к блюду, описанному словами
+  photo: '',          // фото блюда: blob-ссылка; при сохранении уменьшается и уходит в IndexedDB + Storage
+  mealTime: '',       // когда поели, 'ЧЧ:ММ'; '' — сейчас (на момент сохранения)
   note: '',           // комментарий к блюду: что на тарелке, порция
   result: null,       // разбор блюда (src/domain/meal.js)
   source: '',         // 'photo' | 'text'
@@ -66,6 +66,9 @@ function friendlyAiError(e, what = 'разобрать блюдо') {
   if (/fetch|network|Load failed|NetworkError/i.test(msg)) return 'Не получилось ' + what + ': нет связи с сервером. Проверьте интернет и попробуйте ещё раз';
   return 'Не получилось ' + what + '. Попробуйте ещё раз через минуту';
 }
+
+/** 'ЧЧ:ММ' из значения <input type="time"> (бывает 'ЧЧ:ММ:СС'); '' — пусто или мусор */
+const mealTimeOf = (v) => (/^([01]\d|2[0-3]):[0-5]\d/.test(String(v || '')) ? String(v).slice(0, 5) : '');
 
 /** Текущее значение поля из DOM: onChange срабатывает только при потере фокуса, а нажать «Сохранить» можно раньше */
 function liveValue(id, fallback) {
@@ -143,8 +146,6 @@ export default class App extends Component {
       exampleN: 0
     };
     this.onboardingStartedAt = Date.now();
-    this.mealSaves = {};  // id блюда → промис записи в Supabase (путь к фото дописываем после неё)
-    this.artJob = null;   // картинка ИИ в работе: { id, day, mealId } — day/mealId появляются, если блюдо уже сохранили
     this.handleBack = () => this.back();
 
     // ref-колбэки для шаблона
@@ -290,7 +291,7 @@ export default class App extends Component {
       day.gut.push(gut);
     }
     if (f.food === 'done' && f.result) {
-      meal = { id: newId(), time, ...f.result, note: f.note.trim(), photo: f.photo, source: f.source };
+      meal = { id: newId(), time: mealTimeOf(liveValue('foodTime', f.mealTime)) || time, ...f.result, note: f.note.trim(), photo: f.photo, source: f.source };
       day.meals.push(meal);
     }
     return { day, gut, meal };
@@ -633,7 +634,6 @@ export default class App extends Component {
   closeAddSheet() {
     clearTimeout(this.exampleTimer);
     this.scanId = null;
-    this.cancelMealArt();
     this.setState({ addSheet: null, keyboard: false, form: blankForm() });
     track('add_sheet_closed');
   }
@@ -845,7 +845,6 @@ export default class App extends Component {
       if (this.scanId !== scanId) return; // блюдо уже убрали
       this.setForm({ food: 'done', result });
       track('food_analysis_completed', { source, has_note: !!note, tone: result.tone, kcal: result.kcal, fiber: result.fiber, latency_ms: Date.now() - startedAt });
-      if (source === 'text') this.startMealArt(result.name, note);
     } catch (e) {
       if (this.scanId !== scanId) return;
       this.setForm({ food: 'pick' });
@@ -868,9 +867,8 @@ export default class App extends Component {
   removeFood() {
     clearTimeout(this.exampleTimer);
     this.scanId = null;
-    this.cancelMealArt();
     const f = blankForm();
-    this.setForm({ art: '', food: f.food, photo: f.photo, note: f.note, result: f.result, source: f.source, fixOpen: false, fix: '', fixing: false });
+    this.setForm({ food: f.food, photo: f.photo, note: f.note, result: f.result, source: f.source, fixOpen: false, fix: '', fixing: false });
     track('food_removed');
   }
 
@@ -881,7 +879,6 @@ export default class App extends Component {
     if (IS_DEMO) { this.setForm({ fixOpen: false, fix: '' }); this.showToast('В демо уточнение не пересчитывается'); return; }
     this.setForm({ fixing: true });
     try {
-      // картинку ИИ в разбор не отправляем — это иллюстрация, а не фото тарелки
       const result = await this.requestMeal({ photo: f.source === 'photo' ? f.photo : '', note: fix, previous: f.result });
       this.setForm({ result, fixing: false, fixOpen: false, fix: '', note: [f.note.trim(), fix].filter(Boolean).join('; ') });
       track('food_reanalyzed', { where: 'draft', kcal: result.kcal });
@@ -905,6 +902,16 @@ export default class App extends Component {
   closeMeal() { this.setState({ mealEdit: null }); }
 
   setMealFix(text) { this.setState({ mealEdit: { ...this.state.mealEdit, fix: text } }); }
+
+  /** Время приёма пищи у сохранённого блюда */
+  setMealTime(value) {
+    const me = this.state.mealEdit, meal = me && this.findMeal(me.day, me.id), time = mealTimeOf(value);
+    if (!meal || !time || time === meal.time) return;
+    const updated = { ...meal, time };
+    this.replaceMeal(me.day, me.id, updated);
+    if (!IS_DEMO) store.updateMeal(updated);
+    track('meal_time_changed', { where: 'saved' });
+  }
 
   replaceMeal(dayK, id, patch) {
     const d = this.day(dayK);
@@ -942,7 +949,7 @@ export default class App extends Component {
     track('meal_deleted');
   }
 
-  // ---------- фото блюда: хранение и картинка ИИ ----------
+  // ---------- фото блюда: хранение ----------
 
   /** Меняет поля блюда в записях, если оно ещё есть (его могли удалить, пока шла загрузка) */
   patchMeal(dayK, id, patch) {
@@ -962,47 +969,7 @@ export default class App extends Component {
         if (photoPath) this.patchMeal(k, meal.id, { photoPath });
       }
     }
-    this.mealSaves[meal.id] = store.addMeal(k, { ...meal, photoPath });
-  }
-
-  /** Блюдо описали словами — просим ИИ нарисовать картинку. Пока рисует, вместо фото — заглушка. */
-  async startMealArt(name, note) {
-    if (IS_DEMO) return;
-    const job = (this.artJob = { id: newId(), day: null, mealId: null });
-    this.setForm({ art: 'loading' });
-    track('food_art_requested');
-    const startedAt = Date.now();
-    try {
-      const r = await generateMealImage({ name, note });
-      if (this.artJob !== job) return; // блюдо убрали или шторку закрыли без сохранения
-      const photo = await photoForStorage(r.image);
-      this.artJob = null;
-      track('food_art_completed', { latency_ms: Date.now() - startedAt, saved_before: !!job.mealId });
-      if (job.mealId) { this.attachArtToSaved(job.day, job.mealId, photo); return; }
-      this.setForm({ photo, art: '' });
-    } catch (e) {
-      if (this.artJob !== job) return;
-      this.artJob = null;
-      if (!job.mealId) this.setForm({ art: '' });
-      // причину показываем как есть — так видно, что не так с ключом или моделью OpenAI
-      this.showToast('Картинку нарисовать не вышло: ' + String(e.message || e).slice(0, 160));
-      track('food_art_failed', { reason: String(e.message || e).slice(0, 120), latency_ms: Date.now() - startedAt });
-    }
-  }
-
-  cancelMealArt() {
-    if (this.artJob && !this.artJob.mealId) this.artJob = null;
-  }
-
-  async attachArtToSaved(dayK, id, photo) {
-    if (!this.findMeal(dayK, id)) return;
-    this.patchMeal(dayK, id, { photo });
-    putPhoto(id, photo);
-    const path = await store.uploadMealPhoto(id, photo);
-    if (!path) return;
-    this.patchMeal(dayK, id, { photoPath: path });
-    await this.mealSaves[id];
-    store.setMealPhotoPath(id, path);
+    store.addMeal(k, { ...meal, photoPath });
   }
 
   saveEntry() {
@@ -1034,8 +1001,6 @@ export default class App extends Component {
     this.setState({ log, form: blankForm(), screen: 'today', selected: k, addSheet: null });
     this.showToast('Сохранено');
 
-    // картинка ИИ ещё рисуется — допишем её к уже сохранённому блюду, когда придёт
-    if (meal && this.artJob && f.art === 'loading') Object.assign(this.artJob, { day: k, mealId: meal.id });
     if (meal) this.persistNewMeal(k, meal);
 
     if (!IS_DEMO) {

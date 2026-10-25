@@ -6,8 +6,7 @@ import { dailyTargets } from '../domain/targets.js';
 import { litres } from '../domain/suggestions.js';
 import { gutFormView } from './gut-form.js';
 import { mealCard } from './meal-card.js';
-import { dayMonth, addDays, parseKey, WEEKDAYS_FULL } from '../domain/dates.js';
-import { isAndroid } from '../services/telegram.js';
+import { dayMonth, addDays, parseKey, WEEKDAYS_FULL, nowHM } from '../domain/dates.js';
 import { gutScore } from '../domain/score.js';
 import { cycleDay } from '../domain/cycle.js';
 import { noCyclePhases } from '../domain/profile.js';
@@ -74,8 +73,9 @@ export function addEntryView(app) {
     food: { pick: f.food === 'pick', scan: f.food === 'scan', done: f.food === 'done' },
     photo: f.photo,
     noPhoto: !f.photo,
-    photoSplit: !f.photo && isAndroid(),
-    photoSingle: !f.photo && !isAndroid(),
+    // время приёма пищи: по умолчанию — сейчас; можно поставить, когда ели на самом деле
+    mealTime: f.mealTime || nowHM(),
+    onMealTime: (e) => app.setForm({ mealTime: e.target.value }),
     note: f.note,
     onNote: (e) => app.setForm({ note: e.target.value }),
     onPhoto: (e) => {
@@ -87,7 +87,7 @@ export function addEntryView(app) {
     analyzeCls: 'btn secondary' + (f.photo || f.note.trim() ? '' : ' off'),
     analyze: () => app.analyzeFoodDraft(),
     scanTint: MEAL_TINT.mild,
-    card: f.result ? mealCard(f.result, f.photo, { drawing: f.art === 'loading', aiArt: f.source === 'text' && !!f.photo }) : null,
+    card: f.result ? mealCard(f.result, f.photo) : null,
     removeFood: () => app.removeFood(),
     fixOpen: f.fixOpen,
     fixClosed: !f.fixOpen,

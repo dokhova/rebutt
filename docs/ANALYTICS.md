@@ -61,14 +61,12 @@
 | `food_photo_removed` | фото убрали до разбора | — |
 | `food_analysis_requested` | «Разобрать с ИИ» | `has_photo`, `has_note` |
 | `food_analysis_completed` | ИИ разобрал блюдо | `source` (`photo` / `text`), `has_note`, `tone`, `kcal`, `fiber`, `latency_ms` |
-| `food_art_requested` | блюдо без фото — ИИ начал рисовать картинку | — |
-| `food_art_completed` | картинка готова | `latency_ms`, `saved_before` (блюдо уже сохранили, пока рисовалась) |
-| `food_art_failed` | картинку нарисовать не вышло (блюдо сохраняется без неё) | `reason`, `latency_ms` |
 | `food_analysis_failed` | ошибка или не еда | `source`, `reason`, `latency_ms` |
 | `food_reanalyzed` | пересчёт после «Уточнить» | `where` (`draft` — до сохранения / `saved` — сохранённое блюдо), `kcal` |
 | `food_reanalyze_failed` | ошибка пересчёта | `where`, `reason` |
 | `food_removed` | «Убрать» блюдо до сохранения | — |
 | `meal_opened` | открыто сохранённое блюдо из «Записей дня» | — |
+| `meal_time_changed` | поменяли время у сохранённого блюда | `where` |
 | `meal_deleted` | сохранённое блюдо удалено | — |
 | `entry_opened` | открыта запись о стуле/самочувствии из «Записей дня» | — |
 | `entry_updated` | запись исправлена | `stool_status`, `bristol_type`, `has_color`, `stress` |

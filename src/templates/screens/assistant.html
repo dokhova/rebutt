@@ -38,13 +38,6 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
         <input id="askFile" class="file-input" type="file" accept="image/*" onChange="{{onChatImage}}">
       </label>
-      <!-- Android: камера отдельной кнопкой — системный выбор файла там часто открывает только галерею -->
-      <sc-if value="{{showChatCamera}}">
-        <label class="attach-btn" aria-label="Сфотографировать">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>
-          <input id="askCamera" class="file-input" type="file" accept="image/*" capture="environment" onChange="{{onChatImage}}">
-        </label>
-      </sc-if>
       <label class="sr-only" for="askInput">Вопрос ИИ</label>
       <!-- textarea: длинный вопрос переносится на следующие строки; высота подстраивается под текст (ref fitAsk) -->
       <textarea id="askInput" class="ask-input" rows="1" placeholder="Ваш вопрос…" onChange="{{onAskInput}}" onKeydown="{{onAskKey}}" enterkeyhint="send" ref="{{fitAsk}}">{{askText}}</textarea>

@@ -8,7 +8,9 @@ export function mealView(app) {
   return {
     mealMissing: false,
     mealFound: true,
-    mealWhen: dayMonth(me.day) + ', ' + meal.time,
+    mealWhen: dayMonth(me.day),
+    mealTimeValue: meal.time,
+    onMealTime: (e) => app.setMealTime(e.target.value),
     card: mealCard(meal),
     fix: me.fix,
     onFix: (e) => app.setMealFix(e.target.value),
