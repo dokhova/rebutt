@@ -6,6 +6,12 @@ export function getTelegram() {
 
 export function isTelegram() { return !!getTelegram(); }
 
+/** Android (в Telegram или в браузере): там выбор файла часто открывает только галерею, поэтому камеру показываем отдельной кнопкой */
+export function isAndroid() {
+  const p = (getTelegram() || {}).platform || '';
+  return p.startsWith('android') || /android/i.test(globalThis.navigator?.userAgent || '');
+}
+
 export function initTelegram() {
   const app = getTelegram();
   if (!app) return;

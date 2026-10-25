@@ -7,8 +7,12 @@ import { IS_DEMO } from '../config.js';
 import { addDays, diffDays } from '../domain/dates.js';
 import { normalizeMeal } from '../domain/meal.js';
 import { validHeight, validWeight } from '../domain/profile.js';
+import { clearPhotos } from './photos.js';
 
 const LS_STATE = 'gt_state_v1';
+// Фото блюд: приватный бакет Supabase Storage, путь <user_id>/<meal_id>.jpg (миграция 20261025120000_meal_photos.sql)
+const PHOTO_BUCKET = 'meal-photos';
+const PHOTO_URL_TTL_S = 7 * 24 * 3600;
 const LS_PREFIX = 'gt_';
 const HISTORY_DAYS = 90;
 
@@ -25,7 +29,7 @@ export function loadLocal() {
 export function saveLocal(profile, log) {
   if (IS_DEMO) return;
   try {
-    // фото еды — blob-ссылки текущей сессии, их не сохраняем
+    // фото еды живут в IndexedDB (services/photos.js) и в Supabase Storage; в localStorage — только путь (photoPath)
     const clean = {};
     for (const k of Object.keys(log)) clean[k] = { ...log[k], meals: (log[k].meals || []).map((m) => ({ ...m, photo: '' })) };
     localStorage.setItem(LS_STATE, JSON.stringify({ profile, log: clean }));
@@ -36,6 +40,17 @@ function clearLocal() {
   try {
     Object.keys(localStorage).filter((k) => k.startsWith(LS_PREFIX)).forEach((k) => localStorage.removeItem(k));
   } catch (_) { /* нет доступа к хранилищу */ }
+}
+
+/** Блюда: серверная версия главнее, но фото с устройства (уже загруженное) не теряем */
+function mergeMeals(local, remote) {
+  const byId = new Map(local.filter((m) => m.id).map((m) => [m.id, m]));
+  const out = remote.map((m) => {
+    const l = byId.get(m.id);
+    byId.delete(m.id);
+    return l ? { ...m, photo: l.photo || m.photo, photoPath: m.photoPath || l.photoPath || '' } : m;
+  });
+  return [...out, ...local.filter((m) => !m.id || byId.has(m.id))];
 }
 
 /** Объединяет локальные и серверные записи без дублей (по id) */
@@ -50,7 +65,7 @@ export function mergeLogs(local, remote) {
     const a = local[k] || {}, b = remote[k] || {};
     out[k] = {
       gut: uniqueById([...(b.gut || []), ...(a.gut || [])]).sort(byTime),
-      meals: uniqueById([...(b.meals || []), ...(a.meals || [])]).sort(byTime),
+      meals: mergeMeals(a.meals || [], b.meals || []).sort(byTime),
       period: !!(a.period || b.period),
       // жидкость хранится одним числом за день; на устройстве — самое свежее, поэтому берём большее
       water: Math.max(a.water || 0, b.water || 0)
@@ -138,10 +153,11 @@ export async function loadRemote(todayK) {
   }
   for (const m of meals.data || []) {
     day(m.day).meals.push({
-      id: m.id, time: (m.time || '').slice(0, 5), source: m.source, note: m.note || '', photo: '',
+      id: m.id, time: (m.time || '').slice(0, 5), source: m.source, note: m.note || '', photo: '', photoPath: m.photo_path || '',
       ...normalizeMeal(m)
     });
   }
+  await signMealPhotos(log);
   for (const p of per.data || []) day(p.day).period = true;
   for (const w of wat.data || []) day(w.day).water = w.ml || 0;
 
@@ -214,17 +230,72 @@ const mealRow = (m) => ({
   verdict: m.verdict, tone: m.tone, tip: m.tip, note: m.note || null
 });
 
+/** insert/update блюда; если миграция с photo_path ещё не применена — повторяем без неё */
+async function mealQuery(label, build, row) {
+  const first = await build(row);
+  if (!first.error) return true;
+  if ('photo_path' in row && /photo_path/.test(first.error.message || '')) {
+    console.warn('[store] нет колонки meals.photo_path — примените миграции из supabase/migrations');
+    const rest = { ...row };
+    delete rest.photo_path;
+    return run(label, build(rest));
+  }
+  console.warn('[store] ' + label + ':', first.error.message);
+  return false;
+}
+
 export const addMeal = (dayK, m) =>
-  withUser((u) => run('meal', supabase.from('meals').insert({
-    id: m.id, user_id: u.id, day: dayK, time: m.time, source: m.source || 'photo', ...mealRow(m)
-  })));
+  withUser((u) => mealQuery('meal', (row) => supabase.from('meals').insert(row), {
+    id: m.id, user_id: u.id, day: dayK, time: m.time, source: m.source || 'photo', ...mealRow(m),
+    ...(m.photoPath ? { photo_path: m.photoPath } : {})
+  }));
 
 /** Обновляет блюдо после уточнения */
 export const updateMeal = (m) =>
   withUser(() => run('meal update', supabase.from('meals').update(mealRow(m)).eq('id', m.id)));
 
-export const deleteMeal = (id) =>
-  withUser(() => run('meal delete', supabase.from('meals').delete().eq('id', id)));
+/** Путь к фото у уже сохранённого блюда (картинка ИИ пришла после «Сохранить») */
+export const setMealPhotoPath = (id, path) =>
+  withUser(() => mealQuery('meal photo', (row) => supabase.from('meals').update(row).eq('id', id), { photo_path: path }));
+
+export const deleteMeal = (id, photoPath) =>
+  withUser(async () => {
+    if (photoPath) await supabase.storage.from(PHOTO_BUCKET).remove([photoPath]).catch(() => null);
+    return run('meal delete', supabase.from('meals').delete().eq('id', id));
+  });
+
+// ---------- фото блюд (Supabase Storage) ----------
+
+/** Загружает фото блюда (JPEG data URL). Возвращает путь в бакете или '' (нет Supabase, нет бакета, ошибка). */
+export async function uploadMealPhoto(mealId, dataUrl) {
+  if (!supabase || IS_DEMO || !dataUrl) return '';
+  try {
+    const user = await getUser();
+    if (!user) return '';
+    const path = user.id + '/' + mealId + '.jpg';
+    const blob = await (await fetch(dataUrl)).blob();
+    const { error } = await supabase.storage.from(PHOTO_BUCKET).upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+    if (error) { console.warn('[store] photo upload:', error.message); return ''; }
+    return path;
+  } catch (e) {
+    console.warn('[store] photo upload', e);
+    return '';
+  }
+}
+
+/** Временные ссылки на фото для блюд с photoPath (бакет приватный) */
+async function signMealPhotos(log) {
+  const meals = Object.values(log).flatMap((d) => d.meals).filter((m) => m.photoPath);
+  if (!meals.length) return;
+  try {
+    const { data, error } = await supabase.storage.from(PHOTO_BUCKET).createSignedUrls(meals.map((m) => m.photoPath), PHOTO_URL_TTL_S);
+    if (error) { console.warn('[store] photo urls:', error.message); return; }
+    const byPath = new Map((data || []).filter((x) => x.signedUrl).map((x) => [x.path, x.signedUrl]));
+    for (const m of meals) m.photo = byPath.get(m.photoPath) || '';
+  } catch (e) {
+    console.warn('[store] photo urls', e);
+  }
+}
 
 export const setPeriodDay = (dayK, on) =>
   withUser((u) => on
@@ -238,9 +309,14 @@ export const setWaterDay = (dayK, ml) =>
 /** Удаляет всё по пользователю: записи, еду, цикл, согласия, аналитику, профиль. Плюс локальный кэш. */
 export async function wipeAll() {
   clearLocal();
+  clearPhotos();
   return withUser(async (u) => {
     const tables = ['gut_entries', 'meals', 'period_days', 'water_days', 'analytics_events', 'consents'];
     const results = await Promise.all(tables.map((t) => run('wipe ' + t, supabase.from(t).delete().eq('user_id', u.id))));
+    try {
+      const { data: files } = await supabase.storage.from(PHOTO_BUCKET).list(u.id, { limit: 1000 });
+      if (files && files.length) await supabase.storage.from(PHOTO_BUCKET).remove(files.map((f) => u.id + '/' + f.name));
+    } catch (e) { console.warn('[store] wipe photos', e); }
     const profileOk = await run('wipe profiles', supabase.from('profiles').delete().eq('id', u.id));
     return results.every(Boolean) && profileOk;
   });

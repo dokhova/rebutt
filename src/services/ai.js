@@ -5,9 +5,9 @@ import { telegramInitData } from './telegram.js';
 
 const TIMEOUT_MS = 45000;
 
-async function post(path, body) {
+async function post(path, body, timeoutMs = TIMEOUT_MS) {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const token = await getAccessToken();
     const initData = telegramInitData();
@@ -25,7 +25,7 @@ async function post(path, body) {
     if (!res.ok) throw new Error(data.error || 'Сервер ответил ' + res.status);
     return data;
   } catch (e) {
-    if (e.name === 'AbortError') throw new Error('ИИ не ответил за 45 секунд');
+    if (e.name === 'AbortError') throw new Error('ИИ не ответил за ' + Math.round(timeoutMs / 1000) + ' секунд');
     throw e;
   } finally {
     clearTimeout(timer);
@@ -43,3 +43,6 @@ export const askAI = ({ question, image, history, context }) => post('/api/ask',
 
 /** Сводка записей → { tip_title, tip_text, noticed } */
 export const getInsights = (context) => post('/api/insights', { context });
+
+/** Картинка блюда по описанию (когда нет фото) → { image: data URL }. Генерация дольше обычного ответа — ждём до 70 с. */
+export const generateMealImage = ({ name, note }) => post('/api/meal-image', { name, note }, 70000);

@@ -6,14 +6,17 @@ import { dailyTargets } from '../domain/targets.js';
 import { litres } from '../domain/suggestions.js';
 import { gutFormView } from './gut-form.js';
 import { mealCard } from './meal-card.js';
-import { dayMonth } from '../domain/dates.js';
+import { dayMonth, addDays, parseKey, WEEKDAYS_FULL } from '../domain/dates.js';
+import { isAndroid } from '../services/telegram.js';
 import { gutScore } from '../domain/score.js';
 import { cycleDay } from '../domain/cycle.js';
 import { noCyclePhases } from '../domain/profile.js';
 
 export function addEntryView(app) {
-  const s = app.state, f = s.form, p = s.profile, todayK = app.today();
-  const today = app.day(todayK);
+  // День записи — выбранный на главной (можно дописать забытый день), по умолчанию сегодня
+  const s = app.state, f = s.form, p = s.profile, todayK = app.today(), dayK = app.entryDay();
+  const isToday = dayK === todayK;
+  const today = app.day(dayK);
   const scoreNow = gutScore(today), scorePreview = gutScore(app.draftDay(today).day);
   const seg = (on) => 'seg' + (on ? ' on' : '');
 
@@ -30,7 +33,8 @@ export function addEntryView(app) {
   const savedWater = today.water || 0, totalWater = Math.max(0, savedWater + (f.water || 0));
 
   return {
-    dateLong: 'Сегодня, ' + dayMonth(todayK),
+    dateLong: dayLabel(dayK, todayK),
+    isPastDay: !isToday,
 
     // шторка: выбор раздела или форма
     sheetPicking: sheet === 'pick',
@@ -47,6 +51,7 @@ export function addEntryView(app) {
     sec: { stool: sheet === 'stool', food: sheet === 'food', water: sheet === 'water' },
 
     // жидкости
+    waterCaption: isToday ? 'За сегодня' : 'За ' + dayMonth(dayK),
     waterTotal: litres(totalWater),
     waterGoal: 'из ' + litres(dailyTargets(p).waterMl) + ' л за день',
     waterBar: 'width: ' + Math.min(100, Math.round(totalWater / dailyTargets(p).waterMl * 100)) + '%',
@@ -59,8 +64,8 @@ export function addEntryView(app) {
     ...gutFormView(app, 'form'),
 
     cycleEnabled: p.cycle && !noCyclePhases(p),
-    cycleDayKnown: cycleDay(p, todayK, todayK) > 0,
-    cycleDay: cycleDay(p, todayK, todayK),
+    cycleDayKnown: cycleDay(p, dayK, todayK) > 0,
+    cycleDay: cycleDay(p, dayK, todayK),
     periodNo: seg(f.period === 'no'),
     periodYes: seg(f.period === 'yes'),
     setPeriodNo: () => app.setPeriodMark('no'),
@@ -69,6 +74,8 @@ export function addEntryView(app) {
     food: { pick: f.food === 'pick', scan: f.food === 'scan', done: f.food === 'done' },
     photo: f.photo,
     noPhoto: !f.photo,
+    photoSplit: !f.photo && isAndroid(),
+    photoSingle: !f.photo && !isAndroid(),
     note: f.note,
     onNote: (e) => app.setForm({ note: e.target.value }),
     onPhoto: (e) => {
@@ -80,7 +87,7 @@ export function addEntryView(app) {
     analyzeCls: 'btn secondary' + (f.photo || f.note.trim() ? '' : ' off'),
     analyze: () => app.analyzeFoodDraft(),
     scanTint: MEAL_TINT.mild,
-    card: f.result ? mealCard(f.result, f.photo) : null,
+    card: f.result ? mealCard(f.result, f.photo, { drawing: f.art === 'loading', aiArt: f.source === 'text' && !!f.photo }) : null,
     removeFood: () => app.removeFood(),
     fixOpen: f.fixOpen,
     fixClosed: !f.fixOpen,
@@ -95,4 +102,11 @@ export function addEntryView(app) {
     scorePreview: scorePreview ? scorePreview.idx + '%' : '—',
     save: () => app.saveEntry()
   };
+}
+
+/** «Сегодня, 25 октября», «Вчера, 24 октября», «Пятница, 23 октября» */
+function dayLabel(k, todayK) {
+  if (k === todayK) return 'Сегодня, ' + dayMonth(k);
+  if (k === addDays(todayK, -1)) return 'Вчера, ' + dayMonth(k);
+  return WEEKDAYS_FULL[parseKey(k).getDay()] + ', ' + dayMonth(k);
 }

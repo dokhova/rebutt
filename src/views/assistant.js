@@ -1,5 +1,15 @@
 // ИИ-помощник: панель, которая выезжает снизу поверх любого экрана. Открывается круглой кнопкой рядом с меню.
 import { AI_SUGGESTED_QUESTIONS } from '../domain/catalog.js';
+import { isAndroid } from '../services/telegram.js';
+
+const ASK_MAX_PX = 136; // как max-height у .ask-input: дальше поле прокручивается
+
+/** Высота поля под текст: растёт по строкам до ASK_MAX_PX */
+function fitAsk(el) {
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight + 2, ASK_MAX_PX) + 'px';
+}
 
 export function assistantView(app) {
   const s = app.state;
@@ -21,7 +31,14 @@ export function assistantView(app) {
     suggestions: AI_SUGGESTED_QUESTIONS.map((q) => ({ q, pick: () => app.ask(q, 'suggestion') })),
     askText: s.askText,
     onAskInput: (e) => app.setState({ askText: e.target.value }),
-    onAskKey: (e) => { if (e.key === 'Enter' && canSend) { e.preventDefault(); app.ask(s.askText.trim(), 'custom'); } },
+    fitAsk,
+    // Enter — отправить, Shift+Enter — новая строка; длинный текст переносится сам
+    onAskKey: (e) => {
+      if (e.key !== 'Enter' || e.shiftKey || e.isComposing) return;
+      e.preventDefault();
+      if (canSend) app.ask(s.askText.trim(), 'custom');
+    },
+    showChatCamera: isAndroid(),
     chatImage: s.chatImage,
     hasChatImage: !!s.chatImage,
     onChatImage: (e) => {

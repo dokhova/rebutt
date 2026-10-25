@@ -21,7 +21,22 @@
   <div class="card-head"><div class="caption">Блюдо</div><div class="hint">фото или описание</div></div>
 
   <sc-if value="{{food.pick}}">
-    <sc-if value="{{noPhoto}}">
+    <!-- Android: отдельные кнопки «Камера» (capture) и «Галерея» — системный выбор файла там часто не предлагает камеру -->
+    <sc-if value="{{photoSplit}}">
+      <div class="photo-pick">
+        <label class="photo-drop half" for="foodCamera">
+          <span class="icon-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></span>
+          <span>Камера</span>
+          <input id="foodCamera" class="file-input" type="file" accept="image/*" capture="environment" onChange="{{onPhoto}}">
+        </label>
+        <label class="photo-drop half" for="foodFile">
+          <span class="icon-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"></rect><circle cx="9.5" cy="9.5" r="1.5"></circle><path d="M20 15l-4.5-4.5L6 20"></path></svg></span>
+          <span>Галерея</span>
+          <input id="foodFile" class="file-input" type="file" accept="image/*" onChange="{{onPhoto}}">
+        </label>
+      </div>
+    </sc-if>
+    <sc-if value="{{photoSingle}}">
       <label class="photo-drop" for="foodFile">
         <span class="icon-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></span>
         <span>Сфотографировать блюдо</span>
@@ -35,7 +50,7 @@
       </div>
     </sc-if>
     <label class="sr-only" for="foodNote">Описание блюда</label>
-    <textarea id="foodNote" class="field-input area" rows="2" placeholder="Что в тарелке? (по желанию)" onChange="{{onNote}}">{{note}}</textarea>
+    <textarea id="foodNote" class="field-input area" rows="2" placeholder="Что в тарелке? Без фото ИИ нарисует картинку" onChange="{{onNote}}">{{note}}</textarea>
     <button class="{{analyzeCls}}" onClick="{{analyze}}">Разобрать с ИИ</button>
   </sc-if>
 
@@ -70,7 +85,7 @@
 <!-- Жидкости: вода, чай, суп — одним числом за день -->
 <sc-if value="{{sec.water}}">
 <div class="card form-card">
-  <div class="card-head"><div class="caption">За сегодня</div><div class="hint">{{waterDelta}}</div></div>
+  <div class="card-head"><div class="caption">{{waterCaption}}</div><div class="hint">{{waterDelta}}</div></div>
   <div class="water-now">
     <button class="{{waterMinusCls}}" onClick="{{waterMinus}}" aria-label="Убрать 250 мл">−</button>
     <div class="water-value num">{{waterTotal}}<span class="metric-unit"> л</span></div>

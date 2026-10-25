@@ -61,6 +61,9 @@
 | `food_photo_removed` | фото убрали до разбора | — |
 | `food_analysis_requested` | «Разобрать с ИИ» | `has_photo`, `has_note` |
 | `food_analysis_completed` | ИИ разобрал блюдо | `source` (`photo` / `text`), `has_note`, `tone`, `kcal`, `fiber`, `latency_ms` |
+| `food_art_requested` | блюдо без фото — ИИ начал рисовать картинку | — |
+| `food_art_completed` | картинка готова | `latency_ms`, `saved_before` (блюдо уже сохранили, пока рисовалась) |
+| `food_art_failed` | картинку нарисовать не вышло (блюдо сохраняется без неё) | `reason`, `latency_ms` |
 | `food_analysis_failed` | ошибка или не еда | `source`, `reason`, `latency_ms` |
 | `food_reanalyzed` | пересчёт после «Уточнить» | `where` (`draft` — до сохранения / `saved` — сохранённое блюдо), `kcal` |
 | `food_reanalyze_failed` | ошибка пересчёта | `where`, `reason` |
@@ -76,7 +79,7 @@
 | `water_updated` | количество жидкости за день исправлено | `ml_before`, `ml_after`, `is_today` |
 | `water_deleted` | запись о жидкости удалена | `is_today` |
 | `period_deleted` | отметка «Месячные» убрана из «Записей дня» | — |
-| `entry_saved` | запись сохранена | `stool_status`, `bristol_type`, `symptoms`, `symptoms_count`, `has_food`, `food_source`, `food_tone`, `period_mark`, `water_ml_added`, `water_ml_day`, `gut_score`, `score_before`, `score_delta`, `days_logged_last7`, `hour` |
+| `entry_saved` | запись сохранена | `stool_status`, `bristol_type`, `symptoms`, `symptoms_count`, `has_food`, `food_source`, `food_tone`, `period_mark`, `water_ml_added`, `water_ml_day`, `gut_score`, `score_before`, `score_delta`, `days_logged_last7`, `hour`, `is_today`, `days_ago` (запись за прошлый день), `food_has_photo` |
 | `first_entry_saved` | первая запись пользователя | как у `entry_saved` |
 
 ### «На главный экран»

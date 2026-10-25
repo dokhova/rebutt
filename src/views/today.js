@@ -20,7 +20,7 @@ const TONE_RGB = { calm: '211,250,157', mild: '127,168,102', sens: '167,139,250'
 
 const EMPTY_TIPS = {
   today: ['Начнём с одной записи', 'Отметь стул, еду или воду — и здесь появятся подсказки на сегодня.'],
-  past: ['В этот день записей нет', 'Ничего страшного — продолжай с сегодняшнего дня.']
+  past: ['В этот день записей нет', 'Если забыли отметить — внесите стул, еду или воду за этот день через «+».']
 };
 
 export function todayView(app) {
@@ -50,7 +50,9 @@ export function todayView(app) {
     noScore: !sc,
     ...arc(sc, arcTone),
     goInsights: () => app.navigate('insights', 'today_summary'),
-    showAddButton: isToday && !sc,
+    // пустой день — кнопка внести данные; для прошлого дня «+» пишет именно в него (App.entryDay)
+    showAddButton: !sc,
+    addButtonLabel: isToday ? 'Внести данные за день' : 'Внести данные за ' + dayMonth(sel),
     goAddFromEmpty: () => app.openAddSheet('empty_day'),
 
     // показатели и подсказки

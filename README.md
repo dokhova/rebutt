@@ -74,6 +74,7 @@ npx vercel dev               # фронт + /api на http://localhost:3000
 | Цвета, шрифты | `src/styles/tokens.css` |
 | Промпты ИИ | `api/ask.js`, `api/food.js`, `api/insights.js`; общие правила — `SAFETY` в `api/_lib/openai.js` |
 | Модель ИИ | переменная `OPENAI_MODEL` (по умолчанию `gpt-5-mini`) |
+| Модель и стиль картинок блюд | `OPENAI_IMAGE_MODEL` (по умолчанию `gpt-image-1-mini`), стиль — `STYLE` в `api/meal-image.js` |
 
 ## Юридическое
 

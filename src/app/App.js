@@ -15,8 +15,9 @@ import { splitSentences } from '../domain/text.js';
 import { DEMO_TODAY, demoLog, demoProfile, DEMO_ANSWERS, DEMO_ANSWER_DEFAULT } from '../domain/demo.js';
 import * as store from '../services/store.js';
 import { track, flush, identifyUser, setPersonProps, setScreen, resetAnalytics } from '../services/analytics.js';
-import { analyzeFood, askAI, getInsights } from '../services/ai.js';
-import { compressImage } from '../services/image.js';
+import { analyzeFood, askAI, getInsights, generateMealImage } from '../services/ai.js';
+import { compressImage, photoForStorage } from '../services/image.js';
+import { putPhoto, deletePhoto, getPhotos, withPhotos, mealIds } from '../services/photos.js';
 import { exportCSV, openDoctorReport } from '../services/export.js';
 import { isTelegram, openTelegramLink, syncBackButton, telegramUser, hapticSelection, homeScreenPlatform, canAddToHomeScreen, checkHomeScreenStatus, addToHomeScreen, onHomeScreenAdded } from '../services/telegram.js';
 import { homePromptSnoozed } from '../domain/home-prompt.js';
@@ -47,7 +48,8 @@ const blankForm = () => ({
   stress: null,       // стресс 0–10; null — не отмечали
   period: '',         // '' | 'yes' | 'no'
   food: 'pick',       // 'pick' — фото и/или описание, 'scan' — ИИ разбирает, 'done' — результат
-  photo: '',          // blob-ссылка на фото (только в текущей сессии)
+  photo: '',          // фото блюда: blob-ссылка (своё фото) или data URL (картинка ИИ); при сохранении уменьшается и уходит в IndexedDB + Storage
+  art: '',            // '' | 'loading' — ИИ рисует картинку к блюду, описанному словами
   note: '',           // комментарий к блюду: что на тарелке, порция
   result: null,       // разбор блюда (src/domain/meal.js)
   source: '',         // 'photo' | 'text'
@@ -141,6 +143,8 @@ export default class App extends Component {
       exampleN: 0
     };
     this.onboardingStartedAt = Date.now();
+    this.mealSaves = {};  // id блюда → промис записи в Supabase (путь к фото дописываем после неё)
+    this.artJob = null;   // картинка ИИ в работе: { id, day, mealId } — day/mealId появляются, если блюдо уже сохранили
     this.handleBack = () => this.back();
 
     // ref-колбэки для шаблона
@@ -163,6 +167,7 @@ export default class App extends Component {
     onHomeScreenAdded(() => this.homeScreenAdded());
     if (!this.state.booting) this.onScreenShown();
     const bootTimer = setTimeout(() => this.finishBoot({}), BOOT_TIMEOUT_MS);
+    this.hydratePhotos();
     await identifyUser();
     track('app_opened', { is_returning: !!this.state.profile.onboardedAt, local_days: Object.keys(this.state.log).length });
     if (IS_DEMO) return;
@@ -180,8 +185,17 @@ export default class App extends Component {
       store.saveProfile(s.profile, this.today()); // профиль был только на устройстве — догружаем на сервер
     }
     this.finishBoot(patch);
+    this.hydratePhotos();
     const p = patch.profile || s.profile;
     if (p.onboardedAt) setPersonProps(profileTraits(p));
+  }
+
+  /** Фото блюд с устройства (IndexedDB) — в записи; на сервере они тоже есть, но так быстрее и работает без сети */
+  async hydratePhotos() {
+    if (IS_DEMO) return;
+    const map = await getPhotos(mealIds(this.state.log));
+    const log = withPhotos(this.state.log, map);
+    if (log !== this.state.log) this.setState({ log });
   }
 
   /** Снимает экран загрузки и применяет данные с сервера */
@@ -252,6 +266,12 @@ export default class App extends Component {
   // ================= данные =================
 
   today() { return IS_DEMO ? DEMO_TODAY : keyOf(new Date()); }
+
+  /** День, в который пишет «+»: выбранный в календаре на главной (можно дописать забытый день), по умолчанию — сегодня */
+  entryDay() {
+    const k = this.state.selected, todayK = this.today();
+    return k && k <= todayK ? k : todayK;
+  }
 
   /** Запись дня (всегда с полями gut / meals / period) */
   day(k) { return { ...emptyDay(), ...(this.state.log[k] || {}) }; }
@@ -613,13 +633,14 @@ export default class App extends Component {
   closeAddSheet() {
     clearTimeout(this.exampleTimer);
     this.scanId = null;
+    this.cancelMealArt();
     this.setState({ addSheet: null, keyboard: false, form: blankForm() });
     track('add_sheet_closed');
   }
 
   /** Жидкость: +ml или −ml к черновику. Минус может убрать и уже сохранённое за сегодня (исправить ошибку), но не ниже 0 за день. */
   addWater(ml) {
-    const saved = this.day(this.today()).water || 0;
+    const saved = this.day(this.entryDay()).water || 0;
     const water = Math.max(-saved, Math.min(5000, (this.state.form.water || 0) + ml));
     if (water === this.state.form.water) return;
     this.setForm({ water });
@@ -790,7 +811,7 @@ export default class App extends Component {
     let image;
     if (photo) image = await compressImage(await (await fetch(photo)).blob());
     const s = this.state;
-    const r = await analyzeFood({ image, note, previous, context: foodContext(s.profile, s.log, this.today()) });
+    const r = await analyzeFood({ image, note, previous, context: foodContext(s.profile, s.log, this.entryDay()) });
     if (r.is_food === false) throw new Error('Не похоже на еду — попробуйте другое фото или опишите блюдо словами');
     return normalizeMeal(r);
   }
@@ -824,6 +845,7 @@ export default class App extends Component {
       if (this.scanId !== scanId) return; // блюдо уже убрали
       this.setForm({ food: 'done', result });
       track('food_analysis_completed', { source, has_note: !!note, tone: result.tone, kcal: result.kcal, fiber: result.fiber, latency_ms: Date.now() - startedAt });
+      if (source === 'text') this.startMealArt(result.name, note);
     } catch (e) {
       if (this.scanId !== scanId) return;
       this.setForm({ food: 'pick' });
@@ -846,8 +868,9 @@ export default class App extends Component {
   removeFood() {
     clearTimeout(this.exampleTimer);
     this.scanId = null;
+    this.cancelMealArt();
     const f = blankForm();
-    this.setForm({ food: f.food, photo: f.photo, note: f.note, result: f.result, source: f.source, fixOpen: false, fix: '', fixing: false });
+    this.setForm({ art: '', food: f.food, photo: f.photo, note: f.note, result: f.result, source: f.source, fixOpen: false, fix: '', fixing: false });
     track('food_removed');
   }
 
@@ -858,7 +881,8 @@ export default class App extends Component {
     if (IS_DEMO) { this.setForm({ fixOpen: false, fix: '' }); this.showToast('В демо уточнение не пересчитывается'); return; }
     this.setForm({ fixing: true });
     try {
-      const result = await this.requestMeal({ photo: f.photo, note: fix, previous: f.result });
+      // картинку ИИ в разбор не отправляем — это иллюстрация, а не фото тарелки
+      const result = await this.requestMeal({ photo: f.source === 'photo' ? f.photo : '', note: fix, previous: f.result });
       this.setForm({ result, fixing: false, fixOpen: false, fix: '', note: [f.note.trim(), fix].filter(Boolean).join('; ') });
       track('food_reanalyzed', { where: 'draft', kcal: result.kcal });
     } catch (e) {
@@ -894,7 +918,7 @@ export default class App extends Component {
     if (IS_DEMO) { this.showToast('В демо уточнение не пересчитывается'); return; }
     this.setState({ mealEdit: { ...me, fixing: true } });
     try {
-      const result = await this.requestMeal({ photo: meal.photo, note: fix, previous: meal });
+      const result = await this.requestMeal({ photo: meal.source === 'photo' ? meal.photo : '', note: fix, previous: meal });
       const updated = { ...meal, ...result, note: [meal.note, fix].filter(Boolean).join('; ') };
       this.replaceMeal(me.day, me.id, updated);
       store.updateMeal(updated);
@@ -909,13 +933,74 @@ export default class App extends Component {
   }
 
   deleteMeal() {
-    const me = this.state.mealEdit;
+    const me = this.state.mealEdit, meal = this.findMeal(me.day, me.id);
     if (!window.confirm('Удалить это блюдо из записей?')) return;
     this.replaceMeal(me.day, me.id, null);
-    if (!IS_DEMO) store.deleteMeal(me.id);
+    if (!IS_DEMO) { store.deleteMeal(me.id, meal && meal.photoPath); deletePhoto(me.id); }
     this.setState({ mealEdit: null });
     this.showToast('Удалено');
     track('meal_deleted');
+  }
+
+  // ---------- фото блюда: хранение и картинка ИИ ----------
+
+  /** Меняет поля блюда в записях, если оно ещё есть (его могли удалить, пока шла загрузка) */
+  patchMeal(dayK, id, patch) {
+    if (this.findMeal(dayK, id)) this.replaceMeal(dayK, id, patch);
+  }
+
+  /** Новое блюдо: фото уменьшаем → IndexedDB → Supabase Storage, затем запись в таблицу (уже с путём к фото) */
+  async persistNewMeal(k, meal) {
+    if (IS_DEMO) return;
+    let photo = meal.photo, photoPath = '';
+    if (photo) {
+      try { photo = await photoForStorage(photo); } catch (_) { photo = ''; }
+      if (photo) {
+        putPhoto(meal.id, photo);
+        this.patchMeal(k, meal.id, { photo }); // blob-ссылка живёт только до перезапуска
+        photoPath = await store.uploadMealPhoto(meal.id, photo);
+        if (photoPath) this.patchMeal(k, meal.id, { photoPath });
+      }
+    }
+    this.mealSaves[meal.id] = store.addMeal(k, { ...meal, photoPath });
+  }
+
+  /** Блюдо описали словами — просим ИИ нарисовать картинку. Пока рисует, вместо фото — заглушка. */
+  async startMealArt(name, note) {
+    if (IS_DEMO) return;
+    const job = (this.artJob = { id: newId(), day: null, mealId: null });
+    this.setForm({ art: 'loading' });
+    track('food_art_requested');
+    const startedAt = Date.now();
+    try {
+      const r = await generateMealImage({ name, note });
+      if (this.artJob !== job) return; // блюдо убрали или шторку закрыли без сохранения
+      const photo = await photoForStorage(r.image);
+      this.artJob = null;
+      track('food_art_completed', { latency_ms: Date.now() - startedAt, saved_before: !!job.mealId });
+      if (job.mealId) { this.attachArtToSaved(job.day, job.mealId, photo); return; }
+      this.setForm({ photo, art: '' });
+    } catch (e) {
+      if (this.artJob !== job) return;
+      this.artJob = null;
+      if (!job.mealId) this.setForm({ art: '' });
+      track('food_art_failed', { reason: String(e.message || e).slice(0, 120), latency_ms: Date.now() - startedAt });
+    }
+  }
+
+  cancelMealArt() {
+    if (this.artJob && !this.artJob.mealId) this.artJob = null;
+  }
+
+  async attachArtToSaved(dayK, id, photo) {
+    if (!this.findMeal(dayK, id)) return;
+    this.patchMeal(dayK, id, { photo });
+    putPhoto(id, photo);
+    const path = await store.uploadMealPhoto(id, photo);
+    if (!path) return;
+    this.patchMeal(dayK, id, { photoPath: path });
+    await this.mealSaves[id];
+    store.setMealPhotoPath(id, path);
   }
 
   saveEntry() {
@@ -932,7 +1017,7 @@ export default class App extends Component {
       this.analyzeFoodDraft();
       return;
     }
-    const f = this.state.form, k = this.today();
+    const f = this.state.form, k = this.entryDay();
     if (!f.stool && !f.sym.length && f.stress == null && f.food !== 'done' && !f.period && !f.water) {
       this.showToast('Отметьте хотя бы что-то одно');
       track('entry_save_blocked', { reason: 'empty' });
@@ -947,9 +1032,12 @@ export default class App extends Component {
     this.setState({ log, form: blankForm(), screen: 'today', selected: k, addSheet: null });
     this.showToast('Сохранено');
 
+    // картинка ИИ ещё рисуется — допишем её к уже сохранённому блюду, когда придёт
+    if (meal && this.artJob && f.art === 'loading') Object.assign(this.artJob, { day: k, mealId: meal.id });
+    if (meal) this.persistNewMeal(k, meal);
+
     if (!IS_DEMO) {
       if (gut) store.addGutEntry(k, gut);
-      if (meal) store.addMeal(k, meal);
       if (f.period) store.setPeriodDay(k, f.period === 'yes');
       if (f.water) store.setWaterDay(k, day.water);
     }
@@ -971,6 +1059,9 @@ export default class App extends Component {
       score_before: scoreBefore ? scoreBefore.idx : null,
       score_delta: scoreAfter && scoreBefore ? scoreAfter.idx - scoreBefore.idx : null,
       days_logged_last7: [0, 1, 2, 3, 4, 5, 6].filter((i) => hasData(log[addDays(k, -i)])).length,
+      is_today: k === this.today(),
+      days_ago: Math.round((new Date(this.today()) - new Date(k)) / 864e5),
+      food_has_photo: meal ? !!meal.photo : null,
       hour: new Date().getHours()
     };
     track('entry_saved', props);
