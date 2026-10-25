@@ -18,6 +18,12 @@ export function initTelegram() {
   app.ready();
   app.expand();
   if (app.isVersionAtLeast('7.7')) app.disableVerticalSwipes();
+  // На телефоне — на весь экран (Bot API 8.0). Кнопки Telegram «Закрыть» и «⋯» остаются поверх сверху,
+  // отступ под них — --safe-top (tokens.css, переменные --tg-*-safe-area-inset-* ставит сам Telegram).
+  // На компьютере полный экран неудобен — там обычное окно.
+  if (app.isVersionAtLeast('8.0') && typeof app.requestFullscreen === 'function' && /^(ios|android)/.test(app.platform || '')) {
+    try { app.requestFullscreen(); } catch (_) { /* клиент не поддерживает — остаёмся в обычном режиме */ }
+  }
   if (app.isVersionAtLeast('6.1')) {
     app.setHeaderColor(app.isVersionAtLeast('6.9') ? '#26232D' : 'bg_color'); // верх фона (--bg-top)
     app.setBackgroundColor('#141318');
