@@ -10,6 +10,7 @@ export const config = { maxDuration: 60 };
 const IMAGES_URL = 'https://api.openai.com/v1/images/generations';
 const MODEL = process.env.OPENAI_IMAGE_MODEL || 'gpt-image-1-mini';
 const QUALITY = process.env.OPENAI_IMAGE_QUALITY || 'low';
+const FALLBACK_MODEL = 'dall-e-3';
 
 // Один стиль для всех картинок: тёмный фон приложения, спокойный свет, без текста и людей
 const STYLE = [
@@ -29,22 +30,31 @@ export default handler(async (body) => {
   if (!key) throw bad('OPENAI_API_KEY не задан', 500);
 
   const dish = [name && 'Dish: ' + name + '.', note && 'Description from the user (may be in Russian): ' + note + '.'].filter(Boolean).join(' ');
+  const prompt = dish + ' ' + STYLE + '.';
+  try {
+    return await generate(key, { model: MODEL, prompt, n: 1, size: '1024x1024', quality: QUALITY, output_format: 'jpeg', output_compression: 75 });
+  } catch (e) {
+    // gpt-image-модели требуют верификации организации в OpenAI; пока её нет — пробуем dall-e-3
+    if (MODEL === FALLBACK_MODEL) throw e;
+    console.error('[meal-image] ' + MODEL + ' failed, fallback to ' + FALLBACK_MODEL + ':', e.message);
+    try {
+      return await generate(key, { model: FALLBACK_MODEL, prompt, n: 1, size: '1024x1024', response_format: 'b64_json' });
+    } catch (e2) {
+      throw bad(MODEL + ': ' + e.message + ' | ' + FALLBACK_MODEL + ': ' + e2.message, 502);
+    }
+  }
+});
+
+async function generate(key, body) {
   const res = await fetch(IMAGES_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
-    body: JSON.stringify({
-      model: MODEL,
-      prompt: dish + ' ' + STYLE + '.',
-      n: 1,
-      size: '1024x1024',
-      quality: QUALITY,
-      output_format: 'jpeg',
-      output_compression: 75
-    })
+    body: JSON.stringify(body)
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw bad((data.error && data.error.message) || 'OpenAI images HTTP ' + res.status, 502);
   const b64 = data.data && data.data[0] && data.data[0].b64_json;
   if (!b64) throw bad('Модель не вернула картинку', 502);
-  return { image: 'data:image/jpeg;base64,' + b64 };
-});
+  const type = body.output_format === 'jpeg' ? 'jpeg' : 'png';
+  return { image: 'data:image/' + type + ';base64,' + b64 };
+}

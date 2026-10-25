@@ -984,6 +984,8 @@ export default class App extends Component {
       if (this.artJob !== job) return;
       this.artJob = null;
       if (!job.mealId) this.setForm({ art: '' });
+      // причину показываем как есть — так видно, что не так с ключом или моделью OpenAI
+      this.showToast('Картинку нарисовать не вышло: ' + String(e.message || e).slice(0, 160));
       track('food_art_failed', { reason: String(e.message || e).slice(0, 120), latency_ms: Date.now() - startedAt });
     }
   }
