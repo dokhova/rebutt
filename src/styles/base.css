@@ -9,7 +9,7 @@ a { color: var(--ink); }
 input::placeholder { color: var(--faint); }
 img { max-width: 100%; }
 
-#app { position: relative; max-width: 480px; height: 100%; margin: 0 auto; overflow: hidden; }
+#app { position: relative; max-width: 480px; height: var(--app-h, 100%); margin: 0 auto; overflow: hidden; }
 #app button:focus-visible, #app input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* утилиты */

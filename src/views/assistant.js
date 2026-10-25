@@ -4,11 +4,19 @@ import { isAndroid } from '../services/telegram.js';
 
 const ASK_MAX_PX = 136; // как max-height у .ask-input: дальше поле прокручивается
 
-/** Высота поля под текст: растёт по строкам до ASK_MAX_PX */
+const autoSizeCss = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('field-sizing', 'content');
+const askHeights = new WeakMap(); // поле → { value, h }: меряем только когда текст изменился
+
+/** Высота поля под текст: растёт по строкам до ASK_MAX_PX. Где браузер умеет field-sizing — это делает CSS. */
 function fitAsk(el) {
-  if (!el) return;
+  if (!el || autoSizeCss) return;
+  // morphdom при каждой перерисовке снимает inline-стиль, поэтому высоту ставим всегда, а меряем — только при новом тексте
+  const prev = askHeights.get(el);
+  if (prev && prev.value === el.value) { el.style.height = prev.h; return; }
   el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight + 2, ASK_MAX_PX) + 'px';
+  const h = Math.min(el.scrollHeight + 2, ASK_MAX_PX) + 'px';
+  el.style.height = h;
+  askHeights.set(el, { value: el.value, h });
 }
 
 export function assistantView(app) {
@@ -50,6 +58,16 @@ export function assistantView(app) {
     sendCls: 'send' + (canSend ? '' : ' off'),
     sendAsk: () => { if (canSend) app.ask(s.askText.trim(), 'custom'); },
     closeAssistant: () => app.closeAssistant(),
-    scrollChat: (el) => { if (el && s.chat.length) el.scrollIntoView({ block: 'end' }); }
+    // вниз — только когда появилось новое сообщение или кусок ответа, а не на каждую букву в поле;
+    // крутим саму ленту, а не страницу (scrollIntoView сдвигал весь экран вместе с клавиатурой)
+    scrollChat: (el) => {
+      if (!el || !s.chat.length) return;
+      const last = s.chat[s.chat.length - 1];
+      const key = s.chat.length + ':' + String(last.shown != null ? last.shown : last.text).length + ':' + s.chatLoading;
+      if (app.chatScroll && app.chatScroll.el === el && app.chatScroll.key === key) return;
+      app.chatScroll = { el, key };
+      const box = el.closest('.sheet-body');
+      if (box) box.scrollTop = box.scrollHeight;
+    }
   };
 }

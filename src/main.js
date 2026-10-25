@@ -6,6 +6,7 @@ import './styles/screens.css';
 
 import { registerComponent, registerPartial, mount } from './core/runtime.js';
 import { initTelegram } from './services/telegram.js';
+import { trackViewport } from './services/viewport.js';
 import { initAnalytics } from './services/analytics.js';
 import App from './app/App.js';
 import Pebble from './components/Pebble.js';
@@ -29,6 +30,7 @@ import infoCardHtml from './templates/partials/info-card.html?raw';
 import homePromptHtml from './templates/partials/home-prompt.html?raw';
 
 initTelegram();
+trackViewport();
 initAnalytics();
 
 registerComponent('App', App, appHtml);

@@ -184,6 +184,7 @@
 .ask-input { box-sizing: border-box; flex-grow: 1; min-width: 0; min-height: 48px; max-height: 136px; border-radius: 24px; border: 1px solid var(--line-control); background: var(--surface-1); padding: 13px 18px; font: inherit; font-size: 15px; line-height: 20px; color: inherit; outline: none; resize: none; overflow-y: auto; display: block; }
 .send { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; border: 0; padding: 0; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; }
 .ask .attach-btn, .ask .send { margin-bottom: 2px; }
+@supports (field-sizing: content) { .ask-input { field-sizing: content; } }
 .send.off { background: var(--surface-4); color: var(--muted); }
 
 /* ================= Профиль ================= */
