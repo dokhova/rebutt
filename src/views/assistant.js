@@ -1,6 +1,5 @@
 // ИИ-помощник: панель, которая выезжает снизу поверх любого экрана. Открывается круглой кнопкой рядом с меню.
 import { AI_SUGGESTED_QUESTIONS } from '../domain/catalog.js';
-import { isAndroid } from '../services/telegram.js';
 
 const ASK_MAX_PX = 136; // как max-height у .ask-input: дальше поле прокручивается
 
@@ -46,7 +45,6 @@ export function assistantView(app) {
       e.preventDefault();
       if (canSend) app.ask(s.askText.trim(), 'custom');
     },
-    showChatCamera: isAndroid(),
     chatImage: s.chatImage,
     hasChatImage: !!s.chatImage,
     onChatImage: (e) => {

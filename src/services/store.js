@@ -250,13 +250,9 @@ export const addMeal = (dayK, m) =>
     ...(m.photoPath ? { photo_path: m.photoPath } : {})
   }));
 
-/** Обновляет блюдо после уточнения */
+/** Обновляет блюдо: после уточнения или смены времени */
 export const updateMeal = (m) =>
-  withUser(() => run('meal update', supabase.from('meals').update(mealRow(m)).eq('id', m.id)));
-
-/** Путь к фото у уже сохранённого блюда (картинка ИИ пришла после «Сохранить») */
-export const setMealPhotoPath = (id, path) =>
-  withUser(() => mealQuery('meal photo', (row) => supabase.from('meals').update(row).eq('id', id), { photo_path: path }));
+  withUser(() => run('meal update', supabase.from('meals').update({ ...mealRow(m), time: m.time }).eq('id', m.id)));
 
 export const deleteMeal = (id, photoPath) =>
   withUser(async () => {

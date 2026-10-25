@@ -10,6 +10,10 @@
 <sc-if value="{{mealFound}}">
   <div class="hint">{{mealWhen}}</div>
   <div class="card form-card">
+    <div class="time-row">
+      <label for="mealTime">Когда ели</label>
+      <input id="mealTime" class="time-input num" type="time" value="{{mealTimeValue}}" onChange="{{onMealTime}}">
+    </div>
     <sc-include name="meal-card"></sc-include>
   </div>
 

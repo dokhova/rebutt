@@ -41,3 +41,6 @@ export function mealStats(m) {
 export const mealSummary = (m) => (m.kcal || 0) + ' ккал · Б ' + (m.protein || 0) + ' · Ж ' + (m.fat || 0) + ' · У ' + (m.carbs || 0);
 
 export const mealTint = (m) => MEAL_TINT[m.tone] || MEAL_TINT.mild;
+
+/** Фото для показа: только своё фото тарелки. У блюд, описанных словами, раньше была картинка ИИ — её не показываем. */
+export const mealPhoto = (m) => (m.source === 'text' ? '' : m.photo || '');

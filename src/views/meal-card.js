@@ -1,16 +1,14 @@
-// Карточка блюда: фото (своё или картинка ИИ), название, КБЖУ и клетчатка, оценка и совет. Одинаковая на «+» и в сохранённом блюде.
+// Карточка блюда: миниатюра (своё фото или плашка цвета оценки), название, калории и оценка, БЖУ и клетчатка, совет.
+// Одинаковая на «+» и в сохранённом блюде — с фото и без фото одна и та же раскладка.
 // Шаблон — src/templates/partials/meal-card.html (значения в объекте card).
-// Есть фото — оно крупно сверху карточки; нет — маленькая плашка цвета оценки, как раньше.
-import { mealStats, mealTint } from '../domain/meal.js';
+import { mealStats, mealTint, mealPhoto } from '../domain/meal.js';
 
 /**
  * @param {object} meal
- * @param {string} [photo] — фото черновика (на «+»); у сохранённого блюда берётся meal.photo
- * @param {{ drawing?: boolean, aiArt?: boolean }} [opts] — drawing: ИИ ещё рисует картинку; aiArt: фото нарисовано ИИ
+ * @param {string} [photo] — фото черновика (на «+»); у сохранённого блюда берётся из meal
  */
-export function mealCard(meal, photo, opts = {}) {
-  const src = photo || meal.photo || '';
-  const drawing = !!opts.drawing && !src;
+export function mealCard(meal, photo) {
+  const src = photo || mealPhoto(meal);
   return {
     name: meal.name,
     stats: mealStats(meal),
@@ -18,9 +16,6 @@ export function mealCard(meal, photo, opts = {}) {
     tip: meal.tip,
     tint: mealTint(meal),
     photo: src,
-    hasPhoto: !!src,
-    drawing,
-    showThumb: !src && !drawing,
-    aiArt: !!src && (opts.aiArt != null ? opts.aiArt : meal.source === 'text')
+    hasPhoto: !!src
   };
 }

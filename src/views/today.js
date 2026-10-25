@@ -3,7 +3,7 @@
 import { IS_DEMO } from '../config.js';
 import { BRISTOL_TYPES, FALLBACK_TIPS, SYMPTOM_OK, STOOL_COLORS, stressWord } from '../domain/catalog.js';
 import { dailyTargets } from '../domain/targets.js';
-import { mealSummary, mealTint } from '../domain/meal.js';
+import { mealSummary, mealTint, mealPhoto } from '../domain/meal.js';
 import { parseKey, addDays, dayMonth, WEEKDAYS_SHORT, WEEKDAYS_FULL } from '../domain/dates.js';
 import { gutScore, toneOf, TONE_COLOR, fiberOf, waterOf, hasData } from '../domain/score.js';
 import { suggestionsFor, litres } from '../domain/suggestions.js';
@@ -166,7 +166,7 @@ function timeline(app, dayK, day, profile) {
     else items.push({ kind: 'feel', title: g.type === 0 ? 'Стула не было' : 'Самочувствие', sub: parts.join(' · '), time: g.time, open });
   }
   for (const m of day.meals) {
-    items.push({ kind: 'meal', tint: mealTint(m), photo: m.photo, title: m.name, sub: mealSummary(m), time: m.time, open: () => app.openMeal(dayK, m.id) });
+    items.push({ kind: 'meal', tint: mealTint(m), photo: mealPhoto(m), title: m.name, sub: mealSummary(m), time: m.time, open: () => app.openMeal(dayK, m.id) });
   }
   if (day.water > 0) items.push({ kind: 'water', title: 'Жидкость', sub: litres(day.water) + ' л за день', time: 'день', sortKey: '00:01', open: () => app.openWater(dayK) });
   if (profile.cycle && day.period) items.push({ kind: 'period', title: 'Месячные', sub: 'нажмите, чтобы убрать отметку', time: 'день', sortKey: '00:00', open: () => app.deletePeriod(dayK) });

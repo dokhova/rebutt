@@ -43,6 +43,3 @@ export const askAI = ({ question, image, history, context }) => post('/api/ask',
 
 /** Сводка записей → { tip_title, tip_text, noticed } */
 export const getInsights = (context) => post('/api/insights', { context });
-
-/** Картинка блюда по описанию (когда нет фото) → { image: data URL }. Генерация дольше обычного ответа — ждём до 70 с. */
-export const generateMealImage = ({ name, note }) => post('/api/meal-image', { name, note }, 70000);
