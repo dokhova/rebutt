@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { keyOf, parseKey, addDays, diffDays, mondayOf, yearsWord } from '../src/domain/dates.js';
 import { gutScore, toneOf, symptomsOf } from '../src/domain/score.js';
-import { cycleDay, cyclePhase, isPeriodDay } from '../src/domain/cycle.js';
+import { cycleDay, cyclePhase, cycleHint, isPeriodDay } from '../src/domain/cycle.js';
 import { blankProfile, onboardingFlow } from '../src/domain/profile.js';
 import { buildAiContext } from '../src/domain/ai-context.js';
 
@@ -221,4 +221,14 @@ test('кэш инсайтов сбрасывается, когда меняет�
   const a = aiContextHash(buildAiContext({ ...blankProfile(), weight: 60 }, log, '2026-10-18'));
   const b = aiContextHash(buildAiContext({ ...blankProfile(), weight: 80 }, log, '2026-10-18'));
   assert.notEqual(a, b);
+});
+
+test('цикл на «Сегодня» — только в окна месячных и овуляции', () => {
+  assert.equal(cycleHint(3, 28, false, true)[0], 'Месячные');
+  assert.equal(cycleHint(14, 28)[0], 'Овуляция');
+  assert.equal(cycleHint(27, 28)[0], 'Скоро месячные');
+  assert.equal(cycleHint(8, 28), null);
+  assert.equal(cycleHint(20, 28), null);
+  assert.equal(cycleHint(14, 28, true), null); // КОК — только кровотечение отмены
+  assert.equal(cycleHint(0, 28), null);
 });

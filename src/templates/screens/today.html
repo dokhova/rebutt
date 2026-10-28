@@ -104,12 +104,9 @@
   </div>
 </div>
 
+<!-- Цикл: только в «окна» (месячные, овуляция, 2 дня до месячных) и одной строкой — domain/cycle.js cycleHint -->
 <sc-if value="{{showCycle}}">
-  <div class="card panel">
-    <div class="caption">{{cycle.caption}}</div>
-    <div class="panel-title">{{cycle.phase}}</div>
-    <div class="panel-text">{{cycle.note}}</div>
-  </div>
+  <div class="card cycle-hint"><span class="cycle-hint-title">{{cycle.title}}</span> <span class="muted">· {{cycle.text}}</span></div>
 </sc-if>
 
 <sc-if value="{{timeline.length}}">

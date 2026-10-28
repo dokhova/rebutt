@@ -115,8 +115,6 @@
 .photo-drop { position: relative; height: 112px; border-radius: 22px; border: 1px dashed var(--line-control); background: var(--surface-2); display: flex; align-items: center; justify-content: center; gap: 14px; font-size: 15px; cursor: pointer; }
 .photo-drop .icon-btn { background: var(--surface-4); }
 .file-input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-.photo-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.photo-drop.half { flex-direction: column; gap: 8px; height: 112px; }
 
 .scan { position: relative; height: 140px; border-radius: 22px; overflow: hidden; }
 .scan img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -261,3 +259,7 @@
 .water-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .water-step { min-height: 64px; border-radius: 18px; border: 1px solid var(--line-control); background: transparent; color: var(--ink); font-size: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
 .water-step .muted { font-size: 13px; }
+
+/* Цикл на «Сегодня»: короткая строка, только в окна месячных/овуляции */
+.cycle-hint { padding: 14px 16px; font-size: 15px; line-height: 1.45; }
+.cycle-hint-title { font-weight: 600; }
