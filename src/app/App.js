@@ -132,7 +132,7 @@ export default class App extends Component {
       info: null,         // открытая карточка «?» — откуда норма или совет: id из domain/sources.js → infoCards
       // шторка «+» поверх экрана: null | 'pick' — выбор из трёх карточек | 'stool' | 'food' | 'water' — форма раздела
       addSheet: IS_DEMO && location.hash === '#add' ? 'pick' : null,
-      sheetFull: false,   // шторка «+» (форма раздела) или ИИ раскрыта на весь экран; открываются до середины
+      sheetFull: false,   // шторка ИИ раскрыта на весь экран; открывается до середины (core/sheet-drag.js)
       chat: [],           // диалог: [{ role: 'user' | 'ai', text, shown?, image? }]; shown — сколько текста уже показано
       chatLoading: false,
       chatImage: '',      // фото, приложенное к следующему вопросу (blob-ссылка)
@@ -178,7 +178,7 @@ export default class App extends Component {
     onHomeScreenAdded(() => this.homeScreenAdded());
     installSheetDrag({
       onSnap: (kind, full) => this.snapSheet(kind, full),
-      onClose: (kind) => (kind === 'assistant' ? this.closeAssistant() : this.closeAddSheet())
+      onClose: () => this.closeAssistant()
     });
     if (!this.state.booting) this.onScreenShown();
     const bootTimer = setTimeout(() => this.finishBoot({}), BOOT_TIMEOUT_MS);
@@ -623,7 +623,7 @@ export default class App extends Component {
 
   /** Карточка в слайдере: стул, питание или жидкости */
   pickAddSection(section) {
-    this.setState({ addSheet: section, form: { ...this.state.form, section }, sheetFull: false });
+    this.setState({ addSheet: section, form: { ...this.state.form, section } });
     track('add_section_opened', { section });
   }
 

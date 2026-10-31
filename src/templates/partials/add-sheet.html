@@ -1,4 +1,4 @@
-<!-- «+»: три карточки над меню (выбор) → шторка с формой раздела. Значения: src/views/add-entry.js -->
+<!-- «+»: три карточки над меню (выбор) → отдельный экран с формой раздела. Значения: src/views/add-entry.js -->
 <sc-if value="{{sheetPicking}}">
   <div class="pick-backdrop fade-in" onClick="{{closeAddSheet}}"></div>
   <div class="pick-float" role="dialog" aria-label="Что добавить">
@@ -30,9 +30,7 @@
 </sc-if>
 
 <sc-if value="{{sheetForm}}">
-  <div class="sheet-backdrop fade-in" onClick="{{closeAddSheet}}"></div>
-  <section class="{{sheetCls}}" data-sheet="add" role="dialog" aria-label="Новая запись">
-    <div class="sheet-handle"></div>
+  <section class="add-screen screen-in" role="dialog" aria-label="Новая запись">
     <div class="sheet-head add-sheet-head">
       <button class="icon-btn sheet-back" onClick="{{backToPicker}}" aria-label="К выбору раздела"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
       <div class="add-sheet-titles">
@@ -41,7 +39,7 @@
       </div>
       <button class="icon-btn" onClick="{{closeAddSheet}}" aria-label="Закрыть"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
     </div>
-    <div class="sheet-body add-sheet-body">
+    <div class="add-screen-body">
       <sc-include name="add"></sc-include>
     </div>
   </section>

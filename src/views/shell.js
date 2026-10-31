@@ -32,7 +32,7 @@ export function shellView(app, screen) {
     // при выборе раздела «+» меню остаётся: «+» превращается в «×»
     showTabs: withTabs && !s.keyboard && !s.assistant && !s.homePrompt && (!s.addSheet || s.addSheet === 'pick'),
     showAddSheet: !!s.addSheet && withTabs,
-    // шторки «+» и ИИ: середина экрана или весь экран (core/sheet-drag.js)
+    // шторка ИИ: середина экрана или весь экран (core/sheet-drag.js)
     sheetCls: 'sheet slide-up' + (s.sheetFull ? ' full' : ''),
     showAssistant: !!s.assistant && screen !== 'booting',
     openAssistantDock: () => app.openAssistant('dock'),
