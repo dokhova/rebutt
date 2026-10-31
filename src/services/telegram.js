@@ -19,8 +19,8 @@ export function initTelegram() {
     try { app.requestFullscreen(); } catch (_) { /* клиент не поддерживает — остаёмся в обычном режиме */ }
   }
   if (app.isVersionAtLeast('6.1')) {
-    app.setHeaderColor(app.isVersionAtLeast('6.9') ? '#26232D' : 'bg_color'); // верх фона (--bg-top)
-    app.setBackgroundColor('#141318');
+    app.setHeaderColor(app.isVersionAtLeast('6.9') ? '#2F2442' : 'bg_color'); // верх фона (--bg-top)
+    app.setBackgroundColor('#0F0C14'); // низ фона (--bg) — под меню и при перетягивании
   }
 }
 
@@ -81,6 +81,13 @@ export function telegramUser() {
 export function homeScreenPlatform() {
   const p = (getTelegram() || {}).platform || '';
   return p === 'ios' ? 'ios' : p.startsWith('android') ? 'android' : '';
+}
+
+/** Android: в Telegram по платформе мини-аппа, в браузере — по user agent. Камеру из мини-аппа на Android не вызвать — только выбор файла. */
+export function isAndroid() {
+  const p = (getTelegram() || {}).platform || '';
+  if (p) return p.startsWith('android');
+  return typeof navigator !== 'undefined' && /android/i.test(navigator.userAgent || '');
 }
 
 export function canAddToHomeScreen() {

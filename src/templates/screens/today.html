@@ -1,5 +1,4 @@
 <!-- «Сегодня». Значения: src/views/today.js -->
-<div class="home-glow" style="{{glowStyle}}" aria-hidden="true"></div>
 
 <div class="home-head">
   <button class="avatar circle-btn" onClick="{{goProfile}}" aria-label="Профиль"><sc-if value="{{avatarUrl}}"><img src="{{avatarUrl}}" alt=""></sc-if><sc-if value="{{noAvatar}}">{{initial}}</sc-if></button>
@@ -12,24 +11,6 @@
     <input class="date-input" type="date" min="{{dateMin}}" max="{{dateMax}}" value="{{dateValue}}" onChange="{{pickDay}}">
   </label>
 </div>
-
-<button class="home-arc" onClick="{{goInsights}}" aria-label="Работа кишечника. Открыть инсайты">
-  <svg viewBox="0 0 350 300" aria-hidden="true">
-    <path d="M 20 115 A 155 155 0 0 0 330 115" fill="none" stroke="rgba(248,247,242,.16)" stroke-width="2" stroke-linecap="round"></path>
-    <path d="M 20 115 A 155 155 0 0 0 330 115" fill="none" stroke="{{arcColor}}" stroke-width="3" stroke-linecap="round" pathLength="100" stroke-dasharray="{{arcDash}}"></path>
-    <circle cx="{{knobX}}" cy="{{knobY}}" r="{{haloR}}" fill="{{arcColor}}" opacity=".25"></circle>
-    <circle cx="{{knobX}}" cy="{{knobY}}" r="{{knobR}}" fill="#F8F7F2"></circle>
-  </svg>
-  <span class="home-score">
-    <sc-if value="{{hasScore}}">
-      <span class="home-value num">{{idx}}<span class="home-unit">%</span></span>
-      <span class="home-label">Работа кишечника</span>
-    </sc-if>
-    <sc-if value="{{noScore}}">
-      <span class="home-empty">Пока нет записей</span>
-    </sc-if>
-  </span>
-</button>
 
 <sc-if value="{{showAddButton}}"><button class="btn" onClick="{{goAddFromEmpty}}">{{addButtonLabel}}</button></sc-if>
 

@@ -1,7 +1,7 @@
 /* Переиспользуемые элементы интерфейса */
 
 /* ---------- оболочка ---------- */
-.shell { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 40%, var(--bg) 100%); }
+.shell { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 45%, var(--bg) 100%); }
 .screen {
   position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: none;
   box-sizing: border-box; padding: calc(28px + var(--safe-top)) 16px calc(28px + var(--safe-bottom));
@@ -13,7 +13,7 @@
    Градиент до цвета фона + размытие, которое плавно нарастает книзу (маска) */
 .tabbar-fade {
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; height: calc(160px + var(--safe-bottom)); pointer-events: none;
-  background: linear-gradient(180deg, rgba(20, 19, 24, 0) 0%, rgba(20, 19, 24, .72) 40%, rgba(20, 19, 24, .94) 70%, var(--bg) 100%);
+  background: linear-gradient(180deg, rgba(15, 12, 20, 0) 0%, rgba(15, 12, 20, .72) 40%, rgba(15, 12, 20, .94) 70%, var(--bg) 100%);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 45%); mask-image: linear-gradient(180deg, transparent 0%, #000 45%);
 }
@@ -58,7 +58,7 @@
 .round-btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line-control); background: transparent; font-size: 17px; padding: 0; display: flex; align-items: center; justify-content: center; }
 
 /* ---------- карточки и списки ---------- */
-.card { border-radius: 28px; background: var(--surface-1); border: 1px solid var(--line); }
+.card { border-radius: 28px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .09); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
 .card.list { padding: 4px 20px; }
 .panel { padding: 20px; display: flex; flex-direction: column; gap: 8px; }
 .panel-title { font-size: 17px; font-weight: 600; line-height: 1.3; }

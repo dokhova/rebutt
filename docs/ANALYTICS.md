@@ -47,7 +47,9 @@
 |---|---|---|
 | `nav_clicked` (`to: add_entry`) | нажат «+» — показаны три карточки | `from` — экран под шторкой, `source` (`tab` / `empty_day`) |
 | `add_section_opened` | выбрана карточка «+» | `section` (`stool` / `food` / `water`) |
-| `add_sheet_closed` | «+» закрыли без сохранения («×», затемнение, крестик, «Назад») | — |
+| `add_sheet_closed` | «+» закрыли без сохранения («×», затемнение, крестик, «Назад»); черновик остаётся | `has_draft` |
+| `add_draft_restored` | при запуске восстановлен незаконченный черновик «+» | `has_stool`, `has_food`, `has_water`, `food_state` (`pick` / `done`) |
+| `add_draft_discarded` | «Очистить» на карточках «+» | `has_stool`, `has_food`, `has_water` |
 | `info_opened` | тап по «?» рядом с нормой или советом | `topic` (`fiber` / `water` / `targets` / `bristol` / `tips`), `screen` |
 | `source_opened` | переход по ссылке на источник в карточке «?» | `source` (`who_fiber` / `efsa_water` / `heaton` / `nice_ibs` / `nhs_bowel`), `topic` |
 | `water_changed` | ± жидкость в разделе «Жидкости» | `step_ml` (250, 150, 500, −250), `draft_ml` — сколько добавится к дню |

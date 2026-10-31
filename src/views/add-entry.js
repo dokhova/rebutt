@@ -1,5 +1,6 @@
 // «+»: над меню всплывают три отдельные карточки слайдером — «Стул», «Питание», «Жидкости»; выбранная открывает шторку с формой раздела.
 // Черновик общий: можно вернуться к карточкам и заполнить другой раздел, «Сохранить» сохраняет всё сразу.
+// Черновик переживает закрытие шторки и перезапуск приложения (App.saveDraft), «Очистить» на карточках — начать заново.
 // Значения попадают в общий view вместе с экраном под шторкой — имена ключей не должны пересекаться с views/today.js и др.
 import { MEAL_TINT, WATER_STEPS } from '../domain/catalog.js';
 import { dailyTargets } from '../domain/targets.js';
@@ -10,6 +11,8 @@ import { dayMonth, addDays, parseKey, WEEKDAYS_FULL } from '../domain/dates.js';
 import { gutScore } from '../domain/score.js';
 import { cycleDay } from '../domain/cycle.js';
 import { noCyclePhases } from '../domain/profile.js';
+import { draftSections } from '../domain/draft.js';
+import { isAndroid } from '../services/telegram.js';
 
 export function addEntryView(app) {
   // День записи — выбранный на главной (можно дописать забытый день), по умолчанию сегодня
@@ -19,9 +22,8 @@ export function addEntryView(app) {
   const scoreNow = gutScore(today), scorePreview = gutScore(app.draftDay(today).day);
   const seg = (on) => 'seg' + (on ? ' on' : '');
 
-  const stoolFilled = !!(f.stool || f.sym.length || f.stress != null || f.period);
-  const foodFilled = f.food === 'done';
-  const waterFilled = !!f.water;
+  // точка «заполнено» на карточке: в т.ч. фото или описание блюда, которые ещё не разобрали
+  const { stool: stoolFilled, food: foodFilled, water: waterFilled } = draftSections(f);
   const sheet = s.addSheet || 'pick';
   const card = (id, title, sub, tone, filled) => ({
     id, title, sub, filled,
@@ -47,6 +49,7 @@ export function addEntryView(app) {
       card('water', 'Жидкости', 'Вода, чай', 'sens', waterFilled)
     ],
     hasDraft: stoolFilled || foodFilled || waterFilled,
+    discardDraft: () => app.discardDraft(),
     sec: { stool: sheet === 'stool', food: sheet === 'food', water: sheet === 'water' },
 
     // жидкости
@@ -72,6 +75,10 @@ export function addEntryView(app) {
 
     food: { pick: f.food === 'pick', scan: f.food === 'scan', done: f.food === 'done' },
     photo: f.photo,
+    // на Android камера из мини-аппа не открывается — там только выбор из галереи
+    photoLabel: isAndroid() ? 'Добавить фото блюда' : 'Сфотографировать блюдо',
+    photoCamera: !isAndroid(),
+    photoGallery: isAndroid(),
     noPhoto: !f.photo,
     note: f.note,
     onNote: (e) => app.setForm({ note: e.target.value }),

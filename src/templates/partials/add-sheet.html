@@ -4,7 +4,12 @@
   <div class="pick-float" role="dialog" aria-label="Что добавить">
     <div class="pick-head">
       <span class="pick-caption">Что добавить?</span>
-      <sc-if value="{{hasDraft}}"><button class="pick-save" onClick="{{save}}">Сохранить</button></sc-if>
+      <sc-if value="{{hasDraft}}">
+        <span class="pick-actions">
+          <button class="pick-clear" onClick="{{discardDraft}}">Очистить</button>
+          <button class="pick-save" onClick="{{save}}">Сохранить</button>
+        </span>
+      </sc-if>
     </div>
     <div class="pick-slider scroller">
       <sc-for list="{{pickCards}}" as="c">

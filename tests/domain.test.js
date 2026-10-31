@@ -232,3 +232,67 @@ test('цикл на «Сегодня» — только в окна месячн
   assert.equal(cycleHint(14, 28, true), null); // КОК — только кровотечение отмены
   assert.equal(cycleHint(0, 28), null);
 });
+
+// ---------- черновик «+» ----------
+import { draftForStorage, restoreDraft, isDraftEmpty, draftSections, DRAFT_TTL_MS } from '../src/domain/draft.js';
+
+const blankF = () => ({ section: 'stool', water: 0, stool: '', type: 4, sym: [], color: '', stress: null, period: '', food: 'pick', photo: '', art: '', note: '', result: null, source: '', fixOpen: false, fix: '', fixing: false });
+
+test('черновик: пустая форма не сохраняется', () => {
+  assert.equal(isDraftEmpty(blankF()), true);
+  assert.equal(draftForStorage(blankF()), null);
+});
+
+test('черновик: описание блюда и фото считаются заполненным питанием', () => {
+  assert.equal(draftSections({ ...blankF(), note: 'гречка' }).food, true);
+  assert.equal(draftSections({ ...blankF(), photo: 'blob:x' }).food, true);
+  assert.equal(draftSections({ ...blankF(), note: '   ' }).food, false);
+});
+
+test('черновик: сохраняется и восстанавливается, процесс разбора сбрасывается', () => {
+  const now = 1_000_000;
+  const f = { ...blankF(), stool: 'had', type: 3, sym: ['bloat'], water: 250, food: 'scan', photo: 'blob:abc', note: 'суп', fixing: true, art: 'loading' };
+  const saved = draftForStorage(f, now);
+  assert.equal(saved.hasPhoto, true);
+  assert.equal(saved.photo, undefined); // само фото — в IndexedDB
+  assert.equal(saved.food, 'pick');
+  const back = restoreDraft(JSON.parse(JSON.stringify(saved)), blankF(), now + 1000);
+  assert.equal(back.stool, 'had');
+  assert.equal(back.type, 3);
+  assert.deepEqual(back.sym, ['bloat']);
+  assert.equal(back.water, 250);
+  assert.equal(back.note, 'суп');
+  assert.equal(back.food, 'pick');
+  assert.equal(back.photo, '');
+  assert.equal(back.fixing, false);
+  assert.equal(back.art, '');
+});
+
+test('черновик: разобранное блюдо остаётся разобранным', () => {
+  const result = { name: 'Овсянка', kcal: 300 };
+  const saved = draftForStorage({ ...blankF(), food: 'done', result, source: 'text', note: 'овсянка' }, 5);
+  const back = restoreDraft(saved, blankF(), 10);
+  assert.equal(back.food, 'done');
+  assert.deepEqual(back.result, result);
+});
+
+test('черновик: старый или битый не восстанавливается', () => {
+  const saved = draftForStorage({ ...blankF(), water: 500 }, 0);
+  assert.equal(restoreDraft(saved, blankF(), DRAFT_TTL_MS + 1), null);
+  assert.equal(restoreDraft(null, blankF()), null);
+  assert.equal(restoreDraft({ water: 500 }, blankF()), null);
+  assert.equal(restoreDraft({ savedAt: 5, food: 'done', result: null, note: '' }, blankF(), 6), null);
+});
+
+// ---------- пиксельный процент на «Сегодня» ----------
+import { digitsOf, blendGlyph, easeInOut } from '../src/components/score-number.js';
+
+test('процент: разряды выровнены вправо, клетки перетекают', () => {
+  assert.deepEqual(digitsOf(7, 2), ['', '7']);
+  assert.deepEqual(digitsOf(100, 3), ['1', '0', '0']);
+  assert.equal(easeInOut(0), 0);
+  assert.equal(easeInOut(1), 1);
+  const half = blendGlyph('1', '7', 0.5).flat();
+  assert.ok(half.every((a) => a >= 0 && a <= 1));
+  assert.deepEqual(blendGlyph('', '8', 1).flat().filter((a) => a === 1).length, 17);
+});

@@ -18,6 +18,8 @@ import { track, flush, identifyUser, setPersonProps, setScreen, resetAnalytics }
 import { analyzeFood, askAI, getInsights, generateMealImage } from '../services/ai.js';
 import { compressImage, photoForStorage } from '../services/image.js';
 import { putPhoto, deletePhoto, getPhotos, withPhotos, mealIds } from '../services/photos.js';
+import { readDraft, writeDraft, readDraftPhoto, writeDraftPhoto } from '../services/draft.js';
+import { draftForStorage, restoreDraft, draftSections, isDraftEmpty } from '../domain/draft.js';
 import { exportCSV, openDoctorReport } from '../services/export.js';
 import { isTelegram, openTelegramLink, syncBackButton, telegramUser, hapticSelection, homeScreenPlatform, canAddToHomeScreen, checkHomeScreenStatus, addToHomeScreen, onHomeScreenAdded } from '../services/telegram.js';
 import { homePromptSnoozed } from '../domain/home-prompt.js';
@@ -48,7 +50,7 @@ const blankForm = () => ({
   stress: null,       // стресс 0–10; null — не отмечали
   period: '',         // '' | 'yes' | 'no'
   food: 'pick',       // 'pick' — фото и/или описание, 'scan' — ИИ разбирает, 'done' — результат
-  photo: '',          // фото блюда: blob-ссылка (своё фото) или data URL (картинка ИИ); при сохранении уменьшается и уходит в IndexedDB + Storage
+  photo: '',          // фото блюда: blob-ссылка (своё фото) или data URL (картинка ИИ, восстановленный черновик); при сохранении уменьшается и уходит в IndexedDB + Storage
   art: '',            // '' | 'loading' — ИИ рисует картинку к блюду, описанному словами
   note: '',           // комментарий к блюду: что на тарелке, порция
   result: null,       // разбор блюда (src/domain/meal.js)
@@ -110,6 +112,9 @@ export default class App extends Component {
       }
     }
 
+    // Черновик «+» с прошлого запуска: человек начал заполнять, вышел и вернулся (фото подгрузится в componentDidMount)
+    const draft = profile.onboardedAt ? restoreDraft(readDraft(), blankForm()) : null;
+
     // В Telegram подставляем имя из аккаунта; аватар берём оттуда же (не сохраняем)
     const tg = telegramUser();
     if (tg && !profile.name && tg.first_name) profile = { ...profile, name: tg.first_name };
@@ -136,13 +141,17 @@ export default class App extends Component {
       avatarUrl: (tg && tg.photo_url) || '',
       profile, log,
       selected: this.today(),
-      form: blankForm(),
+      form: draft || blankForm(),
       askText: '',
       insights: readInsightsCache(), insightsLoading: false,
       toast: '',
       exampleN: 0
     };
     this.onboardingStartedAt = Date.now();
+    this.draftRestored = !!draft;
+    this.draftPhotoPending = false;  // фото черновика с прошлого запуска ещё читается из IndexedDB
+    this.draftPhoto = '';            // фото, которое уже лежит в IndexedDB как фото черновика
+    this.draftPhotoQueue = Promise.resolve(); // запись фото черновика — строго по очереди, чтобы старое не перезаписало новое
     this.mealSaves = {};  // id блюда → промис записи в Supabase (путь к фото дописываем после неё)
     this.artJob = null;   // картинка ИИ в работе: { id, day, mealId } — day/mealId появляются, если блюдо уже сохранили
     this.handleBack = () => this.back();
@@ -168,8 +177,13 @@ export default class App extends Component {
     if (!this.state.booting) this.onScreenShown();
     const bootTimer = setTimeout(() => this.finishBoot({}), BOOT_TIMEOUT_MS);
     this.hydratePhotos();
+    this.restoreDraftPhoto();
     await identifyUser();
     track('app_opened', { is_returning: !!this.state.profile.onboardedAt, local_days: Object.keys(this.state.log).length });
+    if (this.draftRestored) {
+      const sec = draftSections(this.state.form);
+      track('add_draft_restored', { has_stool: sec.stool, has_food: sec.food, has_water: sec.water, food_state: this.state.form.food });
+    }
     if (IS_DEMO) return;
 
     const remote = await store.loadRemote(this.today());
@@ -229,6 +243,47 @@ export default class App extends Component {
       else if (s.addSheet && !prev.addSheet) setScreen('add_entry');
     }
     if ((prev.log !== s.log || prev.profile !== s.profile) && s.profile.onboardedAt) store.saveLocal(s.profile, s.log);
+    if (prev.form !== s.form) this.saveDraft(prev.form);
+  }
+
+  // ---------- черновик «+» на устройстве: переживает закрытие шторки и перезапуск приложения ----------
+
+  /** Поля — в localStorage при каждом изменении формы, фото — в IndexedDB, только когда оно поменялось */
+  saveDraft(prevForm) {
+    if (IS_DEMO) return;
+    const f = this.state.form, data = draftForStorage(f);
+    if (this.draftPhotoPending) {
+      // фото с прошлого запуска ещё читается из IndexedDB — не теряем отметку о нём
+      if (data) data.hasPhoto = true;
+      else return;
+    }
+    writeDraft(data);
+    if (prevForm.photo !== f.photo && f.photo !== this.draftPhoto) {
+      const src = f.photo;
+      this.draftPhotoQueue = this.draftPhotoQueue.then(async () => {
+        if (this.state.form.photo !== src) return; // пока ждали очереди, фото уже сменили — запишет следующий шаг
+        this.draftPhoto = await writeDraftPhoto(src);
+      });
+    }
+  }
+
+  /** Фото черновика с прошлого запуска (blob-ссылки после перезапуска не работают — храним сам JPEG) */
+  async restoreDraftPhoto() {
+    if (IS_DEMO) return;
+    const saved = readDraft();
+    if (!this.draftRestored || !saved || !saved.hasPhoto) {
+      // черновика нет — убираем осиротевшее фото, если осталось
+      this.draftPhotoQueue = this.draftPhotoQueue.then(() => (this.state.form.photo ? null : writeDraftPhoto('')));
+      return;
+    }
+    this.draftPhotoPending = true;
+    const photo = await readDraftPhoto();
+    const stillWanted = this.draftPhotoPending;
+    this.draftPhotoPending = false;
+    // пока читали, человек мог убрать блюдо, очистить черновик или выбрать другое фото
+    if (!photo || !stillWanted || this.state.form.photo) return;
+    this.draftPhoto = photo;
+    this.setForm({ photo });
   }
 
   onScreenShown() {
@@ -540,6 +595,7 @@ export default class App extends Component {
     resetAnalytics();
     if (!IS_DEMO) await signOut();
     this.onboardingStartedAt = Date.now();
+    this.draftPhotoPending = false;
     this.setState({
       screen: 'onboarding', onbStep: 'consent', consent: false, legal: null, assistant: false, mealEdit: null, entryEdit: null, waterEdit: null, chat: [],
       profile: blankProfile(), log: {}, form: blankForm(), insights: null
@@ -629,13 +685,25 @@ export default class App extends Component {
     openTelegramLink(url, event);
   }
 
-  /** Закрыли шторку без сохранения — черновик сбрасываем: в следующий раз форма открывается чистой */
+  /**
+   * Закрыли шторку без сохранения — черновик остаётся: при следующем «+» всё заполненное на месте
+   * (и после перезапуска приложения — см. saveDraft). Если ИИ ещё разбирает блюдо, результат допишется в черновик.
+   */
   closeAddSheet() {
+    this.setState({ addSheet: null, keyboard: false });
+    track('add_sheet_closed', { has_draft: !isDraftEmpty(this.state.form) });
+  }
+
+  /** «Очистить» на карточках «+»: начать запись заново */
+  discardDraft() {
+    if (!window.confirm('Очистить всё, что заполнено, и начать заново?')) return;
     clearTimeout(this.exampleTimer);
     this.scanId = null;
     this.cancelMealArt();
-    this.setState({ addSheet: null, keyboard: false, form: blankForm() });
-    track('add_sheet_closed');
+    this.draftPhotoPending = false;
+    const sec = draftSections(this.state.form);
+    this.setState({ form: blankForm() });
+    track('add_draft_discarded', { has_stool: sec.stool, has_food: sec.food, has_water: sec.water });
   }
 
   /** Жидкость: +ml или −ml к черновику. Минус может убрать и уже сохранённое за сегодня (исправить ошибку), но не ниже 0 за день. */
@@ -824,6 +892,7 @@ export default class App extends Component {
   }
 
   removeFoodPhoto() {
+    this.draftPhotoPending = false;
     this.setForm({ photo: '' });
     track('food_photo_removed');
   }
@@ -867,6 +936,7 @@ export default class App extends Component {
 
   removeFood() {
     clearTimeout(this.exampleTimer);
+    this.draftPhotoPending = false;
     this.scanId = null;
     this.cancelMealArt();
     const f = blankForm();
@@ -1031,6 +1101,7 @@ export default class App extends Component {
     const isFirstEntry = !Object.values(this.state.log).some(hasData);
     const log = { ...this.state.log, [k]: day };
 
+    this.draftPhotoPending = false;
     this.setState({ log, form: blankForm(), screen: 'today', selected: k, addSheet: null });
     this.showToast('Сохранено');
 

@@ -23,8 +23,11 @@
   <sc-if value="{{food.pick}}">
     <sc-if value="{{noPhoto}}">
       <label class="photo-drop" for="foodFile">
-        <span class="icon-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></span>
-        <span>Сфотографировать блюдо</span>
+        <span class="icon-btn">
+          <sc-if value="{{photoCamera}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></sc-if>
+          <sc-if value="{{photoGallery}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"></rect><circle cx="9" cy="10" r="1.5"></circle><path d="M20 16l-5-5-8 8"></path></svg></sc-if>
+        </span>
+        <span>{{photoLabel}}</span>
         <input id="foodFile" class="file-input" type="file" accept="image/*" onChange="{{onPhoto}}">
       </label>
     </sc-if>

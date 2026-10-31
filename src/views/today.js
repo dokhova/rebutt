@@ -5,18 +5,12 @@ import { BRISTOL_TYPES, FALLBACK_TIPS, SYMPTOM_OK, STOOL_COLORS, stressWord } fr
 import { dailyTargets } from '../domain/targets.js';
 import { mealSummary, mealTint } from '../domain/meal.js';
 import { parseKey, addDays, dayMonth, WEEKDAYS_SHORT, WEEKDAYS_FULL } from '../domain/dates.js';
-import { gutScore, toneOf, TONE_COLOR, fiberOf, waterOf, hasData } from '../domain/score.js';
+import { gutScore, toneOf, fiberOf, waterOf, hasData } from '../domain/score.js';
 import { suggestionsFor, litres } from '../domain/suggestions.js';
 import { cycleDay, cycleHint, isPeriodDay } from '../domain/cycle.js';
 import { DEMO_TIP_CALM } from '../domain/demo.js';
 
-// Дуга: нижняя полуокружность в SVG 350×300, центр (175, 115), радиус 155 — те же числа в templates/screens/today.html.
-// Заполняется слева направо: 0% — левый край, 100% — правый.
-const ARC = { cx: 175, cy: 115, r: 155 };
 const MAX_TIPS = 3;
-
-// RGB тонов для свечения за дугой (цвета — TONE_COLOR)
-const TONE_RGB = { calm: '211,250,157', mild: '127,168,102', sens: '167,139,250', cycle: '121,84,200' };
 
 const EMPTY_TIPS = {
   today: ['Начнём с одной записи', 'Отметь стул, еду или воду — и здесь появятся подсказки на сегодня.'],
@@ -30,7 +24,6 @@ export function todayView(app) {
   const sc = gutScore(day);
   const tone = toneOf(sc ? sc.idx : null);
   const cd = cycleDay(p, sel, todayK);
-  const arcTone = isPeriodDay(p, day, cd) && sc ? 'cycle' : tone;
 
   return {
     // шапка
@@ -44,12 +37,6 @@ export function todayView(app) {
     dateValue: sel,
     pickDay: (e) => app.pickDay(e.target.value),
 
-    // дуга
-    idx: sc ? sc.idx : '',
-    hasScore: !!sc,
-    noScore: !sc,
-    ...arc(sc, arcTone),
-    goInsights: () => app.navigate('insights', 'today_summary'),
     // пустой день — кнопка внести данные; для прошлого дня «+» пишет именно в него (App.entryDay)
     showAddButton: !sc,
     addButtonLabel: isToday ? 'Внести данные за день' : 'Внести данные за ' + dayMonth(sel),
@@ -70,21 +57,6 @@ function dayTitle(k, todayK) {
   if (k === todayK) return { dayLabel: 'Сегодня', dateSub: WEEKDAYS_SHORT[wd].toLowerCase() + ', ' + dayMonth(k) };
   if (k === addDays(todayK, -1)) return { dayLabel: 'Вчера', dateSub: WEEKDAYS_SHORT[wd].toLowerCase() + ', ' + dayMonth(k) };
   return { dayLabel: WEEKDAYS_FULL[parseKey(k).getDay()], dateSub: dayMonth(k) };
-}
-
-/** Дуга: сколько закрашено, где ползунок, цвет и свечение по тону */
-function arc(sc, tone) {
-  if (!sc) return { arcDash: '0 100', knobX: 0, knobY: 0, knobR: 0, haloR: 0, arcColor: TONE_COLOR.empty, glowStyle: 'background: none' };
-  const a = (sc.idx / 100) * Math.PI, rgb = TONE_RGB[tone] || TONE_RGB.mild;
-  return {
-    arcDash: sc.idx + ' 100',
-    knobX: (ARC.cx - ARC.r * Math.cos(a)).toFixed(1),
-    knobY: (ARC.cy + ARC.r * Math.sin(a)).toFixed(1),
-    knobR: 6.5,
-    haloR: 12,
-    arcColor: TONE_COLOR[tone] || TONE_COLOR.mild,
-    glowStyle: 'background: radial-gradient(circle, rgba(' + rgb + ',.2) 0%, rgba(' + rgb + ',.08) 40%, rgba(' + rgb + ',0) 70%)'
-  };
 }
 
 const bar = (pct, tone) => ({ width: 'width: ' + Math.max(0, Math.min(100, Math.round(pct))) + '%', cls: 'mbar-fill ' + tone });
