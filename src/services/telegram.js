@@ -19,8 +19,8 @@ export function initTelegram() {
     try { app.requestFullscreen(); } catch (_) { /* клиент не поддерживает — остаёмся в обычном режиме */ }
   }
   if (app.isVersionAtLeast('6.1')) {
-    app.setHeaderColor(app.isVersionAtLeast('6.9') ? '#2F2442' : 'bg_color'); // верх фона (--bg-top)
-    app.setBackgroundColor('#0F0C14'); // низ фона (--bg) — под меню и при перетягивании
+    app.setHeaderColor(app.isVersionAtLeast('6.9') ? '#4B3A6B' : 'bg_color'); // верх фона (--bg-top)
+    app.setBackgroundColor('#0B0910'); // низ фона (--bg) — под меню и при перетягивании
   }
 }
 

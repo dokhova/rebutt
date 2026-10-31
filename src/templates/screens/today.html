@@ -12,19 +12,11 @@
   </label>
 </div>
 
-<sc-if value="{{showAddButton}}"><button class="btn" onClick="{{goAddFromEmpty}}">{{addButtonLabel}}</button></sc-if>
-
 <div class="section">
   <h2 class="home-h2">Показатели дня</h2>
   <div class="card metrics">
-    <sc-if value="{{noGut}}">
-      <button class="metric-empty" onClick="{{addStool}}">
-        <span class="metric-empty-text"><span class="metric-empty-title">Стул и самочувствие</span><span class="metric-sub">пока не отмечены</span></span>
-        <span class="metric-empty-cta">Отметить</span>
-      </button>
-    </sc-if>
-    <sc-if value="{{hasGut}}">
-    <div class="metric-row">
+    <!-- пустой день выглядит так же, как заполненный: вместо цифр тусклый «0»; тап по строке открывает «Стул» -->
+    <div class="metric-row" onClick="{{tapGutRow}}">
       <div class="metric">
         <div class="metric-label">Стул</div>
         <div class="{{stool.cls}}">{{stool.text}}<span class="metric-unit">{{stool.unit}}</span></div>
@@ -41,7 +33,6 @@
         <div class="mbar" aria-hidden="true"><div class="{{comfort.bar.cls}}" style="{{comfort.bar.width}}"></div></div>
       </div>
     </div>
-    </sc-if>
     <div class="metric-tiles">
       <!-- плитка: шапка с «?» и кнопка, которая открывает нужный раздел «+» (кнопки не вкладываются друг в друга) -->
       <div class="metric-tile">

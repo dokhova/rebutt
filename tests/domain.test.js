@@ -296,3 +296,25 @@ test('процент: разряды выровнены вправо, клетк
   assert.ok(half.every((a) => a >= 0 && a <= 1));
   assert.deepEqual(blendGlyph('', '8', 1).flat().filter((a) => a === 1).length, 17);
 });
+
+// ---------- подсказки на пустой день по прошлым дням ----------
+import { suggestionsFromHistory } from '../src/domain/suggestions.js';
+
+test('подсказки без записей сегодня: по прошлым дням и целям', () => {
+  const opts = (goals = []) => ({ addDays, goals, targets: { waterMl: 2000, fiberG: 25 } });
+  // ничего нет и целей нет — пусто (на экране будет приглашение)
+  assert.deepEqual(suggestionsFromHistory({}, '2026-10-31', opts()), []);
+  // цель «реакция на еду» — подсказка про фото даже без записей
+  assert.equal(suggestionsFromHistory({}, '2026-10-31', opts(['food']))[0].id, 'photo');
+  // два твёрдых дня из трёх и мало воды — вода первой
+  const log = {
+    '2026-10-30': day([g(2)]),
+    '2026-10-29': day([g(1)]),
+    '2026-10-28': { ...day([g(4)]), water: 750 },
+    '2026-10-31': day([g(7)]) // сам день не учитывается
+  };
+  const ids = suggestionsFromHistory(log, '2026-10-31', opts()).map((x) => x.id);
+  assert.equal(ids[0], 'water');
+  assert.ok(ids.includes('walk'));
+  assert.ok(!ids.includes('sip'));
+});

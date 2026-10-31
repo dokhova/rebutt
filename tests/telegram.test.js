@@ -26,7 +26,7 @@ test('Telegram integration keeps browser behavior and restricts user properties'
     globalThis.Telegram.WebApp = app;
     globalThis.location = { href: 'https://rebutt.example/' };
     initTelegram();
-    assert.deepEqual(calls.splice(0), [['ready'], ['expand'], ['disableVerticalSwipes'], ['setHeaderColor', '#2F2442'], ['setBackgroundColor', '#0F0C14']]);
+    assert.deepEqual(calls.splice(0), [['ready'], ['expand'], ['disableVerticalSwipes'], ['setHeaderColor', '#4B3A6B'], ['setBackgroundColor', '#0B0910']]);
     assert.deepEqual(telegramAnalyticsProps(), { platform: 'telegram', tg_language: 'ru', tg_is_premium: true });
     const event = { preventDefault: () => calls.push('prevent') };
     openTelegramLink('/legal/terms.html', event);

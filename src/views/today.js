@@ -6,7 +6,7 @@ import { dailyTargets } from '../domain/targets.js';
 import { mealSummary, mealTint } from '../domain/meal.js';
 import { parseKey, addDays, dayMonth, WEEKDAYS_SHORT, WEEKDAYS_FULL } from '../domain/dates.js';
 import { gutScore, toneOf, fiberOf, waterOf, hasData } from '../domain/score.js';
-import { suggestionsFor, litres } from '../domain/suggestions.js';
+import { suggestionsFor, suggestionsFromHistory, litres } from '../domain/suggestions.js';
 import { cycleDay, cycleHint, isPeriodDay } from '../domain/cycle.js';
 import { DEMO_TIP_CALM } from '../domain/demo.js';
 
@@ -38,9 +38,6 @@ export function todayView(app) {
     pickDay: (e) => app.pickDay(e.target.value),
 
     // пустой день — кнопка внести данные; для прошлого дня «+» пишет именно в него (App.entryDay)
-    showAddButton: !sc,
-    addButtonLabel: isToday ? 'Внести данные за день' : 'Внести данные за ' + dayMonth(sel),
-    goAddFromEmpty: () => app.openAddSheet('empty_day'),
 
     // показатели и подсказки
     ...metrics(sc, day, app, dailyTargets(p)),
@@ -64,34 +61,34 @@ const bar = (pct, tone) => ({ width: 'width: ' + Math.max(0, Math.min(100, Math.
 /** Стул, форма, комфорт + плитки клетчатки и жидкости. Нет данных — «—», а не 0.
  *  У всех одна и та же тонкая полоска: насколько показатель близок к ровному дню (цвет — по тем же порогам, что у дуги). */
 function metrics(sc, day, app, targets) {
-  const VAL = 'metric-value num', EMPTY = { text: 'не отмечено', cls: 'metric-value is-empty', unit: '', bar: bar(0, 'empty') };
+  // нет данных — тусклый «0» с той же единицей и пустой полоской: экран выглядит так же, как заполненный
+  const VAL = 'metric-value num', DASH = 'metric-value num is-dash';
+  const empty = (unit) => ({ text: '0', cls: DASH, unit, bar: bar(0, 'empty') });
 
   // стул: сколько раз из обычных 1–3 («не было» — честный 0)
-  const stool = !sc || (!sc.n && !sc.had) ? EMPTY
+  const stool = !sc || (!sc.n && !sc.had) ? empty(' раз')
     : { text: String(sc.n), cls: VAL, unit: sc.n > 1 && sc.n < 5 ? ' раза' : ' раз', bar: bar(Math.min(sc.n, 3) / 3 * 100, toneOf(sc.reg)) };
 
   // форма: тип по Бристольской шкале; полоска — насколько форма близка к ровной (score.js → form)
-  const form = !sc || !sc.last ? EMPTY : { text: String(sc.last), cls: VAL, unit: ' тип', bar: bar(sc.form, toneOf(sc.form)) };
+  const form = !sc || !sc.last ? empty(' тип') : { text: String(sc.last), cls: VAL, unit: ' тип', bar: bar(sc.form, toneOf(sc.form)) };
 
   // комфорт: по отмеченному самочувствию
-  const comfort = !sc ? EMPTY : { text: String(sc.comfort), cls: VAL, unit: ' %', bar: bar(sc.comfort, toneOf(sc.comfort)) };
+  const comfort = !sc ? empty(' %') : { text: String(sc.comfort), cls: VAL, unit: ' %', bar: bar(sc.comfort, toneOf(sc.comfort)) };
 
-  // клетчатка и жидкость — к дневному ориентиру; не отмечено — подпись, а не «—» или 0
+  // клетчатка и жидкость — к дневному ориентиру; не отмечено — тусклый «0» из ориентира
   const fiber = fiberOf(day), water = waterOf(day);
   const fiberPct = fiber == null ? 0 : fiber / targets.fiberG * 100, waterPct = water / targets.waterMl * 100;
   return {
-    // пустой день по стулу и самочувствию: вместо трёх прочерков — одна строка-приглашение
-    noGut: !sc,
-    hasGut: !!sc,
+    tapGutRow: () => { if (!sc) app.pickAddSection('stool'); },
     addStool: () => app.pickAddSection('stool'),
     addFood: () => app.pickAddSection('food'),
     addWater: () => app.pickAddSection('water'),
     stool, form, comfort,
     fiber: fiber == null
-      ? { text: 'нет еды', cls: 'metric-tile-value is-empty', unit: '', bar: bar(0, 'empty') }
+      ? { text: '0', cls: 'metric-tile-value num is-dash', unit: ' из ' + targets.fiberG + ' г', bar: bar(0, 'empty') }
       : { text: String(fiber), cls: 'metric-tile-value num', unit: ' из ' + targets.fiberG + ' г', bar: bar(fiberPct, toneOf(fiberPct)) },
     water: !water
-      ? { text: 'не отмечено', cls: 'metric-tile-value is-empty', unit: '', bar: bar(0, 'empty') }
+      ? { text: '0', cls: 'metric-tile-value num is-dash', unit: ' из ' + litres(targets.waterMl) + ' л', bar: bar(0, 'empty') }
       : { text: litres(water), cls: 'metric-tile-value num', unit: ' из ' + litres(targets.waterMl) + ' л', bar: bar(waterPct, toneOf(waterPct)) }
   };
 }
@@ -101,7 +98,9 @@ function tipsOf(s, day, sc, tone, isToday, todayK, opts) {
   const items = [];
   const ai = s.insights;
   if (isToday && sc && ai && ai.date === todayK && ai.tipTitle) items.push({ id: 'ai', icon: 'ai', tone: 'calm', title: ai.tipTitle, text: ai.tipText });
-  if (hasData(day)) items.push(...suggestionsFor(day, sc, opts)); // пустой день — без подсказок, только приглашение
+  if (hasData(day)) items.push(...suggestionsFor(day, sc, opts));
+  // сегодня записей нет — подсказки по прошлым дням и целям (если и их нет — приглашение)
+  else if (isToday) items.push(...suggestionsFromHistory(s.log, todayK, { ...opts, addDays }));
   if (!items.length) {
     const [title, text] = !hasData(day) ? EMPTY_TIPS[isToday ? 'today' : 'past'] : FALLBACK_TIPS[tone] || FALLBACK_TIPS.mild;
     items.push({ id: 'fallback', icon: 'calm', tone: 'mild', title, text: IS_DEMO && tone === 'calm' && sc ? DEMO_TIP_CALM : text });
