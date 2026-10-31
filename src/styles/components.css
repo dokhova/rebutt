@@ -58,7 +58,9 @@
 .round-btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line-control); background: transparent; font-size: 17px; padding: 0; display: flex; align-items: center; justify-content: center; }
 
 /* ---------- карточки и списки ---------- */
-.card { border-radius: 28px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .09); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+/* полупрозрачная поверх градиента фона. Без backdrop-filter: размытие плавного градиента всё равно не видно,
+   а в WebView Telegram на iOS оно у элементов внутри прокрутки мешает скроллить, если палец начинает жест на карточке */
+.card { border-radius: 28px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .09); }
 .card.list { padding: 4px 20px; }
 .panel { padding: 20px; display: flex; flex-direction: column; gap: 8px; }
 .panel-title { font-size: 17px; font-weight: 600; line-height: 1.3; }
