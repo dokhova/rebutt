@@ -3,6 +3,7 @@
 // Каждое действие само отправляет своё событие аналитики (словарь — docs/ANALYTICS.md).
 
 import { Component } from '../core/runtime.js';
+import { installSheetDrag } from '../core/sheet-drag.js';
 import { newId } from '../core/id.js';
 import { APP_NAME, SUPPORT_URL, LEGAL_DOCS, LEGAL_VERSION, IS_DEMO } from '../config.js';
 import { keyOf, addDays, nowHM } from '../domain/dates.js';
@@ -131,6 +132,7 @@ export default class App extends Component {
       info: null,         // открытая карточка «?» — откуда норма или совет: id из domain/sources.js → infoCards
       // шторка «+» поверх экрана: null | 'pick' — выбор из трёх карточек | 'stool' | 'food' | 'water' — форма раздела
       addSheet: IS_DEMO && location.hash === '#add' ? 'pick' : null,
+      sheetFull: false,   // шторка «+» (форма раздела) или ИИ раскрыта на весь экран; открываются до середины
       chat: [],           // диалог: [{ role: 'user' | 'ai', text, shown?, image? }]; shown — сколько текста уже показано
       chatLoading: false,
       chatImage: '',      // фото, приложенное к следующему вопросу (blob-ссылка)
@@ -174,6 +176,10 @@ export default class App extends Component {
     });
 
     onHomeScreenAdded(() => this.homeScreenAdded());
+    installSheetDrag({
+      onSnap: (kind, full) => this.snapSheet(kind, full),
+      onClose: (kind) => (kind === 'assistant' ? this.closeAssistant() : this.closeAddSheet())
+    });
     if (!this.state.booting) this.onScreenShown();
     const bootTimer = setTimeout(() => this.finishBoot({}), BOOT_TIMEOUT_MS);
     this.hydratePhotos();
@@ -617,11 +623,18 @@ export default class App extends Component {
 
   /** Карточка в слайдере: стул, питание или жидкости */
   pickAddSection(section) {
-    this.setState({ addSheet: section, form: { ...this.state.form, section } });
+    this.setState({ addSheet: section, form: { ...this.state.form, section }, sheetFull: false });
     track('add_section_opened', { section });
   }
 
   backToAddPicker() { this.setState({ addSheet: 'pick' }); }
+
+  /** Шторку потянули: на весь экран или обратно до середины */
+  snapSheet(kind, full) {
+    if (this.state.sheetFull === full) return;
+    this.setState({ sheetFull: full });
+    track('sheet_resized', { sheet: kind, to: full ? 'full' : 'half' });
+  }
 
   /** Лёгкая отдача при каждом шаге ползунка (в Telegram) */
   hapticTick() { hapticSelection(); }
@@ -1145,7 +1158,7 @@ export default class App extends Component {
   // ================= ИИ =================
 
   openAssistant(from) {
-    this.setState({ assistant: true });
+    this.setState({ assistant: true, sheetFull: false });
     track('assistant_opened', { from });
   }
 

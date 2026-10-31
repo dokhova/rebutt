@@ -31,7 +31,7 @@
 
 <sc-if value="{{sheetForm}}">
   <div class="sheet-backdrop fade-in" onClick="{{closeAddSheet}}"></div>
-  <section class="sheet slide-up" role="dialog" aria-label="Новая запись">
+  <section class="{{sheetCls}}" data-sheet="add" role="dialog" aria-label="Новая запись">
     <div class="sheet-handle"></div>
     <div class="sheet-head add-sheet-head">
       <button class="icon-btn sheet-back" onClick="{{backToPicker}}" aria-label="К выбору раздела"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
