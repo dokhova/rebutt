@@ -171,7 +171,17 @@ function render() {
   const fresh = document.createElement('div');
   fresh.id = rootEl.id;
   renderChildren(fresh, components.App.tpl, rootInstance.view());
-  morphdom(rootEl, fresh);
+  morphdom(rootEl, fresh, {
+    // шторку тянут пальцем (core/sheet-drag.js) — не трогаем её инлайн-высоту
+    onBeforeElUpdated(from, to) {
+      if (from.hasAttribute('data-dragging')) {
+        to.setAttribute('data-dragging', '');
+        const st = from.getAttribute('style');
+        if (st) to.setAttribute('style', st);
+      }
+      return true;
+    }
+  });
   for (const el of rootEl.querySelectorAll('[data-ref]')) {
     const fn = handlers[+el.getAttribute('data-ref')];
     if (fn) fn(el);
