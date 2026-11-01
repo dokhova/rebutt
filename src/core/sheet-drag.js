@@ -31,6 +31,7 @@ export function installSheetDrag({ onSnap, onClose }) {
     if (!drag.moved) {
       drag.moved = true;
       drag.sheet.style.transition = 'none';
+      drag.sheet.setAttribute('data-dragging', ''); // runtime не сбрасывает инлайн-высоту, пока тянут (иначе дёргается при стриме ответа)
       try { drag.sheet.setPointerCapture(e.pointerId); } catch (_) { /* не критично */ }
     }
     const dt = Math.max(1, e.timeStamp - drag.t);
@@ -48,19 +49,28 @@ export function installSheetDrag({ onSnap, onClose }) {
     else if (d.v < -FLICK) target = 'full';                           // смахнули вверх
     else if (h < half * CLOSE_SHARE) target = 'close';
     else target = h > (half + d.max) / 2 ? 'full' : 'half';
+    // закрываем — оставляем шторку там, где отпустили: она исчезнет при перерисовке, без отскока к середине
+    if (target === 'close') { onClose(kind); return; }
     // убираем инлайн-высоту — переход из CSS доводит шторку до положения по классу
+    d.sheet.removeAttribute('data-dragging');
     d.sheet.style.transition = '';
     d.sheet.style.height = '';
-    if (target === 'close') onClose(kind);
-    else onSnap(kind, target === 'full');
+    onSnap(kind, target === 'full');
   };
   document.addEventListener('pointerup', end, true);
   document.addEventListener('pointercancel', end, true);
 
-  // начали прокручивать содержимое на половине экрана — раскрываем
+  // начали прокручивать содержимое на половине экрана — раскрываем.
+  // Только если крутит человек: лента чата сама прокручивается вниз при открытии и на каждый кусок ответа —
+  // это не повод раскрывать шторку (раньше она прыгала на весь экран сразу после открытия).
+  let userScrollAt = -Infinity;
+  const markUser = (e) => { if (e.target.closest && e.target.closest('.sheet-body')) userScrollAt = e.timeStamp; };
+  document.addEventListener('touchmove', markUser, { capture: true, passive: true });
+  document.addEventListener('wheel', markUser, { capture: true, passive: true });
   document.addEventListener('scroll', (e) => {
     const el = e.target;
     if (!el.classList || !el.classList.contains('sheet-body') || el.scrollTop < 8) return;
+    if (e.timeStamp - userScrollAt > 800) return;
     const sheet = el.closest('.sheet[data-sheet]');
     if (sheet && !sheet.classList.contains('full')) onSnap(sheet.dataset.sheet, true);
   }, true);
@@ -81,7 +91,10 @@ function maxHeight(sheet) {
   sheet.style.transition = 'none';
   sheet.classList.add('full');
   const h = sheet.offsetHeight;
-  if (!had) sheet.classList.remove('full');
+  if (!had) {
+    sheet.classList.remove('full');
+    void sheet.offsetHeight; // фиксируем высоту «середины» до того, как вернуть transition, — иначе браузер анимирует full → half
+  }
   sheet.style.transition = prev;
   return h;
 }
