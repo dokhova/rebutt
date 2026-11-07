@@ -29,6 +29,8 @@ import { supabase, signOut } from '../services/supabase.js';
 import { VIEWS, shellView } from '../views/index.js';
 
 const LS_INSIGHTS = 'gt_insights';
+/** Версия формата совета ИИ: при смене промпта старый кэш за день пересчитывается */
+const INSIGHTS_V = 2;
 const LS_HOME_PROMPT = 'gt_home_prompt';
 const TOAST_MS = 3500;
 const EXAMPLE_SCAN_MS = 1600;
@@ -1223,13 +1225,13 @@ export default class App extends Component {
     const ctx = buildAiContext(s.profile, s.log, this.today());
     if (!ctx.days.length) return;
     const hash = aiContextHash(ctx);
-    if (s.insights && s.insights.hash === hash) return;
+    if (s.insights && s.insights.hash === hash && s.insights.v === INSIGHTS_V) return;
 
     this.setState({ insightsLoading: true });
     const startedAt = Date.now();
     try {
       const r = await getInsights(ctx);
-      const insights = { hash, date: ctx.today, tipTitle: r.tip_title, tipText: r.tip_text, noticed: r.noticed };
+      const insights = { v: INSIGHTS_V, hash, date: ctx.today, tipTitle: r.tip_title, tipText: r.tip_text, noticed: r.noticed };
       try { localStorage.setItem(LS_INSIGHTS, JSON.stringify(insights)); } catch (_) { /* кэш не обязателен */ }
       this.setState({ insights, insightsLoading: false });
       track('ai_insights_generated', { latency_ms: Date.now() - startedAt, days_count: ctx.days.length });
