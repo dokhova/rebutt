@@ -44,7 +44,7 @@ src/
     components/pebble.html     разметка компонента Pebble
     partials/info-card.html    карточка «?»: откуда норма или совет, со ссылками на источники
     partials/home-prompt.html  модалка «На главный экран»
-  components/                  Pebble.js (иконка типа стула)
+  components/                  Pebble.js (иконка типа стула — картинка public/stool/type-N.webp)
   services/                    всё, что ходит наружу
     supabase.js                клиент и анонимный вход
     store.js                   профиль и записи: localStorage + Supabase; фото блюд — Supabase Storage (бакет meal-photos)
