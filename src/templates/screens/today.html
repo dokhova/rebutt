@@ -70,7 +70,7 @@
           <sc-if value="{{t.isPhoto}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></sc-if>
           <sc-if value="{{t.isAi}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.9L19 9.7l-5.2 1.8L12 16.4l-1.8-4.9L5 9.7l5.2-1.8z"></path></svg></sc-if>
         </span>
-        <div class="row-body"><div class="tip-title">{{t.title}}</div><div class="row-sub wrap">{{t.text}}</div></div>
+        <div class="row-body"><div class="tip-title">{{t.title}}</div><sc-if value="{{t.showText}}"><div class="row-sub wrap">{{t.text}}</div></sc-if></div>
       </div>
     </sc-for>
   </div>
