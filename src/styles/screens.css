@@ -97,7 +97,12 @@
 
 .type-list { display: flex; gap: 8px; overflow-x: auto; margin: 0 -18px; padding: 2px 18px; scroll-snap-type: x mandatory; scroll-padding: 18px; }
 .type-card { width: 92px; min-height: 132px; border-radius: 22px; border: 1px solid rgba(255, 255, 255, .08); background: var(--surface-2); display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px 12px; box-sizing: border-box; scroll-snap-align: start; }
-.type-card.on { background: var(--surface-4); border: 1.5px solid var(--ink); }
+.type-card { transition: background .2s ease, border-color .2s ease; }
+.type-card .pebble { transition: transform .25s cubic-bezier(.2, .8, .2, 1); }
+.type-card.on { background: rgba(211, 250, 157, .1); border: 1.5px solid var(--accent); }
+.type-card.on .pebble { transform: scale(1.08); }
+.type-card.on .type-name { color: var(--accent); }
+@media (prefers-reduced-motion: reduce) { .type-card, .type-card .pebble { transition: none; } }
 .type-name { font-size: 13px; font-weight: 500; }
 .type-desc { font-size: 13px; color: var(--muted); text-align: center; line-height: 1.25; }
 
