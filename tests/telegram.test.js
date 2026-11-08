@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { initTelegram, isTelegram, telegramAnalyticsProps, openTelegramLink, syncBackButton } from '../src/services/telegram.js';
+import { initTelegram, isTelegram, telegramAnalyticsProps, openTelegramLink, syncBackButton, setTelegramColors } from '../src/services/telegram.js';
 
 test('Telegram integration keeps browser behavior and restricts user properties', () => {
   const calls = [];
@@ -26,7 +26,10 @@ test('Telegram integration keeps browser behavior and restricts user properties'
     globalThis.Telegram.WebApp = app;
     globalThis.location = { href: 'https://rebutt.example/' };
     initTelegram();
-    assert.deepEqual(calls.splice(0), [['ready'], ['expand'], ['disableVerticalSwipes'], ['setHeaderColor', '#4B3A6B'], ['setBackgroundColor', '#0B0910']]);
+    assert.deepEqual(calls.splice(0), [['ready'], ['expand'], ['disableVerticalSwipes']]);
+    // цвета шапки и фона ставит тема (services/theme.js → setTelegramColors)
+    setTelegramColors('#F2F1EC', '#ECEBE5');
+    assert.deepEqual(calls.splice(0), [['setHeaderColor', '#F2F1EC'], ['setBackgroundColor', '#ECEBE5']]);
     assert.deepEqual(telegramAnalyticsProps(), { platform: 'telegram', tg_language: 'ru', tg_is_premium: true });
     const event = { preventDefault: () => calls.push('prevent') };
     openTelegramLink('/legal/terms.html', event);

@@ -1,4 +1,4 @@
-// «Сегодня»: шапка (аватар, день, календарь), дуга «работа кишечника», показатели дня,
+// «Сегодня»: шапка (аватар, день, календарь), карточка «Комфорт за день» с кольцом, плитки показателей,
 // «Что может помочь», цикл, записи дня. Базовые блоки видны всегда — даже в первый день без записей.
 import { IS_DEMO } from '../config.js';
 import { BRISTOL_TYPES, FALLBACK_TIPS, SYMPTOM_OK, STOOL_COLORS, stressWord } from '../domain/catalog.js';
@@ -59,38 +59,40 @@ function dayTitle(k, todayK) {
 
 const bar = (pct, tone) => ({ width: 'width: ' + Math.max(0, Math.min(100, Math.round(pct))) + '%', cls: 'mbar-fill ' + tone });
 
-/** Стул, форма, комфорт + плитки клетчатки и жидкости. Нет данных — «—», а не 0.
- *  У всех одна и та же тонкая полоска: насколько показатель близок к ровному дню (цвет — по тем же порогам, что у дуги). */
+/** Стул, форма, комфорт (большая карточка с кольцом) + плитки клетчатки и жидкости.
+ *  Нет данных — тусклые «0» / «–» той же высоты: пустой день выглядит так же, как заполненный.
+ *  Полоски на стекле всегда лаймовые: это ориентир, не оценка. */
 function metrics(sc, day, app, targets) {
-  // нет данных — тусклый «0» с той же единицей и пустой полоской: экран выглядит так же, как заполненный
-  const VAL = 'metric-value num', DASH = 'metric-value num is-dash';
-  const empty = (unit) => ({ text: '0', cls: DASH, unit, bar: bar(0, 'empty') });
+  const TILE = 'gvalue num', DIM = 'gvalue num is-dash';
+  const empty = (unit, text = '0') => ({ text, tileCls: DIM, unit, bar: bar(0, 'empty') });
 
   // стул: сколько раз из обычных 1–3 («не было» — честный 0)
   const stool = !sc || (!sc.n && !sc.had) ? empty(' раз')
-    : { text: String(sc.n), cls: VAL, unit: sc.n > 1 && sc.n < 5 ? ' раза' : ' раз', bar: bar(Math.min(sc.n, 3) / 3 * 100, toneOf(sc.reg)) };
+    : { text: String(sc.n), tileCls: TILE, unit: sc.n > 1 && sc.n < 5 ? ' раза' : ' раз', bar: bar(Math.min(sc.n, 3) / 3 * 100, toneOf(sc.reg)) };
 
-  // форма: тип по Бристольской шкале; полоска — насколько форма близка к ровной (score.js → form)
-  const form = !sc || !sc.last ? empty(' тип') : { text: String(sc.last), cls: VAL, unit: ' тип', bar: bar(sc.form, toneOf(sc.form)) };
+  // форма: тип по Бристольской шкале; на плитке — 7 точек, выбранная крупнее
+  const form = !sc || !sc.last ? empty(' тип', '–') : { text: String(sc.last), tileCls: TILE, unit: ' тип', bar: bar(sc.form, toneOf(sc.form)) };
+  const formDots = [1, 2, 3, 4, 5, 6, 7].map((n) => ({ cls: 'gdot' + (sc && sc.last === n ? ' on' : '') }));
 
-  // комфорт: по отмеченному самочувствию
-  const comfort = !sc ? empty(' %') : { text: String(sc.comfort), cls: VAL, unit: ' %', bar: bar(sc.comfort, toneOf(sc.comfort)) };
+  // комфорт за день — главная цифра: по отмеченному самочувствию
+  const hasComfort = !!sc && sc.comfort != null;
+  const comfort = hasComfort
+    ? { text: String(sc.comfort), heroCls: 'hero-value num' }
+    : { text: '–', heroCls: 'hero-value num is-dash' };
+  const C = 2 * Math.PI * 50, pct = hasComfort ? Math.max(0, Math.min(100, sc.comfort)) / 100 : 0;
+  const ring = { dash: (C * pct).toFixed(1) + ' ' + C.toFixed(1), text: hasComfort ? String(sc.comfort) : '–', cls: 'ring-num' + (hasComfort ? '' : ' is-dash') };
 
-  // клетчатка и жидкость — к дневному ориентиру; не отмечено — тусклый «0» из ориентира
+  // клетчатка и жидкость — к дневному ориентиру
   const fiber = fiberOf(day), water = waterOf(day);
   const fiberPct = fiber == null ? 0 : fiber / targets.fiberG * 100, waterPct = water / targets.waterMl * 100;
+  const fiberUnit = ' / ' + targets.fiberG + ' г', waterUnit = ' / ' + litres(targets.waterMl) + ' л';
   return {
-    tapGutRow: () => { if (!sc) app.pickAddSection('stool'); },
     addStool: () => app.pickAddSection('stool'),
     addFood: () => app.pickAddSection('food'),
     addWater: () => app.pickAddSection('water'),
-    stool, form, comfort,
-    fiber: fiber == null
-      ? { text: '0', cls: 'metric-tile-value num is-dash', unit: ' из ' + targets.fiberG + ' г', bar: bar(0, 'empty') }
-      : { text: String(fiber), cls: 'metric-tile-value num', unit: ' из ' + targets.fiberG + ' г', bar: bar(fiberPct, toneOf(fiberPct)) },
-    water: !water
-      ? { text: '0', cls: 'metric-tile-value num is-dash', unit: ' из ' + litres(targets.waterMl) + ' л', bar: bar(0, 'empty') }
-      : { text: litres(water), cls: 'metric-tile-value num', unit: ' из ' + litres(targets.waterMl) + ' л', bar: bar(waterPct, toneOf(waterPct)) }
+    stool, form, formDots, comfort, ring,
+    fiber: fiber == null ? empty(fiberUnit) : { text: String(fiber), tileCls: TILE, unit: fiberUnit, bar: bar(fiberPct, toneOf(fiberPct)) },
+    water: !water ? empty(waterUnit) : { text: litres(water), tileCls: TILE, unit: waterUnit, bar: bar(waterPct, toneOf(waterPct)) }
   };
 }
 

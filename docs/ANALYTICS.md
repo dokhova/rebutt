@@ -111,6 +111,7 @@
 | `cycle_toggled` | переключатель цикла | `enabled` |
 | `cycle_option_toggled` | беременность / КОК (онбординг и профиль) | `option` (`pregnant` / `coc`), `enabled` |
 | `reminder_toggled` | напоминания | `slot` (`morning` / `evening`), `enabled` |
+| `theme_changed` | профиль → «Оформление» | `theme` (`light` / `dark`) |
 | `export_clicked` | экспорт | `format` (`csv` / `pdf_report`), `rows` / `days` |
 | `support_clicked` | «Написать в Telegram» | `source` |
 | `data_deleted` / `data_delete_cancelled` | «Удалить все данные» | — |

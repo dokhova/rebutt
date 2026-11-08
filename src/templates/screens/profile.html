@@ -43,6 +43,14 @@
   </div>
 </sc-if>
 
+<div class="settings">
+  <div class="caption">Оформление</div>
+  <div class="segments theme-seg" role="radiogroup" aria-label="Тема">
+    <button class="{{themeLight}}" role="radio" aria-checked="{{themeLightOn}}" onClick="{{pickLight}}">Светлая</button>
+    <button class="{{themeDark}}" role="radio" aria-checked="{{themeDarkOn}}" onClick="{{pickDark}}">Тёмная</button>
+  </div>
+</div>
+
 <!-- Напоминания пока только сохраняются в профиль, отправки нет (см. README → «Что не сделано») -->
 <div class="settings">
   <div class="caption">Напоминания</div>
@@ -52,19 +60,19 @@
 
 <div class="settings">
   <div class="caption">Экспорт</div>
-  <button class="list-row link" onClick="{{exportReport}}"><span>Отчёт для врача <span class="muted">· PDF</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A3B3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
-  <button class="list-row link" onClick="{{exportCsv}}"><span>Все данные <span class="muted">· CSV</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A3B3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+  <button class="list-row link" onClick="{{exportReport}}"><span>Отчёт для врача <span class="muted">· PDF</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+  <button class="list-row link" onClick="{{exportCsv}}"><span>Все данные <span class="muted">· CSV</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
 </div>
 
 <div class="settings">
   <div class="caption">Поддержка</div>
-  <a class="list-row link" href="{{supportUrl}}" target="_blank" rel="noopener" onClick="{{openSupport}}"><span>Написать в Telegram <span class="muted">· {{supportHandle}}</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A3B3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"></path></svg></a>
+  <a class="list-row link" href="{{supportUrl}}" target="_blank" rel="noopener" onClick="{{openSupport}}"><span>Написать в Telegram <span class="muted">· {{supportHandle}}</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"></path></svg></a>
 </div>
 
 <div class="settings">
   <div class="caption">Документы</div>
   <sc-for list="{{docs}}" as="d">
-    <a class="list-row link" href="{{d.url}}" target="_blank" rel="noopener" onClick="{{d.open}}"><span>{{d.title}}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A8A3B3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+    <a class="list-row link" href="{{d.url}}" target="_blank" rel="noopener" onClick="{{d.open}}"><span>{{d.title}}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
   </sc-for>
 </div>
 

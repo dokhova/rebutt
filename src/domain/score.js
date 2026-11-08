@@ -51,4 +51,4 @@ export const toneOf = (v) => (v == null ? 'empty' : v >= 80 ? 'calm' : v >= 62 ?
 export const TONE_WORD = { calm: 'Хорошо', mild: 'Небольшие сбои', sens: 'Нужна забота', empty: 'Нет данных' };
 
 /** Цвета тонов — те же, что в styles/tokens.css (нужны в JS для SVG-колец и столбиков) */
-export const TONE_COLOR = { calm: '#D3FA9D', mild: '#7FA866', sens: '#A78BFA', cycle: '#7954C8', empty: 'rgba(255,255,255,.15)' };
+export const TONE_COLOR = { calm: '#D3FA9D', mild: '#7FA866', sens: '#A78BFA', cycle: '#7954C8', empty: 'var(--track)' };
