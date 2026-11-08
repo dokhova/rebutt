@@ -20,7 +20,7 @@ export function mealCard(meal, photo, opts = {}) {
     photo: src,
     hasPhoto: !!src,
     drawing,
-    showThumb: !src && !drawing,
+    showThumb: false, // без картинок-заглушек: только своё фото, если есть
     aiArt: !!src && (opts.aiArt != null ? opts.aiArt : meal.source === 'text')
   };
 }

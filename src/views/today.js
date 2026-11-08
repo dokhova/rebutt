@@ -68,7 +68,8 @@ function metrics(sc, day, app, targets) {
 
   // стул: сколько раз из обычных 1–3 («не было» — честный 0)
   const stool = !sc || (!sc.n && !sc.had) ? empty(' раз')
-    : { text: String(sc.n), tileCls: TILE, unit: sc.n > 1 && sc.n < 5 ? ' раза' : ' раз', bar: bar(Math.min(sc.n, 3) / 3 * 100, toneOf(sc.reg)) };
+    // 1–3 раза в день — обычно, поэтому уже один раз заполняет полоску целиком: «нужно больше» здесь неверный сигнал
+    : { text: String(sc.n), tileCls: TILE, unit: sc.n > 1 && sc.n < 5 ? ' раза' : ' раз', bar: bar(sc.n > 0 ? 100 : 0, toneOf(sc.reg)) };
 
   // форма: тип по Бристольской шкале; на плитке — 7 точек, выбранная крупнее
   const form = !sc || !sc.last ? empty(' тип', '–') : { text: String(sc.last), tileCls: TILE, unit: ' тип', bar: bar(sc.form, toneOf(sc.form)) };

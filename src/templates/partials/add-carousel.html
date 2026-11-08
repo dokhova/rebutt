@@ -1,15 +1,15 @@
-<!-- Карусель типов стула: свайп влево-вправо, стрелки, тап по соседнему. Значения: src/views/add-entry.js → carousel -->
+<!-- Карусель типов стула: лента едет за пальцем и плавно доезжает до ближайшего типа; стрелки и тап по соседнему.
+     Значения: src/views/stool-block.js -->
 <div class="carousel">
-  <div class="ctrack" onPointerDown="{{cswipe}}" onPointerUp="{{cswipe}}" onPointerCancel="{{cswipe}}">
-    <sc-for list="{{ctypes}}" as="c">
-      <sc-if value="{{c.show}}">
+  <div class="ctrack" onPointerDown="{{cdrag}}" onPointerMove="{{cdrag}}" onPointerUp="{{cdrag}}" onPointerCancel="{{cdrag}}">
+    <div class="cinner" style="{{cindex}}">
+      <sc-for list="{{ctypes}}" as="c">
         <button class="{{c.cls}}" onClick="{{c.pick}}" aria-label="{{c.aria}}">
-          <sc-component name="Pebble" type="{{c.type}}" size="{{c.size}}"></sc-component>
+          <sc-component name="Pebble" type="{{c.type}}" size="60"></sc-component>
           <span class="ctype-n num">{{c.type}}</span>
         </button>
-      </sc-if>
-      <sc-if value="{{c.empty}}"><span class="ctype-slot" aria-hidden="true"></span></sc-if>
-    </sc-for>
+      </sc-for>
+    </div>
   </div>
   <div class="cname-row">
     <button class="cchev" onClick="{{cprev}}" aria-label="Предыдущий тип"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>

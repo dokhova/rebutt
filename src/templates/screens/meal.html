@@ -1,22 +1,17 @@
-<!-- Сохранённое блюдо. Значения: src/views/meal.js -->
-<div class="topbar">
+<!-- Сохранённое блюдо — так же, как результат разбора при записи. Значения: src/views/meal.js -->
+<div class="edit-head">
   <button class="icon-btn glass" onClick="{{closeMeal}}" aria-label="Назад"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
-  <div class="topbar-title">Блюдо</div>
+  <div class="edit-titles"><h1 class="edit-title">Еда</h1><div class="hint">{{mealWhen}}</div></div>
   <span class="topbar-spacer"></span>
 </div>
 
 <sc-if value="{{mealMissing}}"><div class="empty-text">Это блюдо уже удалено</div></sc-if>
 
 <sc-if value="{{mealFound}}">
-  <div class="hint">{{mealWhen}}</div>
-  <div class="card form-card">
+  <div class="gcard g-deep gblock">
     <sc-include name="meal-card"></sc-include>
-  </div>
-
-  <div class="section">
-    <div class="caption">Уточнить разбор</div>
-    <label class="sr-only" for="mealFix">Уточнение</label>
-    <textarea id="mealFix" class="field-input area" rows="3" placeholder="Что поправить?" onChange="{{onFix}}">{{fix}}</textarea>
+    <label class="food-note-label" for="mealFix">Уточнить разбор</label>
+    <textarea id="mealFix" class="field-input area" rows="2" placeholder="Что поправить?" onChange="{{onFix}}">{{fix}}</textarea>
     <button class="{{fixCls}}" onClick="{{applyFix}}">{{fixLabel}}</button>
   </div>
 

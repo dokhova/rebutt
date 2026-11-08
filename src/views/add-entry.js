@@ -3,10 +3,10 @@
 // Черновик общий: «Сохранить» сохраняет всё, что отмечено.
 // Черновик переживает закрытие шторки и перезапуск приложения (App.saveDraft), «Очистить» на карточках — начать заново.
 // Значения попадают в общий view вместе с экраном под шторкой — имена ключей не должны пересекаться с views/today.js и др.
-import { MEAL_TINT, WATER_STEPS, BRISTOL_TYPES, SYMPTOMS } from '../domain/catalog.js';
+import { MEAL_TINT, WATER_STEPS } from '../domain/catalog.js';
+import { stoolBlockView } from './stool-block.js';
 import { dailyTargets } from '../domain/targets.js';
 import { litres } from '../domain/suggestions.js';
-import { gutFormView } from './gut-form.js';
 import { mealCard } from './meal-card.js';
 import { dayMonth, addDays, parseKey, WEEKDAYS_FULL } from '../domain/dates.js';
 import { gutScore } from '../domain/score.js';
@@ -44,25 +44,12 @@ export function addEntryView(app) {
     sec: { stool: sheet === 'stool', food: sheet === 'food', water: sheet === 'water' },
     modalCta: { stool: 'Сохранить', food: 'Добавить', water: 'Готово' }[sheet] || 'Сохранить',
 
-    // карусель типов стула: по центру крупно, по бокам соседние; свайп / стрелки / тап по соседу
-    ...carousel(app, f),
-    symptomChips: SYMPTOMS.map((label) => {
-      const on = f.sym.includes(label);
-      return { label, cls: 'gchip' + (on ? ' on' : ''), on, pick: () => app.toggleSymptom(label, 'form') };
-    }),
-    stoolHadCls: 'gseg' + (f.stool === 'had' ? ' on' : ''),
-    stoolNoneCls: 'gseg' + (f.stool === 'none' ? ' on' : ''),
-    setStoolHad: () => app.setStool('had', 'form'),
-    setStoolNone: () => app.setStool('none', 'form'),
-    showCarousel: f.stool !== 'none',
+    ...stoolBlockView(app, 'form'),
 
     // что ещё влияет: месячные (если включён цикл) и стресс тремя кнопками
     periodOn: f.period === 'yes',
     periodSwitch: 'gswitch' + (f.period === 'yes' ? ' on' : ''),
     togglePeriod: () => app.setPeriodMark('yes'),
-    stressLevels: [['low', 'Низкий', 2], ['mid', 'Средний', 5], ['high', 'Высокий', 8]].map(([id, label, v]) => ({
-      label, on: f.stress === v, cls: 'gseg' + (f.stress === v ? ' on' : ''), pick: () => app.setStressLevel(id, 'form')
-    })),
 
     // стаканы: тап по стакану n — за день n × 250 мл
     cups: Array.from({ length: CUPS }, (_, i) => ({
@@ -83,7 +70,6 @@ export function addEntryView(app) {
     waterMinusCls: 'round-btn lg' + (totalWater > 0 ? '' : ' off'),
     waterPlus: () => app.addWater(250),
 
-    ...gutFormView(app, 'form'),
 
     cycleEnabled: p.cycle && !noCyclePhases(p),
     cycleDayKnown: cycleDay(p, dayK, todayK) > 0,
@@ -129,40 +115,6 @@ export function addEntryView(app) {
 }
 
 const CUPS = 8, CUP_ML = 250;
-const SWIPE_PX = 36;
-let swipeX = null; // где палец коснулся карусели
-
-/** Карусель типов: 5 позиций вокруг выбранного (пустые — за краями шкалы) */
-function carousel(app, f) {
-  const had = f.stool === 'had', sel = had ? f.type : 4;
-  const slots = [-2, -1, 0, 1, 2].map((off) => {
-    const n = sel + off;
-    if (n < 1 || n > 7) return { empty: true, show: false, cls: 'ctype-slot' };
-    const center = off === 0;
-    return {
-      show: true, empty: false, type: String(n), size: center ? '84' : '52',
-      cls: 'ctype' + (center ? ' center' : '') + (center && had ? ' on' : ''),
-      aria: 'Тип ' + n + ', ' + BRISTOL_TYPES[n].replace(' — норма', ''),
-      pick: () => app.pickBristolType(n, 'form')
-    };
-  });
-  return {
-    ctypes: slots,
-    ctypeName: had ? BRISTOL_TYPES[sel].replace(' — норма', '') : 'Листайте и выберите похожий',
-    ctypeNum: had ? 'Тип ' + sel : '',
-    cdots: [1, 2, 3, 4, 5, 6, 7].map((n) => ({ cls: 'cdot' + (had && n === sel ? ' on' : '') })),
-    cprev: () => app.stepBristolType(-1, 'form'),
-    cnext: () => app.stepBristolType(1, 'form'),
-    cswipe: (e) => {
-      if (e.type === 'pointerdown') { swipeX = e.clientX; return; }
-      if (swipeX == null) return;
-      const dx = e.clientX - swipeX;
-      swipeX = null;
-      if (Math.abs(dx) >= SWIPE_PX) app.stepBristolType(dx < 0 ? 1 : -1, 'form');
-    }
-  };
-}
-
 /** «Сегодня, 25 октября», «Вчера, 24 октября», «Пятница, 23 октября» */
 function dayLabel(k, todayK) {
   if (k === todayK) return 'Сегодня, ' + dayMonth(k);

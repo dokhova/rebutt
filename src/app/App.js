@@ -755,8 +755,7 @@ export default class App extends Component {
   /** Свайп по карусели типов стула: следующий / предыдущий тип, стул отмечается как «был» */
   stepBristolType(delta, target = 'form') {
     const d = this.gutDraft(target), cur = d.stool === 'had' ? d.type : 4;
-    const next = d.stool === 'had' ? Math.max(1, Math.min(7, cur + delta)) : cur;
-    this.pickBristolType(next, target);
+    this.pickBristolType(Math.max(1, Math.min(7, cur + delta)), target);
   }
 
   addWater(ml) {
@@ -876,6 +875,14 @@ export default class App extends Component {
 
   closeWater() { this.setState({ waterEdit: null }); }
 
+  /** Правка жидкости стаканами: тап по стакану n — за день n × 250 мл, по последнему заполненному — на стакан меньше */
+  setWaterEditCups(n) {
+    const w = this.state.waterEdit;
+    let ml = n * WATER_CUP_ML;
+    if (ml === w.ml) ml -= WATER_CUP_ML;
+    this.setState({ waterEdit: { ...w, ml: Math.max(0, ml) } });
+  }
+
   stepWaterEdit(ml) {
     const w = this.state.waterEdit, next = Math.max(0, Math.min(WATER_MAX_ML, w.ml + ml));
     if (next !== w.ml) this.setState({ waterEdit: { ...w, ml: next } });
@@ -966,7 +973,6 @@ export default class App extends Component {
       if (this.scanId !== scanId) return; // блюдо уже убрали
       this.setForm({ food: 'done', result });
       track('food_analysis_completed', { source, has_note: !!note, tone: result.tone, kcal: result.kcal, fiber: result.fiber, latency_ms: Date.now() - startedAt });
-      if (source === 'text') this.startMealArt(result.name, note);
     } catch (e) {
       if (this.scanId !== scanId) return;
       this.setForm({ food: 'pick' });
