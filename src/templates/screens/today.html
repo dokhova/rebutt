@@ -77,16 +77,11 @@
 </sc-if>
 
 <sc-if value="{{timeline.length}}">
-  <div class="section">
+  <div class="section home-tips">
     <h2 class="home-h2">Записи дня</h2>
     <div class="card list">
       <sc-for list="{{timeline}}" as="e">
         <div class="{{e.rowCls}}" onClick="{{e.open}}">
-          <sc-if value="{{e.isStool}}"><span class="icon-tile"><sc-component name="Pebble" type="{{e.type}}" size="34"></sc-component></span></sc-if>
-          <sc-if value="{{e.isMeal}}"><span class="thumb sm" style="background: {{e.tint}}"><sc-if value="{{e.photo}}"><img src="{{e.photo}}" alt=""></sc-if></span></sc-if>
-          <sc-if value="{{e.isFeel}}"><span class="icon-tile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"></circle><path d="M8 12h8"></path></svg></span></sc-if>
-          <sc-if value="{{e.isWater}}"><span class="icon-tile"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3c3 4.2 6 7.6 6 11a6 6 0 0 1-12 0c0-3.4 3-6.8 6-11z"></path></svg></span></sc-if>
-          <sc-if value="{{e.isPeriod}}"><span class="icon-tile"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c3 4.5 6 8 6 11a6 6 0 0 1-12 0c0-3 3-6.5 6-11z"></path></svg></span></sc-if>
           <div class="row-body"><div class="{{e.titleCls}}">{{e.title}}</div><div class="row-sub nowrap">{{e.sub}}</div></div>
           <div class="row-time num">{{e.time}}</div>
           <sc-if value="{{e.hasOpen}}"><svg class="row-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></sc-if>

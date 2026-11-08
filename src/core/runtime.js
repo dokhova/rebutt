@@ -17,7 +17,7 @@ import morphdom from 'morphdom';
 
 const SVGNS = 'http://www.w3.org/2000/svg';
 const WHOLE = /^\s*\{\{\s*([^}]+?)\s*\}\}\s*$/;
-// pointer* — для ползунков (core/range.js): движение пальца обрабатывается без перерисовки
+// pointer* — для жестов (карусель типов, views/stool-block.js): движение пальца обрабатывается без перерисовки
 const DELEGATED = ['click', 'input', 'change', 'keydown', 'pointerdown', 'pointermove', 'pointerup', 'pointercancel'];
 
 const components = {};

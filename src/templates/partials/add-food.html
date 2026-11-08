@@ -1,23 +1,23 @@
 <!-- Еда: фото или описание текстом → ИИ разбирает → КБЖУ; можно уточнить. Значения: src/views/add-entry.js -->
 <sc-if value="{{food.pick}}">
-  <sc-if value="{{noPhoto}}">
-    <label class="food-photo" for="foodFile">
-      <span class="food-photo-icon">
-        <sc-if value="{{photoCamera}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></sc-if>
-        <sc-if value="{{photoGallery}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"></rect><circle cx="9" cy="10" r="1.5"></circle><path d="M20 16l-5-5-8 8"></path></svg></sc-if>
-      </span>
-      <span>{{photoLabel}}</span>
-      <input id="foodFile" class="file-input" type="file" accept="image/*" onChange="{{onPhoto}}">
-    </label>
-  </sc-if>
   <sc-if value="{{photo}}">
     <div class="photo-preview">
       <img src="{{photo}}" alt="Фото блюда">
       <button class="icon-btn small on-photo" onClick="{{removePhoto}}" aria-label="Убрать фото"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
     </div>
   </sc-if>
-  <label class="food-note-label" for="foodNote">Или опишите блюдо текстом</label>
-  <textarea id="foodNote" class="field-input area food-note" rows="2" placeholder="например, гречка с овощами" onChange="{{onNote}}">{{note}}</textarea>
+  <!-- фото — маленькая кнопка слева от поля, описание — само поле -->
+  <div class="food-row">
+    <sc-if value="{{noPhoto}}">
+      <label class="food-cam" for="foodFile" aria-label="{{photoLabel}}">
+        <sc-if value="{{photoCamera}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></sc-if>
+        <sc-if value="{{photoGallery}}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"></rect><circle cx="9" cy="10" r="1.5"></circle><path d="M20 16l-5-5-8 8"></path></svg></sc-if>
+        <input id="foodFile" class="file-input" type="file" accept="image/*" onChange="{{onPhoto}}">
+      </label>
+    </sc-if>
+    <label class="sr-only" for="foodNote">Описание блюда</label>
+    <textarea id="foodNote" class="field-input area food-note" rows="1" placeholder="Опишите блюдо или снимите фото" onChange="{{onNote}}">{{note}}</textarea>
+  </div>
 </sc-if>
 
 <sc-if value="{{food.scan}}">

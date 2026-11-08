@@ -1,26 +1,18 @@
-<!-- Правка жидкости за день. Значения: src/views/water.js -->
-<div class="topbar">
+<!-- Правка жидкости за день — стаканами, как при записи через «+». Значения: src/views/water.js -->
+<div class="edit-head">
   <button class="icon-btn glass" onClick="{{closeWater}}" aria-label="Назад"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
-  <div class="topbar-title">Жидкость</div>
+  <div class="edit-titles"><h1 class="edit-title">Жидкость</h1><div class="hint">{{waterWhen}}</div></div>
   <span class="topbar-spacer"></span>
 </div>
-<div class="hint">{{waterWhen}}</div>
 
-<div class="card form-card">
-  <div class="water-now">
-    <button class="{{weMinusCls}}" onClick="{{weMinus}}" aria-label="Убрать 250 мл">−</button>
-    <div class="water-value num">{{weLitres}}<span class="metric-unit"> л</span></div>
-    <button class="round-btn lg" onClick="{{wePlus}}" aria-label="Добавить 250 мл">+</button>
-  </div>
-  <div class="mbar" aria-hidden="true"><div class="mbar-fill sens" style="{{weBar}}"></div></div>
-  <div class="hint water-goal">{{weGoal}} <button class="info-btn" onClick="{{info.water}}" aria-label="Откуда норма воды">?</button></div>
-  <div class="water-steps">
-    <sc-for list="{{weSteps}}" as="w">
-      <button class="water-step" onClick="{{w.add}}"><span>{{w.label}}</span><span class="muted num">{{w.ml}}</span></button>
+<div class="gcard g-sage gblock">
+  <div class="cups">
+    <sc-for list="{{weCups}}" as="c">
+      <button class="{{c.cls}}" onClick="{{c.tap}}" aria-label="{{c.label}}"><svg width="28" height="34" viewBox="0 0 26 30" aria-hidden="true"><path d="M3 2h20l-2.4 26H5.4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path></svg></button>
     </sc-for>
   </div>
-  <label class="caption" for="waterMl">Или точно, мл</label>
-  <input id="waterMl" class="field-input num" type="text" inputmode="numeric" value="{{weMl}}" onChange="{{weOnInput}}">
+  <div class="cups-foot"><span class="gvalue num">{{weLitres}}<span class="gunit"> {{weOf}}</span></span></div>
+  <div class="cups-hint">Вода, чай, кофе, суп — всё считается</div>
 </div>
 
 <button class="btn" onClick="{{saveWater}}">Сохранить</button>

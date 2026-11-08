@@ -4,7 +4,7 @@ import { mealCard } from './meal-card.js';
 
 export function mealView(app) {
   const me = app.state.mealEdit, meal = app.findMeal(me.day, me.id);
-  if (!meal) return { mealMissing: true, closeMeal: () => app.closeMeal() };
+  if (!meal) return { mealMissing: true, mealWhen: '', closeMeal: () => app.closeMeal() };
   return {
     mealMissing: false,
     mealFound: true,
