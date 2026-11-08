@@ -1,48 +1,121 @@
-/* Дизайн-токены. Цвета тонов продублированы в src/domain/score.js (TONE_COLOR) — менять вместе.
+/* Дизайн-токены. Две темы: светлая (по умолчанию, :root) и тёмная ([data-theme="dark"] на <html>).
+   Тему ставит services/theme.js до первой отрисовки, выбор — в профиле.
+   Цвета — только из брендбука Rebutt или производные от них:
+     Deep Forest #183A1B · Forest #30472C · Sage #7FA866 · Pale Green #DDE5CF · Lime #D3FA9D
+     Lavender #EDE5FF · Soft Violet #A78BFA · Purple Accent #7954C8 · Warm White #F8F7F2
+   Цвета тонов продублированы в src/domain/score.js (TONE_COLOR) — менять вместе.
    Правила: текст ≥ 4.5:1 к фону, рамки элементов управления ≥ 3:1, текст не меньше 13px.
    Цвет используется только для смысла (состояние, выбор, действие), не для украшения. */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* фон: один тёмно-фиолетовый тон, сверху светлее → книзу темнее; одинаковый на всех экранах.
-     --bg — низ фона (под меню, затемнение у меню — components.css .tabbar-fade) */
-  --bg-top: #4B3A6B;
-  --bg-mid: #211933;
-  --bg: #0B0910;
+  /* фон: тёплый светло-серый от Warm White — на чисто белом стекло пересвечивает */
+  --bg-top: #F2F1EC;
+  --bg-mid: #EFEEE9;
+  --bg: #ECEBE5;
+  --fade-rgb: 236, 235, 229;   /* тот же низ фона для затемнений: rgba(var(--fade-rgb), .9) */
 
-  /* поверхности, от тёмной к светлой */
-  --surface-1: #24212B;   /* карточки, поля */
-  --surface-2: #27242E;   /* карточки типов стула, зона загрузки фото */
-  --surface-3: #2B2833;   /* сегменты, иконки, аватар */
-  --surface-4: #34303D;   /* неактивная кнопка, выбранная карточка, пузырь вопроса */
+  /* поверхности, от светлой к тёмной */
+  --surface-1: #FFFFFF;   /* поля ввода */
+  --surface-2: #F7F6F2;   /* карточки типов стула, зона загрузки фото */
+  --surface-3: #E8E7E1;   /* сегменты, иконки, аватар */
+  --surface-4: #DEDDD6;   /* неактивная кнопка, пузырь вопроса */
+  --sheet-bg: #F7F6F2;    /* шторки и модалки */
+
+  /* полупрозрачные заливки и линии поверх фона */
+  --wash-1: rgba(23, 20, 28, .04);
+  --wash-2: rgba(23, 20, 28, .07);
+  --track: rgba(23, 20, 28, .12);   /* пустая дорожка полосок */
+  --ink-ghost: rgba(23, 20, 28, .26); /* «0» в пустой день */
+
+  /* карточки: матовое белое стекло (мягкая подушка без чёткой рамки) */
+  --card-bg: radial-gradient(95% 90% at 30% 25%, rgba(255, 255, 255, .96) 0%, rgba(250, 249, 246, .82) 50%, rgba(234, 233, 227, .6) 100%);
+  --card-border: rgba(255, 255, 255, .7);
+  --card-shadow: inset 0 0 24px rgba(255, 255, 255, .8), 0 14px 36px rgba(23, 20, 28, .06);
+
+  /* круглые кнопки и меню */
+  --btn-glass: rgba(255, 255, 255, .78);
+  --tab-bg: radial-gradient(95% 120% at 30% 20%, rgba(255, 255, 255, .96) 0%, rgba(244, 243, 239, .86) 60%, rgba(232, 231, 225, .8) 100%);
+  --tab-shadow: inset 0 0 18px rgba(255, 255, 255, .85), 0 14px 36px rgba(23, 20, 28, .08);
+  --overlay: rgba(236, 235, 229, .55);
 
   /* текст */
-  --ink: #F8F7F2;
-  --muted: #A8A3B3;
-  --faint: #938E9D;      /* плейсхолдеры, неактивные значения — контраст ≥ 4.5:1 на карточке */
-  --dim: #5F5A67;
+  --ink: #17141C;
+  --ink-soft: #2E2A35;
+  --muted: #5A5466;
+  --faint: #6F6A78;      /* плейсхолдеры — контраст ≥ 4.5:1 на поле */
+  --dim: #B4B0BA;
 
   /* акцент */
-  --accent: #D3FA9D;      /* основная кнопка, «+», переключатели */
-  --accent-ink: #183A1B;  /* текст на акценте */
-  --selected: #DDE5CF;    /* выбранный чип / сегмент */
-  --danger: #FF8F80;
+  --accent: #D3FA9D;      /* Lime: основная кнопка, «+», переключатели */
+  --accent-ink: #183A1B;  /* Deep Forest: текст на акценте */
+  --accent-text: #3F6B33; /* выбранное как текст/обводка на светлом (лайм на светлом не читается) */
+  --selected: #DDE5CF;    /* Pale Green: выбранный чип / сегмент */
+  --danger: #B5402F;
 
   /* тоны состояния кишечника */
   --tone-calm: #D3FA9D;
   --tone-mild: #7FA866;
   --tone-sens: #A78BFA;
   --tone-cycle: #7954C8;
+  --violet: #7954C8;      /* Purple Accent */
+  --violet-soft: #A78BFA; /* Soft Violet */
 
   /* линии */
-  --line: rgba(255, 255, 255, .07);
-  --line-2: rgba(255, 255, 255, .1);
-  --line-3: rgba(255, 255, 255, .14);
-  --line-control: rgba(255, 255, 255, .36); /* рамки полей, чипов, чекбокса — контраст ≥ 3:1 */
+  --line: rgba(23, 20, 28, .07);
+  --line-2: rgba(23, 20, 28, .1);
+  --line-3: rgba(23, 20, 28, .14);
+  --line-control: rgba(23, 20, 28, .32); /* рамки полей, чипов, чекбокса — контраст ≥ 3:1 */
 
-  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  /* шрифты брендбука: Onest — текст и интерфейс, Manrope — заголовки и крупные цифры; Doto — точечные цифры индекса */
+  --font: 'Onest', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-display: 'Manrope', 'Onest', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-dot: 'Doto', 'Manrope', monospace;
 
   /* В полноэкранном режиме Telegram сверху его кнопки: системный отступ + отступ под кнопки (--tg-content-safe-area-inset-top) */
   --safe-top: calc(max(env(safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px)) + var(--tg-content-safe-area-inset-top, 0px));
   --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px));
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-top: #1E1A28;
+  --bg-mid: #17151D;
+  --bg: #141218;
+  --fade-rgb: 20, 18, 24;
+
+  --surface-1: #24212B;
+  --surface-2: #27242E;
+  --surface-3: #2B2833;
+  --surface-4: #34303D;
+  --sheet-bg: #1C1A21;
+
+  --wash-1: rgba(255, 255, 255, .05);
+  --wash-2: rgba(255, 255, 255, .08);
+  --track: rgba(248, 247, 242, .16);
+  --ink-ghost: rgba(248, 247, 242, .24);
+
+  --card-bg: rgba(255, 255, 255, .05);
+  --card-border: rgba(255, 255, 255, .09);
+  --card-shadow: none;
+
+  --btn-glass: rgba(43, 40, 51, .7);
+  --tab-bg: rgba(36, 33, 43, .9);
+  --tab-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07);
+  --overlay: rgba(10, 9, 12, .55);
+
+  --ink: #F8F7F2;
+  --ink-soft: #DCD9E2;
+  --muted: #A8A3B3;
+  --faint: #938E9D;
+  --dim: #5F5A67;
+
+  --accent-text: #D3FA9D;
+  --danger: #FF8F80;
+
+  --line: rgba(255, 255, 255, .07);
+  --line-2: rgba(255, 255, 255, .1);
+  --line-3: rgba(255, 255, 255, .14);
+  --line-control: rgba(255, 255, 255, .36);
 }

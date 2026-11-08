@@ -25,6 +25,7 @@ import { exportCSV, openDoctorReport } from '../services/export.js';
 import { isTelegram, openTelegramLink, syncBackButton, telegramUser, hapticSelection, homeScreenPlatform, canAddToHomeScreen, checkHomeScreenStatus, addToHomeScreen, onHomeScreenAdded } from '../services/telegram.js';
 import { homePromptSnoozed } from '../domain/home-prompt.js';
 import { loadLegalHtml, legalIdByHref } from '../services/legal.js';
+import { applyTheme, readTheme, saveTheme } from '../services/theme.js';
 import { supabase, signOut } from '../services/supabase.js';
 import { VIEWS, shellView } from '../views/index.js';
 
@@ -138,6 +139,7 @@ export default class App extends Component {
       chat: [],           // диалог: [{ role: 'user' | 'ai', text, shown?, image? }]; shown — сколько текста уже показано
       chatLoading: false,
       chatImage: '',      // фото, приложенное к следующему вопросу (blob-ссылка)
+      theme: readTheme(), // 'light' | 'dark' — тема оформления, хранится на устройстве (services/theme.js)
       entryEdit: null,    // правка записи о стуле: { day, id, draft }
       mealEdit: null,     // открытое сохранённое блюдо: { day, id, fix, fixing }
       waterEdit: null,    // правка жидкости за день: { day, ml }
@@ -567,6 +569,15 @@ export default class App extends Component {
     if (enabled && option !== 'menopause') patch.menopause = false;
     this.updateProfile(patch, option);
     track('cycle_option_toggled', { option, enabled });
+  }
+
+  /** Тема оформления: светлая или тёмная. Хранится на устройстве, не в профиле */
+  setTheme(theme) {
+    if (theme === this.state.theme) return;
+    const applied = applyTheme(theme);
+    saveTheme(applied);
+    this.setState({ theme: applied });
+    track('theme_changed', { theme: applied });
   }
 
   toggleReminder(slot) {

@@ -31,7 +31,7 @@ export function insightsView(app) {
       value: sc ? sc.idx : '',
       height: sc ? Math.max(BAR_MIN_PX, Math.round((sc.idx - 30) / 70 * BAR_MAX_PX)) : BAR_MIN_PX,
       bg: sc ? TONE_COLOR[toneOf(sc.idx)] : 'transparent',
-      border: sc ? '0' : '1px dashed rgba(255,255,255,.36)',
+      border: sc ? '0' : '1px dashed var(--line-control)',
       dayCls: 'bar-day' + (k === todayK ? ' today' : ''),
       title: d.getDate() + ' ' + MONTHS_GEN[d.getMonth()] + (sc ? ': ' + sc.idx + '%' : ': нет данных')
     };

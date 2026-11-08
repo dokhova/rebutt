@@ -55,8 +55,9 @@ src/
     ai.js                      запросы к /api
     image.js                   сжатие фото перед отправкой в ИИ и для хранения (photoForStorage, 720 px)
     export.js                  CSV и отчёт для врача
+    theme.js                   тема оформления: светлая (по умолчанию) / тёмная, data-theme на <html>, цвета Telegram
   styles/
-    tokens.css                 цвета, шрифты (CSS-переменные)
+    tokens.css                 цвета и шрифты для двух тем (CSS-переменные): :root — светлая, [data-theme="dark"] — тёмная
     base.css                   сброс, утилиты, анимации
     components.css             общие элементы: кнопки, карточки, чипы, меню
     screens.css                элементы конкретных экранов

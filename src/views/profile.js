@@ -51,6 +51,13 @@ export function profileView(app) {
     lenMinus: () => app.setCycleLength(p.len - 1),
     lenPlus: () => app.setCycleLength(p.len + 1),
 
+    themeLight: 'seg' + (app.state.theme === 'light' ? ' on' : ''),
+    themeDark: 'seg' + (app.state.theme === 'dark' ? ' on' : ''),
+    themeLightOn: app.state.theme === 'light',
+    themeDarkOn: app.state.theme === 'dark',
+    pickLight: () => app.setTheme('light'),
+    pickDark: () => app.setTheme('dark'),
+
     remAm: p.am, remAmSwitch: sw(p.am), toggleAm: () => app.toggleReminder('morning'),
     remPm: p.pm, remPmSwitch: sw(p.pm), togglePm: () => app.toggleReminder('evening'),
 

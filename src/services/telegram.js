@@ -18,10 +18,18 @@ export function initTelegram() {
   if (app.isVersionAtLeast('8.0') && typeof app.requestFullscreen === 'function' && /^(ios|android)/.test(app.platform || '')) {
     try { app.requestFullscreen(); } catch (_) { /* клиент не поддерживает — остаёмся в обычном режиме */ }
   }
-  if (app.isVersionAtLeast('6.1')) {
-    app.setHeaderColor(app.isVersionAtLeast('6.9') ? '#4B3A6B' : 'bg_color'); // верх фона (--bg-top)
-    app.setBackgroundColor('#0B0910'); // низ фона (--bg) — под меню и при перетягивании
-  }
+  // цвета шапки и фона Telegram ставит services/theme.js (applyTheme) — под выбранную тему
+}
+
+/** Шапка Telegram — цвет верха фона (--bg-top), фон под приложением — низ (--bg): под меню и при перетягивании */
+export function setTelegramColors(header, background) {
+  const app = getTelegram();
+  if (!app || !app.isVersionAtLeast('6.1')) return;
+  try {
+    app.setHeaderColor(app.isVersionAtLeast('6.9') ? header : 'bg_color');
+    app.setBackgroundColor(background);
+    if (app.isVersionAtLeast('7.10') && typeof app.setBottomBarColor === 'function') app.setBottomBarColor(background);
+  } catch (_) { /* старый клиент — остаются цвета Telegram */ }
 }
 
 /** Лёгкий «щелчок» при выборе (шаг ползунка). Вне Telegram и на старых клиентах — ничего. */
