@@ -29,8 +29,8 @@ export function shellView(app, screen) {
     setScrollEl: app.setScrollEl,
 
     // пока открыта клавиатура, панель ИИ или модалка «На главный экран», меню не показываем
-    // при выборе раздела «+» меню остаётся: «+» превращается в «×»
-    showTabs: withTabs && !s.keyboard && !s.assistant && !s.homePrompt && (!s.addSheet || s.addSheet === 'pick'),
+    // «+» открыт (экран «Запись» или модалка) — меню прячем
+    showTabs: withTabs && !s.keyboard && !s.assistant && !s.homePrompt && !s.addSheet,
     showAddSheet: !!s.addSheet && withTabs,
     // шторка ИИ: середина экрана или весь экран (core/sheet-drag.js)
     sheetCls: 'sheet slide-up' + (s.sheetFull ? ' full' : ''),

@@ -40,6 +40,9 @@ const DRUM_ROW_PX = 40;
 const BOOT_TIMEOUT_MS = 6000;
 const SENTENCE_DELAY_MS = 900;
 const WATER_MAX_ML = 20000;
+const WATER_CUP_ML = 250;
+/** Уровни стресса на экране «Запись» → значение шкалы 0–10 */
+const STRESS_LEVELS = { low: 2, mid: 5, high: 8 };
 
 /** Имена экранов в аналитике */
 const SCREEN_EVENT_NAME = { today: 'today', add: 'add_entry', insights: 'insights', profile: 'profile' };
@@ -133,8 +136,9 @@ export default class App extends Component {
       // модалка «На главный экран»: null | 'ios' | 'android' (как рисовать иконки)
       homePrompt: IS_DEMO && location.hash === '#a2hs' ? demoHomePlatform() : null,
       info: null,         // открытая карточка «?» — откуда норма или совет: id из domain/sources.js → infoCards
-      // шторка «+» поверх экрана: null | 'pick' — выбор из трёх карточек | 'stool' | 'food' | 'water' — форма раздела
-      addSheet: IS_DEMO && location.hash === '#add' ? 'pick' : null,
+      // «+» поверх экрана: null | 'all' — экран «Запись» со всеми блоками (кнопка «+» в меню)
+      // | 'stool' | 'food' | 'water' — модалка по центру с одним действием («+» в плитке на главной)
+      addSheet: IS_DEMO && location.hash === '#add' ? 'all' : null,
       sheetFull: false,   // шторка ИИ раскрыта на весь экран; открывается до середины (core/sheet-drag.js)
       chat: [],           // диалог: [{ role: 'user' | 'ai', text, shown?, image? }]; shown — сколько текста уже показано
       chatLoading: false,
@@ -411,7 +415,7 @@ export default class App extends Component {
     const s = this.state;
     if (s.homePrompt) this.dismissHomePrompt('back');
     else if (s.info) this.closeInfo();
-    else if (s.addSheet) { if (s.addSheet === 'pick') this.closeAddSheet(); else this.backToAddPicker(); }
+    else if (s.addSheet) this.closeAddSheet();
     else if (s.assistant) this.closeAssistant();
     else if (s.legal) this.closeLegalDoc();
     else if (s.mealEdit) this.closeMeal();
@@ -630,7 +634,7 @@ export default class App extends Component {
 
   openAddSheet(from = 'tab') {
     if (this.state.addSheet) return;
-    this.setState({ addSheet: 'pick', assistant: false });
+    this.setState({ addSheet: 'all', form: { ...this.state.form, section: 'all' }, assistant: false });
     track('nav_clicked', { to: 'add_entry', from: SCREEN_EVENT_NAME[this.state.screen], source: from });
   }
 
@@ -640,7 +644,6 @@ export default class App extends Component {
     track('add_section_opened', { section });
   }
 
-  backToAddPicker() { this.setState({ addSheet: 'pick' }); }
 
   /** Шторку потянули: на весь экран или обратно до середины */
   snapSheet(kind, full) {
@@ -733,6 +736,29 @@ export default class App extends Component {
   }
 
   /** Жидкость: +ml или −ml к черновику. Минус может убрать и уже сохранённое за сегодня (исправить ошибку), но не ниже 0 за день. */
+  /** Стаканы: тап по стакану n — за день выпито n × 250 мл; тап по последнему заполненному — на стакан меньше */
+  setWaterCups(n) {
+    const saved = this.day(this.entryDay()).water || 0, total = saved + (this.state.form.water || 0);
+    let target = n * WATER_CUP_ML;
+    if (target === total) target -= WATER_CUP_ML;
+    this.addWater(Math.max(0, target) - total);
+  }
+
+  /** Стресс тремя кнопками: низкий / средний / высокий → 2 / 5 / 8 по шкале 0–10; повторный тап снимает отметку */
+  setStressLevel(level, target = 'form') {
+    const v = STRESS_LEVELS[level];
+    if (v == null) return;
+    if (this.gutDraft(target).stress === v) { this.setGutDraft(target, { stress: null }); track('stress_set', { stress: null, where: target }); return; }
+    this.setStress(v, target);
+  }
+
+  /** Свайп по карусели типов стула: следующий / предыдущий тип, стул отмечается как «был» */
+  stepBristolType(delta, target = 'form') {
+    const d = this.gutDraft(target), cur = d.stool === 'had' ? d.type : 4;
+    const next = d.stool === 'had' ? Math.max(1, Math.min(7, cur + delta)) : cur;
+    this.pickBristolType(next, target);
+  }
+
   addWater(ml) {
     const saved = this.day(this.entryDay()).water || 0;
     const water = Math.max(-saved, Math.min(5000, (this.state.form.water || 0) + ml));
@@ -1110,7 +1136,7 @@ export default class App extends Component {
     if (draft.food === 'scan' || draft.fixing) { this.showToast('ИИ ещё разбирает блюдо — подождите пару секунд'); return; }
     if (draft.food === 'pick' && (draft.photo || typed.trim())) {
       track('food_autoanalyze_on_save', { has_photo: !!draft.photo });
-      if (this.state.addSheet !== 'food') this.setState({ addSheet: 'food', form: { ...this.state.form, section: 'food' } });
+      if (this.state.addSheet !== 'food' && this.state.addSheet !== 'all') this.setState({ addSheet: 'food', form: { ...this.state.form, section: 'food' } });
       this.showToast('Разбираем блюдо — проверьте результат и нажмите «Сохранить»');
       this.analyzeFoodDraft();
       return;
