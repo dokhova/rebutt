@@ -13,6 +13,7 @@ export function insightsView(app) {
   const start = since > monday && since <= todayK ? since : monday;
   const days = [0, 1, 2, 3, 4, 5, 6].map((i) => addDays(monday, i));
   const pastDays = days.filter((k) => k >= start && k <= todayK).length;
+  const typeCount = {};
   let stools = 0, normal = 0, symptomDays = 0, fiberSum = 0, meals = 0, idxSum = 0, idxDays = 0, dataDays = 0;
 
   const bars = days.map((k) => {
@@ -20,7 +21,7 @@ export function insightsView(app) {
     const before = k < start;
     if (before) return { dow, value: '', pct: 0, fillCls: 'gbar-fill', dayCls: 'gbar-day off', title: d.getDate() + ' ' + MONTHS_GEN[d.getMonth()] + ': до начала дневника' };
     const day = app.day(k), sc = k > todayK ? null : gutScore(day);
-    for (const g of day.gut) if (g.type > 0) { stools++; if (g.type === 3 || g.type === 4) normal++; }
+    for (const g of day.gut) if (g.type > 0) { stools++; typeCount[g.type] = (typeCount[g.type] || 0) + 1; if (g.type === 3 || g.type === 4) normal++; }
     for (const m of day.meals) { fiberSum += Number(m.fiber) || 0; meals++; }
     if (symptomsOf(day).length) symptomDays++;
     if (sc) { idxSum += sc.idx; idxDays++; }
@@ -38,6 +39,9 @@ export function insightsView(app) {
 
   const avg = idxDays ? Math.round(idxSum / idxDays) : null;
   const normalPct = stools ? Math.round(normal / stools * 100) : null;
+  // «Чаще всего» — тип, который отмечали чаще за неделю (при равенстве — ближе к норме, к 4)
+  const topType = Object.keys(typeCount).map(Number)
+    .sort((a, b) => typeCount[b] - typeCount[a] || Math.abs(a - 4) - Math.abs(b - 4))[0] || null;
   const cdToday = cycleDay(p, todayK, todayK);
 
   return {
@@ -48,6 +52,9 @@ export function insightsView(app) {
     avgWord: TONE_WORD[toneOf(avg)],
     bars,
     normalPct: normalPct == null ? '—' : normalPct + '%',
+    topType: topType || '–',
+    topTypeUnit: topType ? ' тип' : '',
+    topTypeCls: 'gvalue num' + (topType ? '' : ' is-dash'),
     symptomDays,
     pastDays,
     symptomDaysText: symptomDays + ' из ' + pastDays,
@@ -76,6 +83,6 @@ function noticedText(app, todayK, stats) {
   if (s.insights && s.insights.noticed && s.insights.date === todayK) return s.insights.noticed;
   if (s.insightsLoading) return 'Смотрю на ваши записи…';
   if (stats.dataDays < 3) return 'Добавьте записи хотя бы за 3 дня — здесь появятся закономерности между едой и самочувствием.';
-  const normal = stats.normalPct == null ? '' : 'За неделю стул был в норме в ' + stats.normalPct + '% случаев. ';
+  const normal = stats.normalPct == null ? '' : 'За неделю гладкий стул (тип 3–4) был в ' + stats.normalPct + '% случаев. ';
   return normal + 'Дней с дискомфортом: ' + stats.symptomDays + '.';
 }
