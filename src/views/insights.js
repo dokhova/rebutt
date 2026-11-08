@@ -1,11 +1,10 @@
-// «Инсайты»: средний показатель недели, столбики по дням, статистика, наблюдение ИИ, вопросы к ИИ.
+// «Инсайты»: средний показатель недели со столбиками по дням (стекло), две плитки статистики, наблюдение ИИ.
 import { IS_DEMO } from '../config.js';
 import { parseKey, addDays, mondayOf, MONTHS_GEN, WEEKDAYS_SHORT } from '../domain/dates.js';
-import { gutScore, symptomsOf, toneOf, hasData, TONE_WORD, TONE_COLOR } from '../domain/score.js';
+import { gutScore, symptomsOf, toneOf, hasData, TONE_WORD } from '../domain/score.js';
 import { cycleDay, daysToLuteal } from '../domain/cycle.js';
 
-const BAR_MAX_PX = 90;
-const BAR_MIN_PX = 12;
+const BAR_MIN_PCT = 8;
 
 export function insightsView(app) {
   const s = app.state, p = s.profile, todayK = app.today(), monday = mondayOf(todayK);
@@ -19,7 +18,7 @@ export function insightsView(app) {
   const bars = days.map((k) => {
     const d = parseKey(k), dow = WEEKDAYS_SHORT[(d.getDay() + 6) % 7];
     const before = k < start;
-    if (before) return { dow, value: '', height: BAR_MIN_PX, bg: 'transparent', border: '0', dayCls: 'bar-day off', title: d.getDate() + ' ' + MONTHS_GEN[d.getMonth()] + ': до начала дневника' };
+    if (before) return { dow, value: '', pct: 0, fillCls: 'gbar-fill', dayCls: 'gbar-day off', title: d.getDate() + ' ' + MONTHS_GEN[d.getMonth()] + ': до начала дневника' };
     const day = app.day(k), sc = k > todayK ? null : gutScore(day);
     for (const g of day.gut) if (g.type > 0) { stools++; if (g.type === 3 || g.type === 4) normal++; }
     for (const m of day.meals) { fiberSum += Number(m.fiber) || 0; meals++; }
@@ -29,10 +28,10 @@ export function insightsView(app) {
     return {
       dow,
       value: sc ? sc.idx : '',
-      height: sc ? Math.max(BAR_MIN_PX, Math.round((sc.idx - 30) / 70 * BAR_MAX_PX)) : BAR_MIN_PX,
-      bg: sc ? TONE_COLOR[toneOf(sc.idx)] : 'transparent',
-      border: sc ? '0' : '1px dashed var(--line-control)',
-      dayCls: 'bar-day' + (k === todayK ? ' today' : ''),
+      // высота столбика: 30 % → пусто, 100 % → полный; сегодня — лаймовый
+      pct: sc ? Math.max(BAR_MIN_PCT, Math.round((sc.idx - 30) / 70 * 100)) : 0,
+      fillCls: 'gbar-fill' + (k === todayK ? ' today' : ''),
+      dayCls: 'gbar-day' + (k === todayK ? ' today' : ''),
       title: d.getDate() + ' ' + MONTHS_GEN[d.getMonth()] + (sc ? ': ' + sc.idx + '%' : ': нет данных')
     };
   });
@@ -50,6 +49,7 @@ export function insightsView(app) {
     bars,
     normalPct: normalPct == null ? '—' : normalPct + '%',
     symptomDays,
+    pastDays,
     symptomDaysText: symptomDays + ' из ' + pastDays,
     fiberAvg: meals ? (fiberSum / meals).toFixed(1).replace('.', ',') + ' г' : '—',
     noticed: noticedText(app, todayK, { dataDays, normalPct, symptomDays }),

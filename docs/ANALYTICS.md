@@ -57,7 +57,7 @@
 | `stool_status_selected` | «Был» / «Не было» | `value` (`had` / `none` / `cleared`) |
 | `bristol_type_selected` | выбор типа | `bristol_type` 1–7 |
 | `stool_color_selected` | выбор цвета стула | `color` (`brown` / `light` / `yellow` / `green` / `dark` / `red` / `cleared`), `where` (`form` — новая запись / `entry` — правка) |
-| `stress_set` | ползунок стресса отпущен | `stress` 0–10, `where` |
+| `stress_set` | ползунок стресса отпущен или кнопка «Низкий / Средний / Высокий» (2 / 5 / 8) | `stress` 0–10 (`null` — отметку сняли), `where` |
 | `symptom_toggled` | чип самочувствия | `symptom`, `selected` |
 | `period_marked` | «Месячные» / «Месячных нет» | `value` |
 | `food_photo_added` | выбрано фото блюда | `source`, `file_type`, `size_kb` |

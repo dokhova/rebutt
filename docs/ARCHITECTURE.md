@@ -40,7 +40,11 @@ src/
     screens/assistant.html     панель ИИ снизу поверх экрана
     partials/gut-form.html     стул, цвет, самочувствие, стресс — на «+» и при правке записи
     partials/meal-card.html    карточка блюда с КБЖУ
-    partials/add-sheet.html    шторка «+»: слайдер «Стул / Питание / Жидкости» → форма раздела (screens/add.html)
+    partials/add-sheet.html    «+»: экран «Запись» из меню (screens/add.html — стул, что ещё влияет, еда, жидкость)
+                               или модалка по центру из «+» в плитке (стул / еда / жидкость — одно действие)
+    partials/add-carousel.html карусель типов стула: свайп, стрелки, тап по соседу
+    partials/add-food.html     еда: фото или описание → разбор ИИ → КБЖУ
+    partials/add-cups.html     жидкость стаканами по 250 мл
     components/pebble.html     разметка компонента Pebble
     partials/info-card.html    карточка «?»: откуда норма или совет, со ссылками на источники
     partials/home-prompt.html  модалка «На главный экран»

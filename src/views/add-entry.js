@@ -1,8 +1,9 @@
-// «+»: над меню всплывают три отдельные карточки слайдером — «Стул», «Питание», «Жидкости»; выбранная открывает шторку с формой раздела.
-// Черновик общий: можно вернуться к карточкам и заполнить другой раздел, «Сохранить» сохраняет всё сразу.
+// «+» в меню — экран «Запись»: стул, что ещё влияет (месячные, стресс), еда, жидкость — всё сразу.
+// «+» в плитке на главной — модалка по центру с одним действием: стул (свайп по типам), еда (фото / текст), жидкость (стаканы).
+// Черновик общий: «Сохранить» сохраняет всё, что отмечено.
 // Черновик переживает закрытие шторки и перезапуск приложения (App.saveDraft), «Очистить» на карточках — начать заново.
 // Значения попадают в общий view вместе с экраном под шторкой — имена ключей не должны пересекаться с views/today.js и др.
-import { MEAL_TINT, WATER_STEPS } from '../domain/catalog.js';
+import { MEAL_TINT, WATER_STEPS, BRISTOL_TYPES, SYMPTOMS } from '../domain/catalog.js';
 import { dailyTargets } from '../domain/targets.js';
 import { litres } from '../domain/suggestions.js';
 import { gutFormView } from './gut-form.js';
@@ -22,35 +23,54 @@ export function addEntryView(app) {
   const scoreNow = gutScore(today), scorePreview = gutScore(app.draftDay(today).day);
   const seg = (on) => 'seg' + (on ? ' on' : '');
 
-  // точка «заполнено» на карточке: в т.ч. фото или описание блюда, которые ещё не разобрали
   const { stool: stoolFilled, food: foodFilled, water: waterFilled } = draftSections(f);
-  const sheet = s.addSheet || 'pick';
-  const card = (id, title, sub, tone, filled) => ({
-    id, title, sub, filled,
-    cls: 'pick-card', iconCls: 'pick-icon ' + tone,
-    isStool: id === 'stool', isFood: id === 'food', isWater: id === 'water',
-    pick: () => app.pickAddSection(id)
-  });
+  const sheet = s.addSheet || 'all';
+  const isAll = sheet === 'all';
   const savedWater = today.water || 0, totalWater = Math.max(0, savedWater + (f.water || 0));
+  const waterTarget = dailyTargets(p).waterMl;
+  const cupsFull = Math.round(totalWater / CUP_ML);
 
   return {
     dateLong: dayLabel(dayK, todayK),
     isPastDay: !isToday,
 
-    // шторка: выбор раздела или форма
-    sheetPicking: sheet === 'pick',
-    sheetForm: sheet !== 'pick',
-    sheetTitle: { pick: 'Что добавить?', stool: 'Стул', food: 'Питание', water: 'Жидкости' }[sheet],
+    // экран «Запись» или модалка одного раздела
+    sheetAll: isAll,
+    sheetModal: !isAll,
+    sheetTitle: { all: 'Запись', stool: 'Стул', food: 'Еда', water: 'Жидкость' }[sheet],
     closeAddSheet: () => app.closeAddSheet(),
-    backToPicker: () => app.backToAddPicker(),
-    pickCards: [
-      card('stool', 'Стул', 'Тип, цвет', 'calm', stoolFilled),
-      card('food', 'Питание', 'Фото, текст', 'mild', foodFilled),
-      card('water', 'Жидкости', 'Вода, чай', 'sens', waterFilled)
-    ],
     hasDraft: stoolFilled || foodFilled || waterFilled,
     discardDraft: () => app.discardDraft(),
     sec: { stool: sheet === 'stool', food: sheet === 'food', water: sheet === 'water' },
+    modalCta: { stool: 'Сохранить', food: 'Добавить', water: 'Готово' }[sheet] || 'Сохранить',
+
+    // карусель типов стула: по центру крупно, по бокам соседние; свайп / стрелки / тап по соседу
+    ...carousel(app, f),
+    symptomChips: SYMPTOMS.map((label) => {
+      const on = f.sym.includes(label);
+      return { label, cls: 'gchip' + (on ? ' on' : ''), on, pick: () => app.toggleSymptom(label, 'form') };
+    }),
+    stoolHadCls: 'gseg' + (f.stool === 'had' ? ' on' : ''),
+    stoolNoneCls: 'gseg' + (f.stool === 'none' ? ' on' : ''),
+    setStoolHad: () => app.setStool('had', 'form'),
+    setStoolNone: () => app.setStool('none', 'form'),
+    showCarousel: f.stool !== 'none',
+
+    // что ещё влияет: месячные (если включён цикл) и стресс тремя кнопками
+    periodOn: f.period === 'yes',
+    periodSwitch: 'gswitch' + (f.period === 'yes' ? ' on' : ''),
+    togglePeriod: () => app.setPeriodMark('yes'),
+    stressLevels: [['low', 'Низкий', 2], ['mid', 'Средний', 5], ['high', 'Высокий', 8]].map(([id, label, v]) => ({
+      label, on: f.stress === v, cls: 'gseg' + (f.stress === v ? ' on' : ''), pick: () => app.setStressLevel(id, 'form')
+    })),
+
+    // стаканы: тап по стакану n — за день n × 250 мл
+    cups: Array.from({ length: CUPS }, (_, i) => ({
+      cls: 'cup' + (i < cupsFull ? ' on' : ''), label: 'Стакан ' + (i + 1) + ' — ' + litres((i + 1) * CUP_ML) + ' л за день',
+      tap: () => app.setWaterCups(i + 1)
+    })),
+    waterNow: litres(totalWater),
+    waterOf: '/ ' + litres(waterTarget) + ' л',
 
     // жидкости
     waterCaption: isToday ? 'За сегодня' : 'За ' + dayMonth(dayK),
@@ -105,6 +125,41 @@ export function addEntryView(app) {
     scoreNow: scoreNow ? scoreNow.idx + '%' : '—',
     scorePreview: scorePreview ? scorePreview.idx + '%' : '—',
     save: () => app.saveEntry()
+  };
+}
+
+const CUPS = 8, CUP_ML = 250;
+const SWIPE_PX = 36;
+let swipeX = null; // где палец коснулся карусели
+
+/** Карусель типов: 5 позиций вокруг выбранного (пустые — за краями шкалы) */
+function carousel(app, f) {
+  const had = f.stool === 'had', sel = had ? f.type : 4;
+  const slots = [-2, -1, 0, 1, 2].map((off) => {
+    const n = sel + off;
+    if (n < 1 || n > 7) return { empty: true, show: false, cls: 'ctype-slot' };
+    const center = off === 0;
+    return {
+      show: true, empty: false, type: String(n), size: center ? '84' : '52',
+      cls: 'ctype' + (center ? ' center' : '') + (center && had ? ' on' : ''),
+      aria: 'Тип ' + n + ', ' + BRISTOL_TYPES[n].replace(' — норма', ''),
+      pick: () => app.pickBristolType(n, 'form')
+    };
+  });
+  return {
+    ctypes: slots,
+    ctypeName: had ? BRISTOL_TYPES[sel].replace(' — норма', '') : 'Листайте и выберите похожий',
+    ctypeNum: had ? 'Тип ' + sel : '',
+    cdots: [1, 2, 3, 4, 5, 6, 7].map((n) => ({ cls: 'cdot' + (had && n === sel ? ' on' : '') })),
+    cprev: () => app.stepBristolType(-1, 'form'),
+    cnext: () => app.stepBristolType(1, 'form'),
+    cswipe: (e) => {
+      if (e.type === 'pointerdown') { swipeX = e.clientX; return; }
+      if (swipeX == null) return;
+      const dx = e.clientX - swipeX;
+      swipeX = null;
+      if (Math.abs(dx) >= SWIPE_PX) app.stepBristolType(dx < 0 ? 1 : -1, 'form');
+    }
   };
 }
 

@@ -1,0 +1,8 @@
+<!-- Жидкость стаканами: тап по стакану n — за день n × 250 мл. Значения: src/views/add-entry.js → cups -->
+<div class="cups">
+  <sc-for list="{{cups}}" as="c">
+    <button class="{{c.cls}}" onClick="{{c.tap}}" aria-label="{{c.label}}"><svg width="28" height="34" viewBox="0 0 26 30" aria-hidden="true"><path d="M3 2h20l-2.4 26H5.4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path></svg></button>
+  </sc-for>
+</div>
+<div class="cups-foot"><span class="gvalue num">{{waterNow}}<span class="gunit"> {{waterOf}}</span></span></div>
+<div class="cups-hint">Вода, чай, кофе, суп — всё считается</div>

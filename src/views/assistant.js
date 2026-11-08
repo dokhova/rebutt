@@ -35,7 +35,7 @@ export function assistantView(app) {
     messages,
     chatLoading: s.chatLoading,
     emptyChat: !s.chat.length,
-    suggestions: AI_SUGGESTED_QUESTIONS.map((q) => ({ q, pick: () => app.ask(q, 'suggestion') })),
+    suggestions: AI_SUGGESTED_QUESTIONS.slice(0, 3).map((q) => ({ q, pick: () => app.ask(q, 'suggestion') })),
     askText: s.askText,
     onAskInput: (e) => app.setState({ askText: e.target.value }),
     fitAsk,

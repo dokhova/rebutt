@@ -1,94 +1,34 @@
-<!-- Формы разделов шторки «+» (Стул / Питание / Жидкости). Шторка — partials/add-sheet.html, значения — src/views/add-entry.js -->
-<!-- Стул: форма + цикл -->
-<sc-if value="{{sec.stool}}">
-<sc-include name="gut-form"></sc-include>
-
-<sc-if value="{{cycleEnabled}}">
-  <div class="card form-card">
-    <div class="card-head"><div class="caption">Цикл</div><sc-if value="{{cycleDayKnown}}"><div class="hint num">день {{cycleDay}}</div></sc-if></div>
-    <div class="segments">
-      <button class="{{periodNo}}" onClick="{{setPeriodNo}}">Месячных нет</button>
-      <button class="{{periodYes}}" onClick="{{setPeriodYes}}">Месячные</button>
-    </div>
+<!-- Экран «Запись» («+» в меню): все блоки сразу. Обёртка — partials/add-sheet.html, значения — src/views/add-entry.js -->
+<div class="gcard g-moss gblock">
+  <div class="gblock-head"><h2 class="gblock-title">Стул</h2><span class="gblock-sub">был сегодня?</span></div>
+  <div class="gsegs">
+    <button class="{{stoolHadCls}}" onClick="{{setStoolHad}}">Был</button>
+    <button class="{{stoolNoneCls}}" onClick="{{setStoolNone}}">Не было</button>
   </div>
-</sc-if>
-
-</sc-if>
-
-<!-- Питание: фото и/или описание → ИИ разбирает → КБЖУ; можно уточнить -->
-<sc-if value="{{sec.food}}">
-<div class="card form-card">
-  <div class="card-head"><div class="caption">Блюдо</div><div class="hint">фото или описание</div></div>
-
-  <sc-if value="{{food.pick}}">
-    <sc-if value="{{noPhoto}}">
-      <label class="photo-drop" for="foodFile">
-        <span class="icon-btn">
-          <sc-if value="{{photoCamera}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></sc-if>
-          <sc-if value="{{photoGallery}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"></rect><circle cx="9" cy="10" r="1.5"></circle><path d="M20 16l-5-5-8 8"></path></svg></sc-if>
-        </span>
-        <span>{{photoLabel}}</span>
-        <input id="foodFile" class="file-input" type="file" accept="image/*" onChange="{{onPhoto}}">
-      </label>
-    </sc-if>
-    <sc-if value="{{photo}}">
-      <div class="photo-preview">
-        <img src="{{photo}}" alt="Фото блюда">
-        <button class="icon-btn small on-photo" onClick="{{removePhoto}}" aria-label="Убрать фото"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
-      </div>
-    </sc-if>
-    <label class="sr-only" for="foodNote">Описание блюда</label>
-    <textarea id="foodNote" class="field-input area" rows="2" placeholder="Что в тарелке? Без фото ИИ нарисует картинку" onChange="{{onNote}}">{{note}}</textarea>
-    <button class="{{analyzeCls}}" onClick="{{analyze}}">Разобрать с ИИ</button>
-  </sc-if>
-
-  <sc-if value="{{food.scan}}">
-    <div class="scan" style="background: {{scanTint}}">
-      <sc-if value="{{photo}}"><img src="{{photo}}" alt="Фото блюда"></sc-if>
-      <div class="scan-line"></div>
-    </div>
-    <div class="scan-text">ИИ считает КБЖУ…</div>
-  </sc-if>
-
-  <sc-if value="{{food.done}}">
-    <div class="fade-in">
-      <sc-include name="meal-card"></sc-include>
-    </div>
-    <sc-if value="{{fixClosed}}">
-      <div class="meal-actions">
-        <button class="text-link" onClick="{{openFix}}">Уточнить</button>
-        <button class="text-link" onClick="{{removeFood}}">Убрать</button>
-      </div>
-    </sc-if>
-    <sc-if value="{{fixOpen}}">
-      <label class="sr-only" for="foodFix">Уточнение</label>
-      <textarea id="foodFix" class="field-input area" rows="2" placeholder="Что поправить?" onChange="{{onFix}}">{{fix}}</textarea>
-      <button class="{{fixCls}}" onClick="{{applyFix}}">{{fixLabel}}</button>
-    </sc-if>
-  </sc-if>
+  <sc-if value="{{showCarousel}}"><sc-include name="add-carousel"></sc-include></sc-if>
+  <div class="gblock-label">Самочувствие</div>
+  <div class="chips"><sc-for list="{{symptomChips}}" as="c"><button class="{{c.cls}}" aria-pressed="{{c.on}}" onClick="{{c.pick}}">{{c.label}}</button></sc-for></div>
 </div>
 
-</sc-if>
-
-<!-- Жидкости: вода, чай, суп — одним числом за день -->
-<sc-if value="{{sec.water}}">
-<div class="card form-card">
-  <div class="card-head"><div class="caption">{{waterCaption}}</div><div class="hint">{{waterDelta}}</div></div>
-  <div class="water-now">
-    <button class="{{waterMinusCls}}" onClick="{{waterMinus}}" aria-label="Убрать 250 мл">−</button>
-    <div class="water-value num">{{waterTotal}}<span class="metric-unit"> л</span></div>
-    <button class="round-btn lg" onClick="{{waterPlus}}" aria-label="Добавить 250 мл">+</button>
+<div class="gcard g-lav gblock">
+  <div class="gblock-head"><h2 class="gblock-title">Что ещё влияет</h2><span class="gblock-sub">можно пропустить</span></div>
+  <div class="grows">
+    <sc-if value="{{cycleEnabled}}">
+      <div class="grow"><span>Месячные<sc-if value="{{cycleDayKnown}}"><span class="grow-sub num"> · день {{cycleDay}}</span></sc-if></span><button class="{{periodSwitch}}" onClick="{{togglePeriod}}" role="switch" aria-checked="{{periodOn}}" aria-label="Месячные"></button></div>
+    </sc-if>
+    <div class="grow"><span>Стресс</span><div class="gsegs small"><sc-for list="{{stressLevels}}" as="l"><button class="{{l.cls}}" aria-pressed="{{l.on}}" onClick="{{l.pick}}">{{l.label}}</button></sc-for></div></div>
   </div>
-  <div class="mbar" aria-hidden="true"><div class="mbar-fill sens" style="{{waterBar}}"></div></div>
-  <div class="hint water-goal">{{waterGoal}} <button class="info-btn" onClick="{{info.water}}" aria-label="Откуда норма воды">?</button></div>
-  <div class="water-steps">
-    <sc-for list="{{waterSteps}}" as="w">
-      <button class="water-step" onClick="{{w.add}}"><span>{{w.label}}</span><span class="muted num">{{w.ml}}</span></button>
-    </sc-for>
-  </div>
-  <div class="hint">Считается любая жидкость: вода, чай, суп, кефир.</div>
 </div>
-</sc-if>
+
+<div class="gcard g-deep gblock">
+  <div class="gblock-head"><h2 class="gblock-title">Еда</h2><span class="gblock-sub">фото или текст</span></div>
+  <sc-include name="add-food"></sc-include>
+</div>
+
+<div class="gcard g-sage gblock">
+  <div class="gblock-head"><h2 class="gblock-title">Жидкость</h2></div>
+  <sc-include name="add-cups"></sc-include>
+</div>
 
 <div class="save-bar">
   <div class="preview">

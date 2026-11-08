@@ -29,6 +29,9 @@ import mealCardHtml from './templates/partials/meal-card.html?raw';
 import addSheetHtml from './templates/partials/add-sheet.html?raw';
 import infoCardHtml from './templates/partials/info-card.html?raw';
 import homePromptHtml from './templates/partials/home-prompt.html?raw';
+import addCarouselHtml from './templates/partials/add-carousel.html?raw';
+import addCupsHtml from './templates/partials/add-cups.html?raw';
+import addFoodHtml from './templates/partials/add-food.html?raw';
 
 initTelegram();
 applyTheme(readTheme()); // до первой отрисовки — без вспышки другой темы
@@ -53,5 +56,8 @@ registerPartial('meal-card', mealCardHtml);
 registerPartial('add-sheet', addSheetHtml);
 registerPartial('info-card', infoCardHtml);
 registerPartial('home-prompt', homePromptHtml);
+registerPartial('add-carousel', addCarouselHtml);
+registerPartial('add-cups', addCupsHtml);
+registerPartial('add-food', addFoodHtml);
 
 mount('#app');
