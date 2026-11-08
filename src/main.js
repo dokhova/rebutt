@@ -9,6 +9,7 @@ import { initTelegram } from './services/telegram.js';
 import { applyTheme, readTheme } from './services/theme.js';
 import { trackViewport } from './services/viewport.js';
 import { initAnalytics } from './services/analytics.js';
+import { preloadImages } from './services/preload.js';
 import App from './app/App.js';
 import Pebble from './components/Pebble.js';
 
@@ -33,7 +34,8 @@ import addCupsHtml from './templates/partials/add-cups.html?raw';
 import addFoodHtml from './templates/partials/add-food.html?raw';
 
 initTelegram();
-applyTheme(readTheme()); // до первой отрисовки — без вспышки другой темы
+const theme = applyTheme(readTheme()); // до первой отрисовки — без вспышки другой темы
+preloadImages(theme);
 trackViewport();
 initAnalytics();
 
