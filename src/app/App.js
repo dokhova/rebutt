@@ -3,7 +3,7 @@
 // Каждое действие само отправляет своё событие аналитики (словарь — docs/ANALYTICS.md).
 
 import { Component } from '../core/runtime.js';
-import { installSheetDrag } from '../core/sheet-drag.js';
+import { installSheetDrag, animateSheetClose } from '../core/sheet-drag.js';
 import { newId } from '../core/id.js';
 import { APP_NAME, SUPPORT_URL, LEGAL_DOCS, LEGAL_VERSION, IS_DEMO } from '../config.js';
 import { keyOf, addDays, nowHM } from '../domain/dates.js';
@@ -186,7 +186,7 @@ export default class App extends Component {
     onHomeScreenAdded(() => this.homeScreenAdded());
     installSheetDrag({
       onSnap: (kind, full) => this.snapSheet(kind, full),
-      onClose: () => this.closeAssistant()
+      onClose: () => this.setState({ assistant: false })
     });
     if (!this.state.booting) this.onScreenShown();
     const bootTimer = setTimeout(() => this.finishBoot({}), BOOT_TIMEOUT_MS);
@@ -1207,7 +1207,11 @@ export default class App extends Component {
     track('assistant_opened', { from });
   }
 
-  closeAssistant() { this.setState({ assistant: false }); }
+  /** Крестик, тап по фону, «назад»: шторка уезжает вниз, потом убираем её из состояния */
+  closeAssistant() {
+    if (typeof document === 'undefined') { this.setState({ assistant: false }); return; }
+    animateSheetClose(document.querySelector('.sheet[data-sheet="assistant"]'), () => this.setState({ assistant: false }));
+  }
 
   attachChatImage(file) {
     let url = '';
