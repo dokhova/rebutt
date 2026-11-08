@@ -46,14 +46,14 @@
 | Событие | Когда | Свойства |
 |---|---|---|
 | `nav_clicked` (`to: add_entry`) | нажат «+» — показаны три карточки | `from` — экран под шторкой, `source` (`tab` / `empty_day`) |
-| `add_section_opened` | выбрана карточка «+» | `section` (`stool` / `food` / `water`) |
+| `add_section_opened` | «+» в плитке на главной — модалка раздела | `section` (`stool` / `food` / `water`) |
 | `add_sheet_closed` | «+» закрыли без сохранения («×», затемнение, крестик, «Назад»); черновик остаётся | `has_draft` |
 | `add_draft_restored` | при запуске восстановлен незаконченный черновик «+» | `has_stool`, `has_food`, `has_water`, `food_state` (`pick` / `done`) |
 | `sheet_resized` | шторку «+» или ИИ потянули: на весь экран или обратно до середины (в т. ч. сама раскрылась при прокрутке или вводе) | `sheet` (`add` / `assistant`), `to` (`full` / `half`) |
 | `add_draft_discarded` | «Очистить» на карточках «+» | `has_stool`, `has_food`, `has_water` |
 | `info_opened` | тап по «?» рядом с нормой или советом | `topic` (`fiber` / `water` / `targets` / `bristol` / `tips`), `screen` |
 | `source_opened` | переход по ссылке на источник в карточке «?» | `source` (`who_fiber` / `efsa_water` / `heaton` / `nice_ibs` / `nhs_bowel`), `topic` |
-| `water_changed` | ± жидкость в разделе «Жидкости» | `step_ml` (250, 150, 500, −250), `draft_ml` — сколько добавится к дню |
+| `water_changed` | тап по стакану (жидкость) | `step_ml` — на сколько изменилось, `draft_ml` — сколько добавится к дню |
 | `stool_status_selected` | «Был» / «Не было» | `value` (`had` / `none` / `cleared`) |
 | `bristol_type_selected` | выбор типа | `bristol_type` 1–7 |
 | `stool_color_selected` | выбор цвета стула | `color` (`brown` / `light` / `yellow` / `green` / `dark` / `red` / `cleared`), `where` (`form` — новая запись / `entry` — правка) |
