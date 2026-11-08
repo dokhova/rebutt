@@ -32,6 +32,7 @@ export function todayView(app) {
     avatarUrl: s.avatarUrl,
     noAvatar: !s.avatarUrl,
     goProfile: () => app.navigate('profile', 'avatar'),
+    goInsights: () => app.navigate('insights', 'home_hero'),
     ...dayTitle(sel, todayK),
     dateMin: since || addDays(todayK, -90),
     dateMax: todayK,
@@ -56,6 +57,13 @@ function dayTitle(k, todayK) {
   if (k === addDays(todayK, -1)) return { dayLabel: 'Вчера', dateSub: WEEKDAYS_SHORT[wd].toLowerCase() + ', ' + dayMonth(k) };
   return { dayLabel: WEEKDAYS_FULL[parseKey(k).getDay()], dateSub: dayMonth(k) };
 }
+
+/** Риски шкалы «Комфорт за день»: 31 штрих по полукругу, каждый пятый длиннее */
+const GAUGE_TICKS = Array.from({ length: 31 }, (_, i) => {
+  const a = Math.PI * (1 - i / 30), r1 = 56, r2 = i % 5 === 0 ? 65 : 61;
+  const p = (r) => (66 + r * Math.cos(a)).toFixed(1) + ' ' + (70 - r * Math.sin(a)).toFixed(1);
+  return 'M' + p(r1) + 'L' + p(r2);
+}).join('');
 
 const bar = (pct, tone) => ({ width: 'width: ' + Math.max(0, Math.min(100, Math.round(pct))) + '%', cls: 'mbar-fill ' + tone });
 
@@ -82,6 +90,10 @@ function metrics(sc, day, app, targets) {
     : { text: '–', heroCls: 'hero-value num is-dash' };
   const C = 2 * Math.PI * 50, pct = hasComfort ? Math.max(0, Math.min(100, sc.comfort)) / 100 : 0;
   const ring = { dash: (C * pct).toFixed(1) + ' ' + C.toFixed(1), text: hasComfort ? String(sc.comfort) : '–', cls: 'ring-num' + (hasComfort ? '' : ' is-dash') };
+  // шкала-полукруг: центр (66, 70), радиус 50; конец дуги — белая точка
+  const ang = Math.PI * (1 - pct);
+  const gauge = { ticks: GAUGE_TICKS, dash: (pct * 100).toFixed(1) + ' 100', show: hasComfort,
+    x: (66 + 50 * Math.cos(ang)).toFixed(1), y: (70 - 50 * Math.sin(ang)).toFixed(1) };
 
   // клетчатка и жидкость — к дневному ориентиру
   const fiber = fiberOf(day), water = waterOf(day);
@@ -91,7 +103,7 @@ function metrics(sc, day, app, targets) {
     addStool: () => app.pickAddSection('stool'),
     addFood: () => app.pickAddSection('food'),
     addWater: () => app.pickAddSection('water'),
-    stool, form, formDots, comfort, ring,
+    stool, form, formDots, comfort, ring, gauge,
     fiber: fiber == null ? empty(fiberUnit) : { text: String(fiber), tileCls: TILE, unit: fiberUnit, bar: bar(fiberPct, toneOf(fiberPct)) },
     water: !water ? empty(waterUnit) : { text: litres(water), tileCls: TILE, unit: waterUnit, bar: bar(waterPct, toneOf(waterPct)) }
   };

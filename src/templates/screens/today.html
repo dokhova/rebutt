@@ -2,10 +2,7 @@
 
 <div class="home-head">
   <button class="avatar circle-btn" onClick="{{goProfile}}" aria-label="Профиль"><sc-if value="{{avatarUrl}}"><img src="{{avatarUrl}}" alt=""></sc-if><sc-if value="{{noAvatar}}">{{initial}}</sc-if></button>
-  <div class="home-day">
-    <h1 class="home-day-title">{{dayLabel}}</h1>
-    <div class="home-day-sub">{{dateSub}}</div>
-  </div>
+  <div></div>
   <label class="circle-btn date-btn" aria-label="Выбрать день">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg>
     <input class="date-input" type="date" min="{{dateMin}}" max="{{dateMax}}" value="{{dateValue}}" onChange="{{pickDay}}">
@@ -14,14 +11,19 @@
 
 <!-- Показатели дня: стеклянные карточки. Пустой день выглядит так же, как заполненный: тусклые «0» и «–».
      У каждой плитки своя «+» — сразу открывает нужный раздел записи. -->
-<div class="gcard g-violet hero">
-  <div class="hero-text">
-    <div class="g-label">Комфорт за день</div>
-    <div class="{{comfort.heroCls}}">{{comfort.text}}<span class="hero-unit">%</span></div>
-  </div>
-  <div class="ring" aria-hidden="true">
-    <svg width="96" height="96" viewBox="0 0 112 112"><defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D3FA9D"></stop><stop offset="1" stop-color="#EDE5FF"></stop></linearGradient></defs><circle cx="56" cy="56" r="50" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5"></circle><circle cx="56" cy="56" r="50" fill="none" stroke="url(#ringGrad)" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="{{ring.dash}}"></circle></svg>
-    <span class="{{ring.cls}}">{{ring.text}}</span>
+<!-- «Комфорт за день»: стеклянная карточка поверх 3D-кишечника (public/hero/gut.webp), шкала-полукруг -->
+<div class="hero-wrap">
+  <img class="hero-gut" src="/hero/gut.webp" alt="" aria-hidden="true">
+  <div class="gcard g-glass hero">
+    <button class="hero-link" onClick="{{goInsights}}" aria-label="Открыть инсайты"><span class="hero-link-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"></path></svg></span>{{dayLabel}}</button>
+    <div class="hero-text">
+      <div><div class="g-label">Комфорт за день</div><div class="hero-date">{{dateSub}}</div></div>
+      <div class="{{comfort.heroCls}}">{{comfort.text}}<span class="hero-unit">%</span></div>
+    </div>
+    <div class="gauge" aria-hidden="true">
+      <svg width="132" height="78" viewBox="0 0 132 78"><path d="{{gauge.ticks}}" stroke="rgba(255,255,255,.7)" stroke-width="1.2" stroke-linecap="round" fill="none"></path><path d="M16 70 A50 50 0 0 1 116 70" pathLength="100" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2.5" stroke-linecap="round"></path><path d="M16 70 A50 50 0 0 1 116 70" pathLength="100" fill="none" stroke="#D3FA9D" stroke-width="4" stroke-linecap="round" stroke-dasharray="{{gauge.dash}}"></path><sc-if value="{{gauge.show}}"><circle cx="{{gauge.x}}" cy="{{gauge.y}}" r="4.5" fill="#FFFFFF"></circle></sc-if></svg>
+      <div class="gauge-scale"><span>0</span><span>100</span></div>
+    </div>
   </div>
 </div>
 
