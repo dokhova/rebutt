@@ -82,9 +82,10 @@
 /* «Комфорт за день»: стеклянная карточка поверх 3D-кишечника. Кишечник лежит под шапкой и карточкой,
    сквозь стекло виден размыто. Блок компактный — 160px, как прежняя карточка с кольцом. */
 .hero-wrap { position: relative; margin-top: 20px; }
-.hero-gut { position: absolute; z-index: 0; width: calc(100% + 36px); max-width: none; left: -18px; top: -178px; -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent 76%); mask-image: linear-gradient(180deg, #000 60%, transparent 76%); pointer-events: none; user-select: none; }
+.hero-gut { position: absolute; z-index: 0; width: calc(100% + 36px); aspect-ratio: 850 / 1851; left: -18px; top: -178px; background: url(/hero/gut.webp) center top / 100% auto no-repeat; -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent 76%); mask-image: linear-gradient(180deg, #000 60%, transparent 76%); pointer-events: none; }
 .home-head, .gtiles { z-index: 1; }
-[data-theme="dark"] .hero-gut { opacity: .62; filter: blur(.6px) saturate(.9); }
+/* тёмная тема — отдельный файл: у светлого рендера на тёмном фоне видно зерно по краям бликов */
+[data-theme="dark"] .hero-gut { background-image: url(/hero/gut-dark.webp); }
 .gtiles { position: relative; }
 .hero-date { margin-top: 2px; font-size: 13px; line-height: 18px; color: rgba(255, 255, 255, .85); }
 .hero-link { position: absolute; top: 16px; right: 18px; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 0; border: 0; background: none; color: #FFFFFF; font: inherit; font-size: 14px; text-shadow: inherit; }
