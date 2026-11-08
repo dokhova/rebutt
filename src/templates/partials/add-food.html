@@ -16,7 +16,7 @@
       </label>
     </sc-if>
     <label class="sr-only" for="foodNote">Описание блюда</label>
-    <textarea id="foodNote" class="field-input area food-note" rows="1" placeholder="Опишите блюдо или снимите фото" onChange="{{onNote}}">{{note}}</textarea>
+    <input id="foodNote" class="field-input food-note" type="text" enterkeyhint="done" placeholder="Опишите блюдо" value="{{note}}" onChange="{{onNote}}">
   </div>
 </sc-if>
 

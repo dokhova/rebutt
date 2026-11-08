@@ -348,8 +348,9 @@
 
 /* еда: фото — маленькая кнопка слева от поля описания */
 .food-row { display: flex; gap: 8px; align-items: stretch; }
-.food-cam { position: relative; width: 52px; min-height: 52px; flex-shrink: 0; border-radius: 18px; display: grid; place-items: center; cursor: pointer; background: #FFFFFF; color: #1A1621; box-shadow: inset 0 0 0 1px var(--line-2); }
-.food-row .food-note { flex: 1 1 auto; min-width: 0; min-height: 52px; padding-top: 15px; padding-bottom: 15px; font-size: 15px; line-height: 20px; }
+.food-cam { position: relative; width: 52px; height: 52px; flex-shrink: 0; border-radius: 18px; display: grid; place-items: center; cursor: pointer; background: #FFFFFF; color: #1A1621; box-shadow: inset 0 0 0 1px var(--line-2); }
+/* однострочное поле: текст и плейсхолдер по центру по высоте на iOS (у textarea в одну строку он съезжал) */
+.food-row .food-note { flex: 1 1 auto; min-width: 0; height: 52px; padding: 0 16px; font-size: 16px; line-height: normal; text-overflow: ellipsis; }
 
 /* еда: крупная кнопка фото (стекло «Клетчатки») и описание текстом */
 .food-photo { position: relative; height: 120px; border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 16px; font-weight: 600; color: #FFFFFF; cursor: pointer;

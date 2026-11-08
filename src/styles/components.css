@@ -4,10 +4,13 @@
 .shell { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 50%, var(--bg) 100%); }
 .screen {
   position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: none;
-  box-sizing: border-box; padding: calc(28px + var(--safe-top)) 16px calc(28px + var(--safe-bottom));
+  box-sizing: border-box; padding: calc(28px + var(--safe-top)) 16px 0;
   display: flex; flex-direction: column; gap: 20px;
 }
-.screen.with-tabs { padding-bottom: calc(120px + var(--safe-bottom)); }
+/* Отступ снизу — отдельным элементом, а не padding-bottom: Safari на iOS в прокручиваемом flex-контейнере
+   нижний padding не учитывает, и короткий экран (инсайты) не прокручивался — низ оставался под меню. */
+.screen::after { content: ""; flex-shrink: 0; height: calc(8px + var(--safe-bottom)); }
+.screen.with-tabs::after { height: calc(100px + var(--safe-bottom)); }
 
 /* затемнение под меню: контент уходит в фон, а не просвечивает между кнопками.
    Градиент до цвета фона + размытие, которое плавно нарастает книзу (маска) */
