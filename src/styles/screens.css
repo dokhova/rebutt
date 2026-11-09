@@ -68,14 +68,15 @@
 
 /* ---------- стеклянные карточки показателей ----------
    Одинаковые в обеих темах: цвет — из брендбука, градиент идёт из центра (насыщенный тон в середине,
-   никогда не почти-чёрный — иначе грязно), к краям светлее, мягкое свечение в нижнем углу. Текст на стекле белый. */
-.gcard { position: relative; overflow: hidden; border-radius: 26px; color: #FFFFFF; text-shadow: 0 1px 10px rgba(0, 0, 0, .18);
+   никогда не почти-чёрный — иначе грязно), к краям светлее, мягкое свечение в нижнем углу. Текст на стекле белый.
+   Свечение в углу слабое (≤ .35) и база не светлее Soft Violet / Sage: иначе белый текст на нём пересвечивается и не читается. */
+.gcard { position: relative; overflow: hidden; border-radius: 26px; color: #FFFFFF; text-shadow: 0 1px 2px rgba(0, 0, 0, .1), 0 1px 12px rgba(0, 0, 0, .2);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .32), inset 0 0 0 1px rgba(255, 255, 255, .12); }
-.g-violet { background: radial-gradient(50% 75% at 50% 50%, #7954C8 0%, rgba(121, 84, 200, 0) 100%), radial-gradient(45% 80% at 0% 110%, rgba(237, 229, 255, .8) 0%, rgba(237, 229, 255, 0) 70%), radial-gradient(45% 80% at 100% 110%, rgba(179, 155, 251, .75) 0%, rgba(179, 155, 251, 0) 70%), linear-gradient(180deg, #9677E6 0%, #A78BFA 100%); }
-.g-lav { background: radial-gradient(55% 65% at 50% 50%, #8A68DC 0%, rgba(138, 104, 220, 0) 100%), radial-gradient(70% 60% at 100% 112%, rgba(237, 229, 255, .85) 0%, rgba(237, 229, 255, 0) 70%), linear-gradient(160deg, #B39BFB 0%, #A78BFA 100%); }
-.g-moss { background: radial-gradient(55% 65% at 50% 50%, #4F8A3C 0%, rgba(79, 138, 60, 0) 100%), radial-gradient(60% 60% at 100% 112%, rgba(221, 229, 207, .7) 0%, rgba(221, 229, 207, 0) 70%), linear-gradient(160deg, #7FA866 0%, #74A05C 100%); }
+.g-violet { background: radial-gradient(50% 75% at 50% 50%, #7954C8 0%, rgba(121, 84, 200, 0) 100%), radial-gradient(45% 80% at 0% 110%, rgba(237, 229, 255, .3) 0%, rgba(237, 229, 255, 0) 70%), radial-gradient(45% 80% at 100% 110%, rgba(179, 155, 251, .35) 0%, rgba(179, 155, 251, 0) 70%), linear-gradient(180deg, #9073E2 0%, #9B7FF2 100%); }
+.g-lav { background: radial-gradient(55% 65% at 50% 50%, #8A68DC 0%, rgba(138, 104, 220, 0) 100%), radial-gradient(70% 60% at 100% 112%, rgba(237, 229, 255, .3) 0%, rgba(237, 229, 255, 0) 70%), linear-gradient(160deg, #A68CF6 0%, #9B7FF2 100%); }
+.g-moss { background: radial-gradient(55% 65% at 50% 50%, #4F8A3C 0%, rgba(79, 138, 60, 0) 100%), radial-gradient(60% 60% at 100% 112%, rgba(221, 229, 207, .3) 0%, rgba(221, 229, 207, 0) 70%), linear-gradient(160deg, #7FA866 0%, #74A05C 100%); }
 .g-deep { background: radial-gradient(60% 70% at 45% 50%, #2C6A2E 0%, rgba(44, 106, 46, 0) 100%), radial-gradient(60% 60% at 100% 112%, rgba(211, 250, 157, .4) 0%, rgba(211, 250, 157, 0) 70%), linear-gradient(160deg, #4E8A45 0%, #447F3E 100%); }
-.g-sage { background: radial-gradient(55% 65% at 50% 50%, #6FA25A 0%, rgba(111, 162, 90, 0) 100%), radial-gradient(70% 70% at 100% 115%, rgba(221, 229, 207, .85) 0%, rgba(221, 229, 207, 0) 65%), linear-gradient(160deg, #A2C78C 0%, #93BA7B 100%); }
+.g-sage { background: radial-gradient(55% 65% at 50% 50%, #5E9449 0%, rgba(94, 148, 73, 0) 100%), radial-gradient(70% 70% at 100% 115%, rgba(221, 229, 207, .3) 0%, rgba(221, 229, 207, 0) 65%), linear-gradient(160deg, #88B470 0%, #7DA965 100%); }
 .g-label { font-size: 16px; line-height: 20px; }
 .gcard .info-btn.on-glass { width: 14px; height: 14px; margin-left: 2px; font-size: 9px; color: #FFFFFF; border-color: rgba(255, 255, 255, .6); text-shadow: none; vertical-align: 1px; }
 
@@ -91,7 +92,7 @@
 .hero-link { position: absolute; top: 16px; right: 18px; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 0; border: 0; background: none; color: #FFFFFF; font: inherit; font-size: 14px; text-shadow: inherit; }
 .hero-link::after { content: ""; position: absolute; inset: -10px -8px; }
 .hero-link-dot { width: 26px; height: 26px; border-radius: 50%; background: #FFFFFF; color: #1A1621; display: grid; place-items: center; }
-.g-glass { z-index: 1; background: radial-gradient(70% 90% at 50% 55%, rgba(121, 84, 200, .34) 0%, rgba(167, 139, 250, .18) 100%);
+.g-glass { z-index: 1; background: radial-gradient(70% 90% at 50% 55%, rgba(121, 84, 200, .5) 0%, rgba(150, 119, 230, .38) 100%);
   -webkit-backdrop-filter: blur(3px) saturate(1.2); backdrop-filter: blur(3px) saturate(1.2);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), inset 0 0 0 1px rgba(255, 255, 255, .28), 0 14px 36px rgba(84, 56, 160, .18); }
 .gauge { align-self: flex-end; width: 132px; flex-shrink: 0; margin-bottom: -4px; }
