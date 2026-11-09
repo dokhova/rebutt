@@ -77,6 +77,25 @@ export function telegramInitData() {
   return (app && app.initData) || '';
 }
 
+/** Метка из ссылки t.me/<бот>?startapp=<метка> (откуда пришёл), иначе '' */
+export function telegramStartParam() {
+  const app = getTelegram();
+  return (app && app.initDataUnsafe && app.initDataUnsafe.start_param) || '';
+}
+
+/**
+ * Просим разрешение боту писать пользователю (Bot API 6.9) — вместо /start, когда приложение
+ * открыли прямой ссылкой. Telegram сам показывает окно; если разрешение уже есть — сразу true без окна.
+ * Результат: true / false, null — вне Telegram или старый клиент.
+ */
+export function requestBotWriteAccess() {
+  return new Promise((resolve) => {
+    const app = getTelegram();
+    if (!app || !app.isVersionAtLeast('6.9') || typeof app.requestWriteAccess !== 'function') { resolve(null); return; }
+    try { app.requestWriteAccess((allowed) => resolve(!!allowed)); } catch (_) { resolve(null); }
+  });
+}
+
 /** Пользователь Telegram: { id, first_name, photo_url, … } или null */
 export function telegramUser() {
   const app = getTelegram();

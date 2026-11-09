@@ -54,6 +54,8 @@ npx vercel dev               # фронт + /api на http://localhost:3000
 
 ### 4. Telegram
 @BotFather → `/mybots` → бот → **Bot Settings → Menu Button** → URL приложения.
+Прямая ссылка на приложение (без чата с ботом): **Bot Settings → Configure Mini App → Enable Mini App** → URL приложения, ссылка — `https://t.me/<бот>?startapp` (с меткой источника: `?startapp=promo1`, попадает в `app_opened.start_param`).
+Открывшие по прямой ссылке не нажимают /start, поэтому после онбординга приложение просит разрешение боту писать (`requestWriteAccess`).
 В Telegram пользователь входит по своему аккаунту (`/api/auth/telegram`): данные привязаны к Telegram id, имя и аватар берутся из Telegram.
 
 ## Где что менять
