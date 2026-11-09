@@ -319,30 +319,29 @@ test('подсказки без записей сегодня: по прошлы
   assert.ok(!ids.includes('sip'));
 });
 
-// ---------- «Комфорт за день» утром: база по прошлым дням ----------
-import { comfortBaseline, dayComfort } from '../src/domain/score.js';
+// ---------- «Комфорт за 7 дней» ----------
+import { weekComfort } from '../src/domain/score.js';
 
-test('комфорт: сегодня без записей — по прошлым дням, свежим больше веса', () => {
+test('комфорт за 7 дней: среднее по неделе, выбранный день ×2', () => {
   const log = {
-    '2026-11-08': dw([g(4)]),                 // 92
-    '2026-11-07': dw([g(4, ['Вздутие'])]),    // 68
-    '2026-11-05': dw([g(4, ['Вздутие', 'Боль'])]) // 44, пропуск дня не мешает
+    '2026-11-09': dw([g(4, ['Вздутие'])]),   // 68, вес 2
+    '2026-11-08': dw([g(4)]),                // 92
+    '2026-11-03': dw([g(4, ['Вздутие'])])    // 68 — ещё в окне
   };
-  const base = Math.round((92 * 0.5 + 68 * 0.3 + 44 * 0.2) / 1);
-  assert.equal(comfortBaseline(log, '2026-11-09', addDays), base);
-  assert.deepEqual(dayComfort(log, '2026-11-09', dw([]), addDays, true), { value: base, fromPast: true });
+  assert.deepEqual(weekComfort(log, '2026-11-09', addDays), { value: Math.round((68 * 2 + 92 + 68) / 4), days: 3, stools: 3 });
 });
 
-test('комфорт: первая запись смешивается с базой, со второй — только сегодня', () => {
-  const log = { '2026-11-08': dw([g(4)]) }; // база 92
-  const one = dw([g(4, ['Вздутие'])]);       // сегодня 68
-  assert.deepEqual(dayComfort(log, '2026-11-09', one, addDays, true), { value: Math.round(68 * 0.6 + 92 * 0.4), fromPast: false });
-  const two = dw([g(4, ['Вздутие']), g(4)]);
-  assert.equal(dayComfort(log, '2026-11-09', two, addDays, true).value, 68);
+test('комфорт за 7 дней: утром без записей — по прошлым дням, а не «–»', () => {
+  const log = { '2026-11-08': dw([g(4)]) };
+  assert.equal(weekComfort(log, '2026-11-09', addDays).value, 92);
+  assert.equal(weekComfort({ '2026-11-02': dw([g(4)]) }, '2026-11-09', addDays), null); // вне окна
+  assert.equal(weekComfort({}, '2026-11-09', addDays), null);
 });
 
-test('комфорт: нет истории — «–»; прошлый день без записей базу не берёт', () => {
-  assert.equal(dayComfort({}, '2026-11-09', dw([]), addDays, true), null);
-  assert.equal(dayComfort({ '2026-11-07': dw([g(4)]) }, '2026-11-08', dw([]), addDays, false), null);
-  assert.equal(comfortBaseline({ '2026-11-01': dw([g(4)]) }, '2026-11-09', addDays), null); // старше недели
+test('комфорт за 7 дней: стула меньше 3 раз при 4+ отмеченных днях — мягко ниже', () => {
+  const none = () => dw([{ ...g(0), type: 0 }]);
+  const log = { '2026-11-09': none(), '2026-11-08': none(), '2026-11-07': dw([g(4)]), '2026-11-06': none() };
+  assert.deepEqual(weekComfort(log, '2026-11-09', addDays), { value: 92 - 8 * 2, days: 4, stools: 1 });
+  // мало отмеченных дней — регулярность не учитываем
+  assert.equal(weekComfort({ '2026-11-09': none() }, '2026-11-09', addDays).value, 92);
 });

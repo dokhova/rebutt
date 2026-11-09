@@ -11,13 +11,13 @@
 
 <!-- Показатели дня: стеклянные карточки. Пустой день выглядит так же, как заполненный: тусклые «0» и «–».
      У каждой плитки своя «+» — сразу открывает нужный раздел записи. -->
-<!-- «Комфорт за день»: стеклянная карточка поверх 3D-кишечника (src/assets/hero/gut.webp, в тёмной теме gut-dark.webp; заранее грузится в services/preload.js), шкала-полукруг -->
+<!-- «Комфорт за 7 дней»: стеклянная карточка поверх 3D-кишечника (src/assets/hero/gut.webp, в тёмной теме gut-dark.webp; заранее грузится в services/preload.js), шкала-полукруг -->
 <div class="hero-wrap">
   <div class="hero-gut" aria-hidden="true"></div>
   <div class="gcard g-glass hero">
     <button class="hero-link" onClick="{{goInsights}}" aria-label="Открыть инсайты"><span class="hero-link-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"></path></svg></span>{{dayLabel}}</button>
     <div class="hero-text">
-      <div><div class="g-label">Комфорт за день</div><div class="hero-date">{{dateSub}}</div><sc-if value="{{comfort.fromPast}}"><div class="hero-date hero-past">по прошлым дням</div></sc-if></div>
+      <div><div class="g-label">Комфорт за 7 дней <button class="info-btn on-glass" onClick="{{info.comfort}}" aria-label="Как считается комфорт">?</button></div><div class="hero-date">{{dateSub}}</div></div>
       <div class="{{comfort.heroCls}}">{{comfort.text}}<span class="hero-unit">%</span></div>
     </div>
     <div class="gauge" aria-hidden="true">

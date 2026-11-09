@@ -9,6 +9,7 @@ export const SOURCES = {
   who_fiber: { label: 'ВОЗ. Carbohydrate intake for adults and children, 2023', url: 'https://www.who.int/publications/i/item/9789240073593' },
   efsa_water: { label: 'EFSA. Dietary reference values for water, 2010', url: 'https://doi.org/10.2903/j.efsa.2010.1459' },
   heaton: { label: 'Heaton K. W. и др. Defecation frequency and timing, and stool form in the general population. Gut, 1992', url: 'https://gut.bmj.com/content/33/6/818' },
+  nhanes: { label: 'Mitsuhashi S. и др. Normal bowel frequency and consistency in US adults (NHANES). Am J Gastroenterol, 2018', url: 'https://pubmed.ncbi.nlm.nih.gov/28762379/' },
   nice_ibs: { label: 'NICE. Irritable bowel syndrome in adults, QS114: питание и образ жизни', url: 'https://www.nice.org.uk/guidance/qs114/chapter/Quality-statement-3-Dietary-management' },
   nhs_bowel: { label: 'NHS. Когда показаться врачу: изменения стула, кровь, похудание', url: 'https://www.nhs.uk/conditions/bowel-cancer/symptoms/' }
 };
@@ -36,6 +37,11 @@ export function infoCards(t) {
       title: 'Форма стула: типы 3–4',
       text: 'Бристольская шкала делит стул на 7 типов. Типы 3–4 — самые обычные: мягкий, оформленный. 1–2 — твёрже и реже, 6–7 — жидкий. В исследовании в Бристоле «типичной» была форма лишь около 60% стулов, так что разовое отклонение — нормально.',
       sources: ['heaton']
+    }],
+    comfort: [{
+      title: 'Комфорт за 7 дней',
+      text: 'Норму стула врачи оценивают за неделю, а не за день: обычно это от 3 раз в неделю до 3 раз в день. Поэтому день без стула — не повод для тревоги. Цифра — среднее по самочувствию за последние 7 дней, сегодняшний день весит вдвое больше. Если записей за неделю достаточно, а стула было меньше 3 раз, цифра немного ниже. Это ориентир, не диагноз.',
+      sources: ['heaton', 'nhanes']
     }],
     tips: [{
       title: 'Откуда подсказки',

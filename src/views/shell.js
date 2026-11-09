@@ -3,7 +3,7 @@ import { APP_NAME } from '../config.js';
 import { SOURCES, infoCards } from '../domain/sources.js';
 import { dailyTargets } from '../domain/targets.js';
 
-const INFO_TOPICS = ['fiber', 'water', 'targets', 'bristol', 'tips'];
+const INFO_TOPICS = ['fiber', 'water', 'targets', 'bristol', 'comfort', 'tips'];
 
 const TAB_SCREENS = ['today', 'insights', 'profile'];
 
