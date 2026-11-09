@@ -1,0 +1,10 @@
+<!-- Правка блюда, записи о стуле или жидкости — модалка по центру поверх экрана, как у «+» в плитках.
+     Содержимое: screens/meal.html, entry.html, water.html; значения: src/views/meal.js, entry.js, water.js -->
+<div class="qmodal-backdrop fade-in" onClick="{{closeEdit}}"></div>
+<div class="qmodal-wrap">
+  <section class="qmodal pop-in" role="dialog">
+    <sc-if value="{{edit.meal}}"><sc-include name="meal"></sc-include></sc-if>
+    <sc-if value="{{edit.entry}}"><sc-include name="entry"></sc-include></sc-if>
+    <sc-if value="{{edit.water}}"><sc-include name="water"></sc-include></sc-if>
+  </section>
+</div>

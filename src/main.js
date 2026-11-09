@@ -32,6 +32,7 @@ import homePromptHtml from './templates/partials/home-prompt.html?raw';
 import addCarouselHtml from './templates/partials/add-carousel.html?raw';
 import addCupsHtml from './templates/partials/add-cups.html?raw';
 import addFoodHtml from './templates/partials/add-food.html?raw';
+import editModalHtml from './templates/partials/edit-modal.html?raw';
 
 initTelegram();
 const theme = applyTheme(readTheme()); // до первой отрисовки — без вспышки другой темы
@@ -58,6 +59,7 @@ registerPartial('info-card', infoCardHtml);
 registerPartial('home-prompt', homePromptHtml);
 registerPartial('add-carousel', addCarouselHtml);
 registerPartial('add-cups', addCupsHtml);
+registerPartial('edit-modal', editModalHtml);
 registerPartial('add-food', addFoodHtml);
 
 mount('#app');
