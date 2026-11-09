@@ -236,20 +236,14 @@ export default class App extends Component {
 
   componentDidUpdate(prev) {
     const s = this.state;
-    const overlay = (x) => !!(x.mealEdit || x.entryEdit || x.waterEdit);
-    if (prev.screen !== s.screen || prev.onbStep !== s.onbStep || prev.booting !== s.booting ||
-        !!prev.legal !== !!s.legal || !!prev.mealEdit !== !!s.mealEdit || !!prev.entryEdit !== !!s.entryEdit || !!prev.waterEdit !== !!s.waterEdit) {
-      // закрыли запись, блюдо или жидкость — возвращаемся туда же, где были на «Сегодня»; иначе — наверх
-      const backFromOverlay = overlay(prev) && !overlay(s) && prev.screen === s.screen && !s.legal;
-      if (this.scrollEl) {
-        if (backFromOverlay && this.savedScroll != null) {
-          const top = this.savedScroll, el = this.scrollEl;
-          el.scrollTop = top;
-          requestAnimationFrame(() => { if (this.scrollEl === el) el.scrollTop = top; });
-        } else this.scrollEl.scrollTop = 0;
-      }
-      if (!overlay(s)) this.savedScroll = null;
+    const overlay = (x) => (x.mealEdit ? 'meal' : x.entryEdit ? 'entry' : x.waterEdit ? 'water' : '');
+    if (prev.screen !== s.screen || prev.onbStep !== s.onbStep || prev.booting !== s.booting || !!prev.legal !== !!s.legal) {
+      if (this.scrollEl) this.scrollEl.scrollTop = 0;
       this.onScreenShown();
+    } else if (overlay(prev) !== overlay(s)) {
+      // запись, блюдо и жидкость правятся в модалке поверх экрана — экран под ней не прокручиваем
+      if (overlay(s)) this.onScreenShown();
+      else { syncBackButton(this.canGoBack(), this.handleBack); setScreen(SCREEN_EVENT_NAME[s.screen]); }
     } else if (prev.assistant !== s.assistant || prev.addSheet !== s.addSheet || prev.info !== s.info || prev.homePrompt !== s.homePrompt) {
       // панель ИИ и шторка «+» открываются поверх — экран под ними не прокручиваем
       syncBackButton(this.canGoBack(), this.handleBack);
@@ -322,11 +316,14 @@ export default class App extends Component {
 
   view() {
     const s = this.state;
-    // Поверх экранов: загрузка → документ → блюдо → запись. ИИ-помощник — выезжающая панель поверх всего.
-    const screen = s.booting ? 'booting' : s.legal ? 'legal' : s.mealEdit ? 'meal' : s.entryEdit ? 'entry' : s.waterEdit ? 'water' : s.screen;
+    // Поверх экранов: загрузка → документ. Блюдо, запись о стуле и жидкость — модалки поверх экрана.
+    // ИИ-помощник — выезжающая панель поверх всего.
+    const screen = s.booting ? 'booting' : s.legal ? 'legal' : s.screen;
+    const edit = s.booting || s.legal ? null : s.mealEdit ? 'meal' : s.entryEdit ? 'entry' : s.waterEdit ? 'water' : null;
     return {
-      ...shellView(this, screen),
+      ...shellView(this, screen, edit),
       ...(VIEWS[screen] ? VIEWS[screen](this) : {}),
+      ...(edit ? VIEWS[edit](this) : {}),
       ...(s.addSheet ? VIEWS.add(this) : {}),
       ...(s.assistant ? VIEWS.assistant(this) : {})
     };
@@ -832,7 +829,6 @@ export default class App extends Component {
       type: g.type > 0 ? g.type : 4,
       sym: [...g.sym], color: g.color || '', stress: g.stress == null ? null : g.stress
     };
-    this.rememberScroll();
     this.setState({ entryEdit: { day: dayK, id, time: g.time, draft } });
     track('entry_opened');
   }
@@ -862,13 +858,9 @@ export default class App extends Component {
     track('entry_deleted');
   }
 
-  /** Запоминаем, где был экран «Сегодня», чтобы вернуться туда после записи */
-  rememberScroll() { if (this.scrollEl) this.savedScroll = this.scrollEl.scrollTop; }
-
   // ---------- жидкость за любой день: поправить или удалить ----------
 
   openWater(dayK) {
-    this.rememberScroll();
     this.setState({ waterEdit: { day: dayK, ml: this.day(dayK).water || 0 } });
     track('water_opened', { is_today: dayK === this.today() });
   }
@@ -1025,7 +1017,6 @@ export default class App extends Component {
   findMeal(dayK, id) { return this.day(dayK).meals.find((m) => m.id === id) || null; }
 
   openMeal(dayK, id) {
-    this.rememberScroll();
     this.setState({ mealEdit: { day: dayK, id, fix: '', fixing: false } });
     track('meal_opened');
   }

@@ -8,7 +8,7 @@ const INFO_TOPICS = ['fiber', 'water', 'targets', 'bristol', 'comfort', 'tips'];
 const TAB_SCREENS = ['today', 'insights', 'profile'];
 
 /** screen — что показывается сейчас: 'booting' | 'legal' | 'meal' | 'entry' | 'onboarding' | экран с меню. ИИ-помощник — панель поверх. */
-export function shellView(app, screen) {
+export function shellView(app, screen, edit = null) {
   const s = app.state;
   const withTabs = TAB_SCREENS.includes(screen);
   const tab = (name) => 'tab' + (screen === name ? ' on' : '');
@@ -17,9 +17,6 @@ export function shellView(app, screen) {
     is: {
       booting: screen === 'booting',
       legal: screen === 'legal',
-      meal: screen === 'meal',
-      entry: screen === 'entry',
-      water: screen === 'water',
       onboarding: screen === 'onboarding',
       today: screen === 'today',
       insights: screen === 'insights',
@@ -30,7 +27,11 @@ export function shellView(app, screen) {
 
     // пока открыта клавиатура, панель ИИ или модалка «На главный экран», меню не показываем
     // «+» открыт (экран «Запись» или модалка) — меню прячем
-    showTabs: withTabs && !s.keyboard && !s.assistant && !s.homePrompt && !s.addSheet,
+    // правка блюда, записи о стуле или жидкости — модалка поверх экрана (partials/edit-modal.html)
+    showEdit: !!edit,
+    closeEdit: () => (edit === 'meal' ? app.closeMeal() : edit === 'entry' ? app.closeEntry() : app.closeWater()),
+    edit: { meal: edit === 'meal', entry: edit === 'entry', water: edit === 'water' },
+    showTabs: withTabs && !edit && !s.keyboard && !s.assistant && !s.homePrompt && !s.addSheet,
     showAddSheet: !!s.addSheet && withTabs,
     // шторка ИИ: середина экрана или весь экран (core/sheet-drag.js)
     sheetCls: 'sheet slide-up' + (s.sheetFull ? ' full' : ''),

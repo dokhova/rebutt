@@ -3,9 +3,6 @@
   <div class="{{screenCls}}" ref="{{setScrollEl}}">
     <sc-if value="{{is.booting}}"><div class="boot" role="status"><span class="boot-dot"></span>Загружаем ваши данные…</div></sc-if>
     <sc-if value="{{is.legal}}"><sc-include name="legal"></sc-include></sc-if>
-    <sc-if value="{{is.meal}}"><sc-include name="meal"></sc-include></sc-if>
-    <sc-if value="{{is.entry}}"><sc-include name="entry"></sc-include></sc-if>
-    <sc-if value="{{is.water}}"><sc-include name="water"></sc-include></sc-if>
     <sc-if value="{{is.onboarding}}"><sc-include name="onboarding"></sc-include></sc-if>
     <sc-if value="{{is.today}}"><sc-include name="today"></sc-include></sc-if>
     <sc-if value="{{is.insights}}"><sc-include name="insights"></sc-include></sc-if>
@@ -13,6 +10,8 @@
   </div>
 
   <sc-if value="{{showAddSheet}}"><sc-include name="add-sheet"></sc-include></sc-if>
+
+  <sc-if value="{{showEdit}}"><sc-include name="edit-modal"></sc-include></sc-if>
 
   <sc-if value="{{showTabs}}">
     <div class="tabbar-fade"></div>

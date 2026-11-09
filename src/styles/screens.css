@@ -286,6 +286,8 @@
   background: var(--sheet-bg); box-shadow: var(--card-shadow), 0 24px 60px rgba(0, 0, 0, .18); display: flex; flex-direction: column; gap: 18px; }
 .qmodal-head { display: flex; justify-content: space-between; align-items: center; }
 .qmodal-title { margin: 0 0 0 4px; font-family: var(--font-display); font-size: 24px; line-height: 30px; font-weight: 600; }
+.qmodal-titles { display: flex; flex-direction: column; gap: 2px; }
+.qmodal-titles .qmodal-title + .hint { margin-left: 4px; }
 .qmodal-food { display: flex; flex-direction: column; gap: 12px; }
 .pop-in { animation: pop-in .26s cubic-bezier(.2, .8, .2, 1); }
 @keyframes pop-in { from { transform: translateY(16px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -360,9 +362,6 @@
 .gcard .btn.secondary { background: rgba(255, 255, 255, .9); color: var(--accent-ink); }
 
 /* правка записей из «Записей дня»: та же шапка, что у «Записи» */
-.edit-head { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; }
-.edit-titles { text-align: center; display: flex; flex-direction: column; gap: 2px; }
-.edit-title { margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px; font-weight: 600; }
 
 /* еда: фото — маленькая кнопка слева от поля описания */
 .food-row { display: flex; gap: 8px; align-items: stretch; }
