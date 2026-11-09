@@ -22,7 +22,7 @@
 ### Запуск и навигация
 | Событие | Когда | Свойства |
 |---|---|---|
-| `app_opened` | открытие приложения | `is_returning`, `local_days` |
+| `app_opened` | открытие приложения | `is_returning`, `local_days`, `start_param` (метка из ссылки `t.me/<бот>?startapp=<метка>`, иначе пусто) |
 | `screen_viewed` | показ экрана (кроме онбординга) | `screen_name` |
 | `nav_clicked` | переход между экранами | `to`, `from` (`today` / `add_entry` / `insights` / `profile`), `source` (`tab` / `avatar` / `back` / `empty_day` / `today_summary` — тап по показателю на главной) |
 | `day_selected` | выбор дня: календарь в шапке «Сегодня» или неделя в инсайтах | `days_ago`, `direction` (`calendar` / `prev` / `next`), `has_data` |
@@ -41,6 +41,7 @@
 | `consent_accepted` | согласие принято | `version`, `documents` |
 | `legal_doc_opened` | открыт документ (внутри приложения) | `doc` (`terms` / `privacy` / `consent`), `source` (`onboarding` / `profile` / `legal_link`) |
 | `onboarding_completed` | онбординг завершён | свойства персоны + `skipped`, `duration_sec` |
+| `bot_write_access` | ответ на окно Telegram «Разрешить боту писать вам?» после онбординга (только в Telegram) | `allowed` |
 
 ### Запись дня (экран «+»)
 | Событие | Когда | Свойства |

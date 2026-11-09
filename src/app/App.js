@@ -22,7 +22,7 @@ import { putPhoto, deletePhoto, getPhotos, withPhotos, mealIds } from '../servic
 import { readDraft, writeDraft, readDraftPhoto, writeDraftPhoto } from '../services/draft.js';
 import { draftForStorage, restoreDraft, draftSections, isDraftEmpty } from '../domain/draft.js';
 import { exportCSV, openDoctorReport } from '../services/export.js';
-import { isTelegram, openTelegramLink, syncBackButton, telegramUser, hapticSelection, homeScreenPlatform, canAddToHomeScreen, checkHomeScreenStatus, addToHomeScreen, onHomeScreenAdded } from '../services/telegram.js';
+import { isTelegram, openTelegramLink, syncBackButton, telegramUser, hapticSelection, homeScreenPlatform, canAddToHomeScreen, checkHomeScreenStatus, addToHomeScreen, onHomeScreenAdded, telegramStartParam, requestBotWriteAccess } from '../services/telegram.js';
 import { homePromptSnoozed } from '../domain/home-prompt.js';
 import { loadLegalHtml, legalIdByHref } from '../services/legal.js';
 import { applyTheme, readTheme, saveTheme } from '../services/theme.js';
@@ -193,7 +193,7 @@ export default class App extends Component {
     this.hydratePhotos();
     this.restoreDraftPhoto();
     await identifyUser();
-    track('app_opened', { is_returning: !!this.state.profile.onboardedAt, local_days: Object.keys(this.state.log).length });
+    track('app_opened', { is_returning: !!this.state.profile.onboardedAt, local_days: Object.keys(this.state.log).length, start_param: telegramStartParam() });
     if (this.draftRestored) {
       const sec = draftSections(this.state.form);
       track('add_draft_restored', { has_stool: sec.stool, has_food: sec.food, has_water: sec.water, food_state: this.state.form.food });
@@ -503,6 +503,10 @@ export default class App extends Component {
       duration_sec: Math.round((Date.now() - this.onboardingStartedAt) / 1000)
     });
     flush();
+    // Открыли прямой ссылкой (без /start) — бот не может писать. Просим разрешение сразу после «Начать».
+    requestBotWriteAccess().then((allowed) => {
+      if (allowed != null) track('bot_write_access', { allowed });
+    });
   }
 
   // ================= профиль =================
