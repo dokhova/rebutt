@@ -17,7 +17,7 @@
   <div class="gcard g-glass hero">
     <button class="hero-link" onClick="{{goInsights}}" aria-label="Открыть инсайты"><span class="hero-link-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"></path></svg></span>{{dayLabel}}</button>
     <div class="hero-text">
-      <div><div class="g-label">Комфорт за день</div><div class="hero-date">{{dateSub}}</div></div>
+      <div><div class="g-label">Комфорт за день</div><div class="hero-date">{{dateSub}}</div><sc-if value="{{comfort.fromPast}}"><div class="hero-date hero-past">по прошлым дням</div></sc-if></div>
       <div class="{{comfort.heroCls}}">{{comfort.text}}<span class="hero-unit">%</span></div>
     </div>
     <div class="gauge" aria-hidden="true">

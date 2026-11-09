@@ -5,7 +5,7 @@ import { BRISTOL_TYPES, FALLBACK_TIPS, SYMPTOM_OK, STOOL_COLORS, stressWord } fr
 import { dailyTargets } from '../domain/targets.js';
 import { mealSummary, mealTint } from '../domain/meal.js';
 import { parseKey, addDays, dayMonth, WEEKDAYS_SHORT, WEEKDAYS_FULL } from '../domain/dates.js';
-import { gutScore, toneOf, fiberOf, waterOf, hasData } from '../domain/score.js';
+import { gutScore, dayComfort, toneOf, fiberOf, waterOf, hasData } from '../domain/score.js';
 import { suggestionsFor, suggestionsFromHistory, litres } from '../domain/suggestions.js';
 import { cycleDay, cycleHint, isPeriodDay } from '../domain/cycle.js';
 import { DEMO_TIP_CALM } from '../domain/demo.js';
@@ -42,7 +42,7 @@ export function todayView(app) {
     // пустой день — кнопка внести данные; для прошлого дня «+» пишет именно в него (App.entryDay)
 
     // показатели и подсказки
-    ...metrics(sc, day, app, dailyTargets(p)),
+    ...metrics(sc, day, app, dailyTargets(p), dayComfort(s.log, sel, day, addDays, isToday)),
     tips: tipsOf(s, day, sc, tone, isToday, todayK, { targets: dailyTargets(p), goals: p.goals }),
 
     ...cycleCard(p, day, cd),
@@ -70,7 +70,7 @@ const bar = (pct, tone) => ({ width: 'width: ' + Math.max(0, Math.min(100, Math.
 /** Стул, форма, комфорт (большая карточка с кольцом) + плитки клетчатки и жидкости.
  *  Нет данных — тусклые «0» / «–» той же высоты: пустой день выглядит так же, как заполненный.
  *  Полоски на стекле всегда лаймовые: это ориентир, не оценка. */
-function metrics(sc, day, app, targets) {
+function metrics(sc, day, app, targets, dc) {
   const TILE = 'gvalue num', DIM = 'gvalue num is-dash';
   const empty = (unit, text = '0') => ({ text, tileCls: DIM, unit, bar: bar(0, 'empty') });
 
@@ -83,13 +83,14 @@ function metrics(sc, day, app, targets) {
   const form = !sc || !sc.last ? empty(' тип', '–') : { text: String(sc.last), tileCls: TILE, unit: ' тип', bar: bar(sc.form, toneOf(sc.form)) };
   const formDots = [1, 2, 3, 4, 5, 6, 7].map((n) => ({ cls: 'gdot' + (sc && sc.last === n ? ' on' : '') }));
 
-  // комфорт за день — главная цифра: по отмеченному самочувствию
-  const hasComfort = !!sc && sc.comfort != null;
+  // комфорт за день — главная цифра: по отмеченному самочувствию;
+  // сегодня до первой записи — по прошлым дням (domain/score.js → dayComfort), а не «–»
+  const hasComfort = !!dc;
   const comfort = hasComfort
-    ? { text: String(sc.comfort), heroCls: 'hero-value num' }
-    : { text: '–', heroCls: 'hero-value num is-dash' };
-  const C = 2 * Math.PI * 50, pct = hasComfort ? Math.max(0, Math.min(100, sc.comfort)) / 100 : 0;
-  const ring = { dash: (C * pct).toFixed(1) + ' ' + C.toFixed(1), text: hasComfort ? String(sc.comfort) : '–', cls: 'ring-num' + (hasComfort ? '' : ' is-dash') };
+    ? { text: String(dc.value), heroCls: 'hero-value num', fromPast: dc.fromPast }
+    : { text: '–', heroCls: 'hero-value num is-dash', fromPast: false };
+  const C = 2 * Math.PI * 50, pct = hasComfort ? Math.max(0, Math.min(100, dc.value)) / 100 : 0;
+  const ring = { dash: (C * pct).toFixed(1) + ' ' + C.toFixed(1), text: hasComfort ? String(dc.value) : '–', cls: 'ring-num' + (hasComfort ? '' : ' is-dash') };
   // шкала-полукруг: центр (66, 70), радиус 50; конец дуги — белая точка
   const ang = Math.PI * (1 - pct);
   const gauge = { ticks: GAUGE_TICKS, dash: (pct * 100).toFixed(1) + ' 100', show: hasComfort,
