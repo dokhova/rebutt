@@ -44,44 +44,40 @@ export function gutScore(day) {
   return { idx: Math.round(0.35 * form + 0.3 * reg + 0.35 * comfort), form, reg, comfort, n: typed.length, had, last, sym };
 }
 
-// ---------- «Комфорт за день» утром: опора на прошлые дни ----------
-// Новый день без записей — это не 0% и не «нет данных»: кишечник работал и вчера.
-// Пока о самочувствии сегодня ничего не отмечено, показываем базу по последним дням,
-// после первой записи плавно переходим к сегодняшнему значению.
+// ---------- «Комфорт за 7 дней» — главная цифра на главной ----------
+// Норму стула в гастроэнтерологии считают за неделю, а не за день: от 3 раз в неделю до 3 раз в день
+// (Heaton 1992, NHANES 2018 — источники в sources.js). Один день без стула ничего не значит,
+// поэтому главная цифра — скользящая неделя, заканчивающаяся выбранным днём. Плитки остаются за день.
 
-/** Сколько дней назад смотрим и сколько дней с записями берём; веса — свежим дням больше */
-const BASE_LOOKBACK = 7;
-const BASE_WEIGHTS = [0.5, 0.3, 0.2];
-/** Вес сегодняшних записей: одна запись — 60% (цифра не прыгает), со второй — 100% */
-const todayWeight = (n) => (n >= 2 ? 1 : n === 1 ? 0.6 : 0);
+export const WEEK_DAYS = 7;
+/** Выбранный день весит вдвое больше остальных — свежая запись заметно сдвигает цифру */
+const DAY_WEIGHT = 2;
+/** Регулярность учитываем, только когда отмечено не меньше 4 дней из 7 — иначе мало данных */
+const REG_MIN_DAYS = 4;
+const REG_MIN_STOOLS = 3;
+const REG_PENALTY = 8;
 
 /**
- * База комфорта по прошлым дням: взвешенное среднее комфорта за последние (до 3) дней
- * с записями о стуле/самочувствии в пределах недели до дня k. Нет таких дней → null.
+ * Комфорт за 7 дней (k и 6 дней до него): { value, days, stools } или null, если за неделю
+ * нет записей о стуле/самочувствии.
+ *   value  — взвешенное среднее дневного комфорта (по самочувствию); если отмечено ≥ 4 дней,
+ *            а стула меньше 3 раз за неделю — мягко меньше: −8 за каждый недостающий раз
+ *   days   — сколько дней недели с записями
+ *   stools — сколько раз был стул за неделю
  */
-export function comfortBaseline(log, k, addDays) {
-  const vals = [];
-  for (let i = 1; i <= BASE_LOOKBACK && vals.length < BASE_WEIGHTS.length; i++) {
+export function weekComfort(log, k, addDays) {
+  let sum = 0, wsum = 0, days = 0, stools = 0;
+  for (let i = 0; i < WEEK_DAYS; i++) {
     const d = log && log[addDays(k, -i)];
     const sc = d && d.gut && d.gut.length ? gutScore({ ...emptyDay(), ...d }) : null;
-    if (sc) vals.push(sc.comfort);
+    if (!sc) continue;
+    const w = i === 0 ? DAY_WEIGHT : 1;
+    sum += sc.comfort * w; wsum += w; days++; stools += sc.n;
   }
-  if (!vals.length) return null;
-  const w = BASE_WEIGHTS.slice(0, vals.length), sum = w.reduce((a, x) => a + x, 0);
-  return Math.round(vals.reduce((a, v, i) => a + v * w[i], 0) / sum);
-}
-
-/**
- * Комфорт для главной: { value, fromPast } или null.
- *   fromPast — цифра пока только по прошлым дням (в карточке подпись «по прошлым дням»).
- * База используется только для сегодняшнего дня: прошлый день без записей остаётся пустым.
- */
-export function dayComfort(log, k, day, addDays, isToday) {
-  const sc = gutScore(day);
-  const base = isToday ? comfortBaseline(log, k, addDays) : null;
-  if (!sc) return base == null ? null : { value: base, fromPast: true };
-  const w = base == null ? 1 : todayWeight(day.gut.length);
-  return { value: Math.round(sc.comfort * w + (base ?? 0) * (1 - w)), fromPast: false };
+  if (!days) return null;
+  let value = sum / wsum;
+  if (days >= REG_MIN_DAYS && stools < REG_MIN_STOOLS) value -= REG_PENALTY * (REG_MIN_STOOLS - stools);
+  return { value: Math.max(0, Math.round(value)), days, stools };
 }
 
 /** Тон состояния по проценту: calm ≥ 80, mild ≥ 62, иначе sens; нет данных → empty */

@@ -1,11 +1,11 @@
-// «Сегодня»: шапка (аватар, день, календарь), карточка «Комфорт за день» с кольцом, плитки показателей,
+// «Сегодня»: шапка (аватар, день, календарь), карточка «Комфорт за 7 дней» со шкалой, плитки показателей,
 // «Что может помочь», цикл, записи дня. Базовые блоки видны всегда — даже в первый день без записей.
 import { IS_DEMO } from '../config.js';
 import { BRISTOL_TYPES, FALLBACK_TIPS, SYMPTOM_OK, STOOL_COLORS, stressWord } from '../domain/catalog.js';
 import { dailyTargets } from '../domain/targets.js';
 import { mealSummary, mealTint } from '../domain/meal.js';
 import { parseKey, addDays, dayMonth, WEEKDAYS_SHORT, WEEKDAYS_FULL } from '../domain/dates.js';
-import { gutScore, dayComfort, toneOf, fiberOf, waterOf, hasData } from '../domain/score.js';
+import { gutScore, weekComfort, toneOf, fiberOf, waterOf, hasData } from '../domain/score.js';
 import { suggestionsFor, suggestionsFromHistory, litres } from '../domain/suggestions.js';
 import { cycleDay, cycleHint, isPeriodDay } from '../domain/cycle.js';
 import { DEMO_TIP_CALM } from '../domain/demo.js';
@@ -42,7 +42,7 @@ export function todayView(app) {
     // пустой день — кнопка внести данные; для прошлого дня «+» пишет именно в него (App.entryDay)
 
     // показатели и подсказки
-    ...metrics(sc, day, app, dailyTargets(p), dayComfort(s.log, sel, day, addDays, isToday)),
+    ...metrics(sc, day, app, dailyTargets(p), weekComfort({ ...s.log, [sel]: day }, sel, addDays)),
     tips: tipsOf(s, day, sc, tone, isToday, todayK, { targets: dailyTargets(p), goals: p.goals }),
 
     ...cycleCard(p, day, cd),
@@ -58,7 +58,7 @@ function dayTitle(k, todayK) {
   return { dayLabel: WEEKDAYS_FULL[parseKey(k).getDay()], dateSub: dayMonth(k) };
 }
 
-/** Риски шкалы «Комфорт за день»: 31 штрих по полукругу, каждый пятый длиннее */
+/** Риски шкалы «Комфорт за 7 дней»: 31 штрих по полукругу, каждый пятый длиннее */
 const GAUGE_TICKS = Array.from({ length: 31 }, (_, i) => {
   const a = Math.PI * (1 - i / 30), r1 = 56, r2 = i % 5 === 0 ? 65 : 61;
   const p = (r) => (66 + r * Math.cos(a)).toFixed(1) + ' ' + (70 - r * Math.sin(a)).toFixed(1);
@@ -67,7 +67,7 @@ const GAUGE_TICKS = Array.from({ length: 31 }, (_, i) => {
 
 const bar = (pct, tone) => ({ width: 'width: ' + Math.max(0, Math.min(100, Math.round(pct))) + '%', cls: 'mbar-fill ' + tone });
 
-/** Стул, форма, комфорт (большая карточка с кольцом) + плитки клетчатки и жидкости.
+/** Комфорт за 7 дней (большая карточка со шкалой), стул и форма за день + плитки клетчатки и жидкости.
  *  Нет данных — тусклые «0» / «–» той же высоты: пустой день выглядит так же, как заполненный.
  *  Полоски на стекле всегда лаймовые: это ориентир, не оценка. */
 function metrics(sc, day, app, targets, dc) {
@@ -83,12 +83,11 @@ function metrics(sc, day, app, targets, dc) {
   const form = !sc || !sc.last ? empty(' тип', '–') : { text: String(sc.last), tileCls: TILE, unit: ' тип', bar: bar(sc.form, toneOf(sc.form)) };
   const formDots = [1, 2, 3, 4, 5, 6, 7].map((n) => ({ cls: 'gdot' + (sc && sc.last === n ? ' on' : '') }));
 
-  // комфорт за день — главная цифра: по отмеченному самочувствию;
-  // сегодня до первой записи — по прошлым дням (domain/score.js → dayComfort), а не «–»
+  // комфорт за 7 дней — главная цифра (domain/score.js → weekComfort): за неделю записей нет — «–»
   const hasComfort = !!dc;
   const comfort = hasComfort
-    ? { text: String(dc.value), heroCls: 'hero-value num', fromPast: dc.fromPast }
-    : { text: '–', heroCls: 'hero-value num is-dash', fromPast: false };
+    ? { text: String(dc.value), heroCls: 'hero-value num' }
+    : { text: '–', heroCls: 'hero-value num is-dash' };
   const C = 2 * Math.PI * 50, pct = hasComfort ? Math.max(0, Math.min(100, dc.value)) / 100 : 0;
   const ring = { dash: (C * pct).toFixed(1) + ' ' + C.toFixed(1), text: hasComfort ? String(dc.value) : '–', cls: 'ring-num' + (hasComfort ? '' : ' is-dash') };
   // шкала-полукруг: центр (66, 70), радиус 50; конец дуги — белая точка
