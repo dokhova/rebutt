@@ -9,9 +9,12 @@
 
   <div class="sheet-body">
     <sc-if value="{{emptyChat}}">
-      <div class="hint">Отвечу с учётом ваших записей. Можно приложить фото.</div>
-      <div class="suggests">
-        <sc-for list="{{suggestions}}" as="s"><button class="suggest" onClick="{{s.pick}}">{{s.q}}</button></sc-for>
+      <!-- пустой чат: стеклянная карточка в стиле плиток главной — короткое пояснение и вопросы, которые отправляются одним тапом -->
+      <div class="gcard g-violet ai-start">
+        <div class="ai-start-text">Отвечу с учётом ваших записей. Можно приложить фото.</div>
+        <div class="suggests">
+          <sc-for list="{{suggestions}}" as="s"><button class="suggest" onClick="{{s.pick}}"><span>{{s.q}}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"></path></svg></button></sc-for>
+        </div>
       </div>
     </sc-if>
     <div class="chat">
