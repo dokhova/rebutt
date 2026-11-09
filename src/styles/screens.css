@@ -121,7 +121,7 @@
 .gdot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, .55); }
 .gdot.on { width: 18px; height: 18px; background: var(--accent); }
 .gvalue { font-family: var(--font-display); font-size: 32px; line-height: 1; font-weight: 500; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gunit { font-size: 19px; letter-spacing: 0; }
+.gunit { font-size: 16px; letter-spacing: 0; }
 
 .home-tips { margin-top: 12px; }
 .home-empty { font-size: 28px; font-weight: 300; margin-top: 44px; }
