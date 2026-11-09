@@ -98,7 +98,7 @@ function metrics(sc, day, app, targets, dc) {
   // клетчатка и жидкость — к дневному ориентиру
   const fiber = fiberOf(day), water = waterOf(day);
   const fiberPct = fiber == null ? 0 : fiber / targets.fiberG * 100, waterPct = water / targets.waterMl * 100;
-  const fiberUnit = ' / ' + targets.fiberG + ' г', waterUnit = ' / ' + litres(targets.waterMl) + ' л';
+  const fiberUnit = ' / ' + targets.fiberG + ' г клетч.', waterUnit = ' / ' + litres(targets.waterMl) + ' л';
   return {
     addStool: () => app.pickAddSection('stool'),
     addFood: () => app.pickAddSection('food'),

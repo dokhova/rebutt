@@ -10,6 +10,8 @@ export function initTelegram() {
   const app = getTelegram();
   if (!app) return;
   app.ready();
+  // платформа — для поправок в CSS (на Android другой отступ меню снизу)
+  if (app.platform && typeof document !== 'undefined') document.documentElement.dataset.platform = app.platform;
   app.expand();
   if (app.isVersionAtLeast('7.7')) app.disableVerticalSwipes();
   // На телефоне — на весь экран (Bot API 8.0). Кнопки Telegram «Закрыть» и «⋯» остаются поверх сверху,

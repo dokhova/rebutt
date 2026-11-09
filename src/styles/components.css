@@ -22,6 +22,9 @@
 }
 /* нижняя панель: меню и рядом круглая кнопка ИИ */
 .dock { position: absolute; left: 0; right: 0; bottom: calc(22px + var(--safe-bottom)); display: flex; justify-content: center; align-items: center; gap: 10px; }
+/* Android: Telegram уже отдаёт в --safe-bottom высоту системной панели (≈48px) — свой отступ поверх неё поднимал меню слишком высоко */
+[data-platform="android"] .dock { bottom: calc(6px + var(--safe-bottom)); }
+[data-platform="android"] .screen.with-tabs::after { height: calc(84px + var(--safe-bottom)); }
 .tabbar {
   padding: 5px; box-sizing: border-box; display: flex; gap: 6px; align-items: center; border-radius: 40px;
   background: var(--tab-bg); box-shadow: var(--tab-shadow); border: 0; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
