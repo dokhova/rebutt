@@ -37,7 +37,7 @@
 }
 
 /* тост поверх всего — и шторки «+», и карточки «?»; длинный текст переносится, а не обрезается */
-.toast { position: absolute; left: 50%; top: calc(52px + var(--safe-top)); transform: translateX(-50%); z-index: 50; width: max-content; max-width: calc(100% - 32px); box-sizing: border-box; padding: 12px 20px; border-radius: 22px; background: var(--ink); color: var(--accent-ink); font-size: 14px; line-height: 1.35; text-align: center; white-space: normal; box-shadow: 0 10px 30px rgba(0, 0, 0, .25); }
+.toast { position: absolute; left: 50%; top: calc(52px + var(--safe-top)); transform: translateX(-50%); z-index: 50; width: max-content; max-width: calc(100% - 32px); box-sizing: border-box; padding: 12px 20px; border-radius: 22px; background: #17141C; color: #FFFFFF; font-size: 14px; line-height: 1.35; text-align: center; white-space: normal; box-shadow: 0 10px 30px rgba(0, 0, 0, .25); }
 
 /* ---------- заголовки ---------- */
 .topbar { display: flex; align-items: center; justify-content: space-between; height: 44px; }
