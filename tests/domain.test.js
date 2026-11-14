@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { keyOf, parseKey, addDays, diffDays, mondayOf, yearsWord } from '../src/domain/dates.js';
 import { gutScore, toneOf, symptomsOf } from '../src/domain/score.js';
-import { cycleDay, cyclePhase, cycleHint, isPeriodDay } from '../src/domain/cycle.js';
+import { cycleDay, cyclePhase, cycleHint, isPeriodDay, newCycleStartAgo } from '../src/domain/cycle.js';
 import { blankProfile, onboardingFlow } from '../src/domain/profile.js';
 import { buildAiContext } from '../src/domain/ai-context.js';
 
@@ -52,6 +52,17 @@ test('цикл: день и фаза', () => {
   assert.equal(cyclePhase(25, 28)[0], 'Перед месячными');
   assert.equal(cycleDay({ ...p, cycle: false }, '2026-10-18', '2026-10-18'), 0);
   assert.equal(isPeriodDay(p, day([]), 2), true);
+});
+
+test('цикл: отметка месячных сдвигает начало цикла, только если это новый цикл', () => {
+  const p = { ...blankProfile(), cycle: true, lastAgo: 20, len: 28 }; // сегодня 21-й день
+  assert.equal(newCycleStartAgo(p, '2026-11-14', '2026-11-14', false), 0);      // пришли раньше расчёта — сегодня день 1
+  assert.equal(newCycleStartAgo(p, '2026-11-12', '2026-11-14', false), 2);      // отметили позавчера
+  assert.equal(newCycleStartAgo(p, '2026-11-14', '2026-11-14', true), null);    // вчера тоже были — это не начало
+  assert.equal(newCycleStartAgo({ ...p, lastAgo: 2 }, '2026-11-14', '2026-11-14', false), null); // по расчёту уже день 3
+  assert.equal(newCycleStartAgo({ ...p, lastUnknown: true }, '2026-11-14', '2026-11-14', false), 0); // дата не была известна
+  assert.equal(newCycleStartAgo({ ...p, pregnant: true }, '2026-11-14', '2026-11-14', false), null);
+  assert.equal(newCycleStartAgo(p, '2026-11-15', '2026-11-14', false), null);   // будущий день
 });
 
 test('онбординг: шаги по полу', () => {

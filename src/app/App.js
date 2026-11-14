@@ -6,7 +6,7 @@ import { Component } from '../core/runtime.js';
 import { installSheetDrag, animateSheetClose } from '../core/sheet-drag.js';
 import { newId } from '../core/id.js';
 import { APP_NAME, SUPPORT_URL, LEGAL_DOCS, LEGAL_VERSION, IS_DEMO } from '../config.js';
-import { keyOf, addDays, nowHM } from '../domain/dates.js';
+import { keyOf, addDays, nowHM, dayMonth } from '../domain/dates.js';
 import { AGE_MIN, AGE_MAX, CYCLE_LEN_MIN, CYCLE_LEN_MAX, EXAMPLE_MEALS, SYMPTOM_OK } from '../domain/catalog.js';
 import { gutScore, emptyDay, hasData } from '../domain/score.js';
 import { blankProfile, profileTraits, onboardingFlow, parseBodyInput, validHeight, validWeight } from '../domain/profile.js';
@@ -22,8 +22,9 @@ import { putPhoto, deletePhoto, getPhotos, withPhotos, mealIds } from '../servic
 import { readDraft, writeDraft, readDraftPhoto, writeDraftPhoto } from '../services/draft.js';
 import { draftForStorage, restoreDraft, draftSections, isDraftEmpty } from '../domain/draft.js';
 import { exportCSV, openDoctorReport } from '../services/export.js';
-import { isTelegram, openTelegramLink, syncBackButton, telegramUser, hapticSelection, homeScreenPlatform, canAddToHomeScreen, checkHomeScreenStatus, addToHomeScreen, onHomeScreenAdded, telegramStartParam, requestBotWriteAccess } from '../services/telegram.js';
+import { isTelegram, openTelegramLink, syncBackButton, telegramUser, hapticSelection, homeScreenPlatform, canAddToHomeScreen, checkHomeScreenStatus, addToHomeScreen, onHomeScreenAdded, telegramStartParam, requestBotWriteAccess, showSettingsButton } from '../services/telegram.js';
 import { homePromptSnoozed } from '../domain/home-prompt.js';
+import { newCycleStartAgo } from '../domain/cycle.js';
 import { loadLegalHtml, legalIdByHref } from '../services/legal.js';
 import { applyTheme, readTheme, saveTheme } from '../services/theme.js';
 import { supabase, signOut } from '../services/supabase.js';
@@ -184,6 +185,8 @@ export default class App extends Component {
     });
 
     onHomeScreenAdded(() => this.homeScreenAdded());
+    // «Настройки» в меню «⋯» Telegram — ведут в профиль (там и ярлык на экран «Домой»)
+    showSettingsButton(() => { if (this.state.profile.onboardedAt) { track('settings_button_clicked'); this.navigate('profile'); } });
     installSheetDrag({
       onSnap: (kind, full) => this.snapSheet(kind, full),
       onClose: () => this.setState({ assistant: false })
@@ -557,6 +560,12 @@ export default class App extends Component {
     this.updateProfile(daysAgo == null ? { lastUnknown: true } : { lastUnknown: false, lastAgo: Math.min(60, Math.max(0, daysAgo)) }, 'cycle_last');
   }
 
+  /** «Сегодня N-й день цикла» в профиле: день 1 — первый день месячных. Не больше длины цикла. */
+  setCycleDay(n) {
+    const day = Math.min(this.state.profile.len, Math.max(1, n));
+    this.setLastPeriod(day - 1);
+  }
+
   setCycleLength(len) { this.updateProfile({ len: Math.min(CYCLE_LEN_MAX, Math.max(CYCLE_LEN_MIN, len)) }, 'cycle_length'); }
 
   toggleCycle() {
@@ -692,6 +701,20 @@ export default class App extends Component {
     writeHomePrompt('later'); // если на iOS передумают в окне Telegram — спросим через 3 дня
     this.setState({ homePrompt: null });
     if (!addToHomeScreen()) this.showToast('Обновите Telegram, чтобы добавить ярлык');
+  }
+
+  /** «На экран „Домой“» в профиле — в любой момент, а не только из модалки на главной */
+  async addToHomeFromProfile() {
+    track('home_screen_profile_clicked', { os: homeScreenPlatform() || 'web' });
+    if (IS_DEMO) { this.showToast('В демо ярлык не добавляется'); return; }
+    if (!canAddToHomeScreen()) { this.showToast('Обновите Telegram, чтобы добавить ярлык'); return; }
+    const status = await checkHomeScreenStatus();
+    if (status === 'added') { writeHomePrompt('added'); this.showToast(APP_NAME + ' уже на экране «Домой»'); return; }
+    if (status === 'unsupported') {
+      this.showToast('Откройте ' + APP_NAME + ' кнопкой «Открыть» в профиле бота и попробуйте ещё раз');
+      return;
+    }
+    addToHomeScreen();
   }
 
   /** Событие Telegram homeScreenAdded (и «Добавить» в демо) */
@@ -919,6 +942,15 @@ export default class App extends Component {
     if (!IS_DEMO) store.setPeriodDay(dayK, false);
     this.showToast('Удалено');
     track('period_deleted');
+  }
+
+  /** Отметили месячные: если это начало нового цикла — считаем этот день днём 1 (domain/cycle.js newCycleStartAgo) */
+  maybeRestartCycle(dayK) {
+    const ago = newCycleStartAgo(this.state.profile, dayK, this.today(), !!this.day(addDays(dayK, -1)).period);
+    if (ago == null) return;
+    this.setLastPeriod(ago);
+    this.showToast('Сохранено. ' + (ago === 0 ? 'Сегодня' : dayMonth(dayK)) + ' — 1-й день цикла');
+    track('cycle_restarted_by_mark', { days_ago: ago });
   }
 
   setPeriodMark(value) {
@@ -1192,6 +1224,7 @@ export default class App extends Component {
     };
     track('entry_saved', props);
     if (isFirstEntry) track('first_entry_saved', props);
+    if (f.period === 'yes') this.maybeRestartCycle(k);
     flush();
   }
 

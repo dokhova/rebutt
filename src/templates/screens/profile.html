@@ -37,9 +37,19 @@
       </sc-for>
     </sc-if>
     <sc-if value="{{showCycleDates}}">
-      <div class="list-row"><span class="muted">Начало месячных</span><div class="controls"><button class="round-btn" onClick="{{lastEarlier}}" aria-label="Раньше">−</button><span class="control-value wide num">{{lastPeriod}}</span><button class="round-btn" onClick="{{lastLater}}" aria-label="Позже">+</button></div></div>
+      <div class="list-row cycle-day-row">
+        <span class="cycle-day-label"><span class="muted">День цикла сегодня <button class="info-btn" onClick="{{info.cycle}}" aria-label="Как считать день цикла">?</button></span><span class="hint">{{cycleDaySub}}</span></span>
+        <div class="controls"><button class="{{cycleDayMinusCls}}" onClick="{{cycleDayMinus}}" aria-label="Меньше">−</button><span class="control-value wide num">{{cycleDayValue}}</span><button class="{{cycleDayPlusCls}}" onClick="{{cycleDayPlus}}" aria-label="Больше">+</button></div>
+      </div>
       <div class="list-row"><span class="muted">Длина цикла</span><div class="controls"><button class="round-btn" onClick="{{lenMinus}}" aria-label="Короче">−</button><span class="control-value wide num">{{cycleLen}} дн.</span><button class="round-btn" onClick="{{lenPlus}}" aria-label="Длиннее">+</button></div></div>
     </sc-if>
+  </div>
+</sc-if>
+
+<sc-if value="{{showHomeScreen}}">
+  <div class="settings">
+    <div class="caption">Ярлык</div>
+    <button class="list-row link" onClick="{{addHomeScreen}}"><span>На экран «Домой»</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button>
   </div>
 </sc-if>
 

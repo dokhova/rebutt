@@ -11,6 +11,8 @@ export const SOURCES = {
   heaton: { label: 'Heaton K. W. и др. Defecation frequency and timing, and stool form in the general population. Gut, 1992', url: 'https://gut.bmj.com/content/33/6/818' },
   nhanes: { label: 'Mitsuhashi S. и др. Normal bowel frequency and consistency in US adults (NHANES). Am J Gastroenterol, 2018', url: 'https://pubmed.ncbi.nlm.nih.gov/28762379/' },
   nice_ibs: { label: 'NICE. Irritable bowel syndrome in adults, QS114: питание и образ жизни', url: 'https://www.nice.org.uk/guidance/qs114/chapter/Quality-statement-3-Dietary-management' },
+  nhs_periods: { label: 'NHS. Periods: длина цикла', url: 'https://www.nhs.uk/conditions/periods/' },
+  nhs_cycle: { label: 'NHS. Periods and fertility in the menstrual cycle', url: 'https://www.nhs.uk/conditions/periods/fertility-in-the-menstrual-cycle/' },
   nhs_bowel: { label: 'NHS. Когда показаться врачу: изменения стула, кровь, похудание', url: 'https://www.nhs.uk/conditions/bowel-cancer/symptoms/' }
 };
 
@@ -42,6 +44,11 @@ export function infoCards(t) {
       title: 'Комфорт за 7 дней',
       text: 'Норму стула врачи оценивают за неделю, а не за день: обычно это от 3 раз в неделю до 3 раз в день. Поэтому день без стула — не повод для тревоги. Цифра — среднее по самочувствию за последние 7 дней, сегодняшний день весит вдвое больше. Если записей за неделю достаточно, а стула было меньше 3 раз, цифра немного ниже. Это ориентир, не диагноз.',
       sources: ['heaton', 'nhanes']
+    }],
+    cycle: [{
+      title: 'Как считать день цикла',
+      text: 'День 1 — первый день месячных. Цикл длится до следующих месячных: обычно от 21 до 40 дней, у каждой по-своему. Точная дата не обязательна — поставьте примерно. Когда отметите месячные в записи, день цикла пересчитается сам.',
+      sources: ['nhs_cycle', 'nhs_periods']
     }],
     tips: [{
       title: 'Откуда подсказки',

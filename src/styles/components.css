@@ -93,6 +93,8 @@
 .list-row > :first-child { min-width: 0; flex-shrink: 1; }
 .card.list .list-row:last-child { border-bottom: 0; }
 .list-row.link { width: 100%; border-width: 0 0 1px; background: transparent; color: var(--ink); padding: 0; text-align: left; text-decoration: none; }
+.list-row.cycle-day-row { padding: 12px 0; }
+.cycle-day-label { display: flex; flex-direction: column; gap: 4px; }
 .list-row .chip { min-height: 34px; padding: 0 14px; font-size: 13px; }
 .controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .control-value { width: 28px; text-align: center; }
