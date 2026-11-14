@@ -43,3 +43,18 @@ export function cycleHint(d, len, coc = false, periodDay = false) {
 
 /** Сколько дней до фазы «перед месячными» (минимум 1) */
 export const daysToLuteal = (cd, len) => Math.max(1, (len - 11) - cd);
+
+/**
+ * Отметили месячные в день `dayK` — не начало ли это нового цикла?
+ * Да, если накануне месячных не было, а по расчёту этот день не попадает в первые 5 дней цикла
+ * (или дата начала была неизвестна). Тогда возвращает новое profile.lastAgo (дней от сегодня до начала), иначе null.
+ * Если по расчёту уже идут месячные (день 1–5), ничего не двигаем: скорее всего, первые дни просто не отметили.
+ */
+export function newCycleStartAgo(profile, dayK, todayK, prevDayPeriod) {
+  if (!profile.cycle || profile.pregnant || profile.menopause || prevDayPeriod) return null;
+  const ago = diffDays(todayK, dayK);
+  if (ago < 0 || ago > 60) return null;
+  const cd = cycleDay(profile, dayK, todayK);
+  if (cd >= 1 && cd <= 5) return null;
+  return ago;
+}

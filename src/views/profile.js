@@ -2,6 +2,9 @@
 import { APP_VERSION, SUPPORT_URL, LEGAL_DOCS } from '../config.js';
 import { GOALS, CYCLE_OPTIONS } from '../domain/catalog.js';
 import { yearsWord, dayMonthShort, addDays } from '../domain/dates.js';
+import { cycleDay } from '../domain/cycle.js';
+import { homeScreenPlatform } from '../services/telegram.js';
+import { IS_DEMO } from '../config.js';
 import { bodyFieldsView } from './body-fields.js';
 import { noCyclePhases } from '../domain/profile.js';
 
@@ -18,8 +21,7 @@ export function profileView(app) {
     displayName: p.name.trim() || 'Без имени',
     meta: [
       p.age + ' ' + yearsWord(p.age),
-      p.sex === 'f' ? 'женщина' : p.sex === 'm' ? 'мужчина' : '',
-      p.since ? 'с ' + dayMonthShort(p.since.slice(0, 10)) : ''
+      p.sex === 'f' ? 'женщина' : p.sex === 'm' ? 'мужчина' : ''
     ].filter(Boolean).join(' · '),
 
     name: p.name,
@@ -44,12 +46,15 @@ export function profileView(app) {
     toggleCycle: () => app.toggleCycle(),
     cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: sw(p[id]), toggle: () => app.toggleCycleOption(id) })),
     showCycleDates: p.cycle && !noCyclePhases(p),
-    lastPeriod: p.lastUnknown ? 'не знаю' : dayMonthShort(addDays(app.today(), -p.lastAgo)),
-    lastEarlier: () => app.setLastPeriod((p.lastUnknown ? 11 : p.lastAgo) + 1),
-    lastLater: () => app.setLastPeriod((p.lastUnknown ? 11 : p.lastAgo) - 1),
+    // день цикла сегодня: «−» / «+» двигают начало месячных; не знаем дату — начинаем с 1-го дня
+    ...cycleDayView(app, p),
     cycleLen: p.len,
     lenMinus: () => app.setCycleLength(p.len - 1),
     lenPlus: () => app.setCycleLength(p.len + 1),
+
+    // ярлык на экран «Домой»: в Telegram на телефоне (в демо — чтобы было видно на показах)
+    showHomeScreen: !!homeScreenPlatform() || IS_DEMO,
+    addHomeScreen: () => app.addToHomeFromProfile(),
 
     themeLight: 'seg' + (app.state.theme === 'light' ? ' on' : ''),
     themeDark: 'seg' + (app.state.theme === 'dark' ? ' on' : ''),
@@ -74,3 +79,19 @@ export function profileView(app) {
   };
 }
 
+
+function cycleDayView(app, p) {
+  const todayK = app.today();
+  const cd = cycleDay(p, todayK, todayK);
+  const start = cd ? addDays(todayK, -(cd - 1)) : '';
+  return {
+    cycleDayValue: cd ? cd + '-й' : '—',
+    cycleDayMinus: () => app.setCycleDay(cd ? cd - 1 : 1),
+    cycleDayPlus: () => app.setCycleDay(cd ? cd + 1 : 1),
+    cycleDayMinusCls: 'round-btn' + (cd > 1 ? '' : ' off'),
+    cycleDayPlusCls: 'round-btn' + (!cd || cd < p.len ? '' : ' off'),
+    cycleDaySub: cd
+      ? 'Месячные начались ' + dayMonthShort(start) + ', следующие примерно ' + dayMonthShort(addDays(start, p.len))
+      : 'День 1 — первый день месячных. Можно примерно',
+  };
+}

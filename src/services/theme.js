@@ -2,7 +2,9 @@
 // применяется атрибутом data-theme на <html> — все цвета берутся из src/styles/tokens.css.
 import { setTelegramColors } from './telegram.js';
 
-const LS_THEME = 'gt_theme';
+// Ключ с версией: при смене темы по умолчанию старый выбор (сохранённый, когда по умолчанию была тёмная) не учитываем —
+// всем открывается светлая, а то, что человек выберет в профиле, дальше сохраняется под этим ключом.
+const LS_THEME = 'gt_theme_v2';
 export const THEMES = ['light', 'dark'];
 export const DEFAULT_THEME = 'light';
 

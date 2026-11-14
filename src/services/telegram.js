@@ -143,6 +143,13 @@ export function addToHomeScreen() {
   return true;
 }
 
+/** Пункт «Настройки» в меню «⋯» Telegram (Bot API 7.0). Вне Telegram — ничего. */
+export function showSettingsButton(onClick) {
+  const app = getTelegram();
+  if (!app || !app.isVersionAtLeast('7.0') || !app.SettingsButton) return;
+  try { app.SettingsButton.onClick(onClick); app.SettingsButton.show(); } catch (_) { /* старый клиент */ }
+}
+
 /** Telegram сообщает, что ярлык добавлен */
 export function onHomeScreenAdded(callback) {
   const app = getTelegram();
