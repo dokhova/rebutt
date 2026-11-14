@@ -1,0 +1,9 @@
+<!-- Календарь «Когда начались месячные». Значения: src/views/period-calendar.js -->
+<div class="pc">
+  <div class="pc-head"><span class="pc-month">{{pcMonths}}</span><button class="{{pcUnknownCls}}" onClick="{{pcUnknown}}">Не помню</button></div>
+  <div class="pc-grid pc-wd" aria-hidden="true"><span>пн</span><span>вт</span><span>ср</span><span>чт</span><span>пт</span><span>сб</span><span>вс</span></div>
+  <div class="pc-grid" role="group" aria-label="Первый день месячных">
+    <sc-for list="{{pcCells}}" as="c"><button class="{{c.cls}}" onClick="{{c.pick}}" aria-label="{{c.aria}}"><span class="pc-m">{{c.month}}</span>{{c.label}}</button></sc-for>
+  </div>
+  <div class="pc-sum">{{pcSummary}}</div>
+</div>

@@ -132,6 +132,8 @@ export default class App extends Component {
       // Пока проверяем, есть ли профиль на сервере, — показываем загрузку, а не онбординг
       booting: !IS_DEMO && !!supabase && !profile.onboardedAt,
       onbStep: 'consent', consent: false,
+      onbPeriodPicked: false, // в онбординге выбрали день начала месячных в календаре
+      cycleCal: false,        // в профиле раскрыт календарь «Когда начались месячные»
       legal: null,        // открытый документ: { id, title, html, error }
       assistant: false,   // открыта панель ИИ-помощника
       // модалка «На главный экран»: null | 'ios' | 'android' (как рисовать иконки)
@@ -488,7 +490,9 @@ export default class App extends Component {
     const props = { step };
     if (step === 'about') Object.assign(props, { sex: p.sex, age: p.age, has_height: validHeight(p.height) != null, has_weight: validWeight(p.weight) != null });
     if (step === 'goals') Object.assign(props, { goals: p.goals, goals_count: p.goals.length, has_custom_goal: !!p.other.trim() });
-    if (step === 'cycle') Object.assign(props, { cycle_enabled: cycleAnswer, last_period: p.lastUnknown ? 'unknown' : p.lastAgo, pregnant: !!p.pregnant, coc: !!p.coc });
+    // цикл учитываем, а день не выбрали — дата начала неизвестна (а не «11 дней назад» по умолчанию)
+    if (step === 'cycle' && cycleAnswer && !s.onbPeriodPicked && !p.lastUnknown) this.setLastPeriod(null);
+    if (step === 'cycle') Object.assign(props, { cycle_enabled: cycleAnswer, last_period: p.lastUnknown || !s.onbPeriodPicked ? 'unknown' : p.lastAgo, pregnant: !!p.pregnant, coc: !!p.coc });
     track('onboarding_step_completed', props);
 
     if (i < flow.length - 1) this.setState({ onbStep: flow[i + 1] });
@@ -560,11 +564,14 @@ export default class App extends Component {
     this.updateProfile(daysAgo == null ? { lastUnknown: true } : { lastUnknown: false, lastAgo: Math.min(60, Math.max(0, daysAgo)) }, 'cycle_last');
   }
 
-  /** «Сегодня N-й день цикла» в профиле: день 1 — первый день месячных. Не больше длины цикла. */
-  setCycleDay(n) {
-    const day = Math.min(this.state.profile.len, Math.max(1, n));
-    this.setLastPeriod(day - 1);
+  /** Календарь «Когда начались месячные» (онбординг и профиль): ago — дней назад, null — «не помню» */
+  pickPeriodStart(ago) {
+    this.setState({ onbPeriodPicked: true });
+    this.setLastPeriod(ago);
+    track('period_start_picked', { days_ago: ago, screen: this.state.screen });
   }
+
+  toggleCycleCalendar() { this.setState({ cycleCal: !this.state.cycleCal }); }
 
   setCycleLength(len) { this.updateProfile({ len: Math.min(CYCLE_LEN_MAX, Math.max(CYCLE_LEN_MIN, len)) }, 'cycle_length'); }
 

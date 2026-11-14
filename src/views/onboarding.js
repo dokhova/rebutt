@@ -4,6 +4,7 @@ import { AGE_MIN, AGE_MAX, GOALS, LAST_PERIOD_OPTIONS, CYCLE_OPTIONS } from '../
 import { yearsWord } from '../domain/dates.js';
 import { bodyFieldsView } from './body-fields.js';
 import { noCyclePhases } from '../domain/profile.js';
+import { periodCalendarView } from './period-calendar.js';
 
 export function onboardingView(app) {
   const s = app.state, p = s.profile, step = s.onbStep;
@@ -19,6 +20,7 @@ export function onboardingView(app) {
   return {
     step: { consent: step === 'consent', about: step === 'about', goals: step === 'goals', cycle: step === 'cycle' },
     stepLabel: 'Шаг ' + (i + 1) + ' / ' + flow.length,
+    progress: flow.map((_, k) => ({ cls: 'onb-bar' + (k <= i ? ' on' : '') })),
     canBack: i > 0,
     noBack: i <= 0,
     back: () => app.onboardingBack(),
@@ -64,6 +66,7 @@ export function onboardingView(app) {
       return { label, on, cls: 'chip' + (on ? ' on' : ''), pick: () => app.setLastPeriod(daysAgo) };
     }),
     cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: 'chip' + (p[id] ? ' on' : ''), pick: () => app.toggleCycleOption(id) })),
-    askLastPeriod: !noCyclePhases(p)
+    askLastPeriod: !noCyclePhases(p),
+    ...periodCalendarView(app, s.onbPeriodPicked)
   };
 }

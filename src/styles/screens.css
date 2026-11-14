@@ -415,3 +415,72 @@
 /* Цикл на «Сегодня»: короткая строка, только в окна месячных/овуляции */
 .cycle-hint { padding: 14px 16px; font-size: 15px; line-height: 1.45; }
 .cycle-hint-title { font-weight: 600; }
+
+/* ---------- календарь «Когда начались месячные» (partials/period-calendar.html): онбординг и профиль ---------- */
+.pc { display: flex; flex-direction: column; gap: 8px; }
+.pc-head { display: flex; align-items: center; justify-content: space-between; }
+.pc-month { font-family: var(--font-display); font-size: 17px; font-weight: 600; text-transform: capitalize; }
+.pc-unknown { height: 32px; padding: 0 14px; border-radius: 16px; border: 1px solid var(--line-control); background: transparent; color: var(--ink); font-size: 13px; }
+.pc-unknown.on { background: var(--selected); border-color: var(--selected); color: var(--accent-ink); }
+.pc-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px 0; }
+.pc-wd span { text-align: center; font-size: 12px; color: var(--muted); }
+.pc-day { position: relative; height: 42px; border: 0; padding: 0; background: transparent; color: var(--ink); font: inherit; font-size: 15px; font-variant-numeric: tabular-nums; }
+.pc-day::before { content: ''; position: absolute; inset: 3px; border-radius: 50%; z-index: -1; }
+.pc-day.today { font-weight: 700; }
+.pc-day.today::after { content: ''; position: absolute; left: 50%; bottom: 4px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: currentColor; }
+.pc-day.band { background: rgba(167, 139, 250, .2); }
+.pc-day.on { color: #FFFFFF; font-weight: 700; }
+.pc-day.on::before { background: var(--violet); }
+.pc-day.band-start { background: linear-gradient(90deg, transparent 50%, rgba(167, 139, 250, .2) 50%); }
+.pc-day.band-end { border-radius: 0 21px 21px 0; }
+.pc-day.off { color: var(--dim); pointer-events: none; }
+.pc-m { position: absolute; top: -2px; left: 0; right: 0; font-size: 9px; line-height: 10px; color: var(--muted); font-weight: 400; }
+.pc-grid { isolation: isolate; }
+.pc-sum { font-size: 14px; color: var(--muted); }
+.pc-wrap { padding: 12px 0 16px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+.pc-help { align-self: flex-start; border: 0; background: transparent; padding: 0; color: var(--violet); font-size: 14px; }
+.cal-chevron { transition: transform .2s; }
+.cal-chevron.open { transform: rotate(180deg); }
+
+/* ---------- онбординг в бренд-стиле: фиолетовое поле, белый текст, заголовки капсом, лайм — выбор и кнопка ---------- */
+.shell.brand {
+  --ink: #FFFFFF; --ink-soft: #FFFFFF; --muted: rgba(255, 255, 255, .74); --faint: rgba(255, 255, 255, .6); --dim: rgba(255, 255, 255, .3);
+  --line: rgba(255, 255, 255, .14); --line-2: rgba(255, 255, 255, .18); --line-3: rgba(255, 255, 255, .22); --line-control: rgba(255, 255, 255, .42);
+  --wash-1: rgba(255, 255, 255, .08); --wash-2: rgba(255, 255, 255, .14);
+  --surface-1: rgba(255, 255, 255, .12); --surface-3: rgba(255, 255, 255, .12); --surface-4: rgba(255, 255, 255, .18);
+  --selected: #D3FA9D; --violet: #FFFFFF;
+  --card-bg: rgba(255, 255, 255, .1); --card-border: rgba(255, 255, 255, .16); --card-shadow: none;
+  color: var(--ink);
+  background: radial-gradient(120% 70% at 85% 0%, #8A62EA 0%, rgba(138, 98, 234, 0) 60%), linear-gradient(180deg, #774CD6 0%, #6B41C9 100%);
+}
+.shell.brand .title { font-size: 34px; line-height: 1.02; font-weight: 800; letter-spacing: -.02em; text-transform: uppercase; }
+.shell.brand .subtitle { font-size: 16px; }
+.shell.brand .caption { color: rgba(255, 255, 255, .8); }
+.shell.brand .field-input { color: #FFFFFF; border-color: transparent; }
+.shell.brand .field-input::placeholder { color: rgba(255, 255, 255, .55); }
+.shell.brand .field-input:focus { border-color: #D3FA9D; }
+.shell.brand .seg.on, .shell.brand .chip.on, .shell.brand .tag.on { color: #183A1B; }
+.shell.brand .chip { border-color: transparent; background: rgba(255, 255, 255, .12); }
+.shell.brand .goal { border-color: transparent; background: rgba(255, 255, 255, .1); min-height: 64px; font-size: 16px; }
+.shell.brand .goal.on { background: #D3FA9D; color: #183A1B; }
+.shell.brand .goal.on .goal-check { background: #183A1B; border-color: #183A1B; color: #D3FA9D; }
+.shell.brand .icon-tile { background: rgba(255, 255, 255, .14); color: #FFFFFF; }
+.shell.brand .drum-frame { background: rgba(255, 255, 255, .16); border-color: transparent; }
+.shell.brand .btn.off { background: rgba(255, 255, 255, .16); color: rgba(255, 255, 255, .6); }
+.shell.brand .consent a { text-decoration-color: rgba(255, 255, 255, .5); }
+.shell.brand .checkbox { border-color: rgba(255, 255, 255, .7); }
+.shell.brand .pc-day.on { color: #183A1B; }
+.shell.brand .pc-day.on::before { background: #D3FA9D; }
+.shell.brand .pc-day.band { background: rgba(211, 250, 157, .18); }
+.shell.brand .pc-day.band-start { background: linear-gradient(90deg, transparent 50%, rgba(211, 250, 157, .18) 50%); }
+.shell.brand .pc-unknown.on { color: #183A1B; }
+.shell.brand .pc-sum { color: #FFFFFF; }
+
+.onb-top { display: flex; align-items: center; justify-content: space-between; height: 44px; }
+.onb-back { width: 44px; height: 44px; color: #FFFFFF; background: rgba(255, 255, 255, .14); }
+span.onb-back { background: transparent; }
+.wordmark { font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: -.03em; color: #FFFFFF; }
+.wm-light { font-weight: 300; }
+.onb-progress { display: flex; gap: 6px; margin-top: 8px; }
+.onb-bar { flex: 1; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, .22); transition: background .3s; }
+.onb-bar.on { background: #D3FA9D; }
