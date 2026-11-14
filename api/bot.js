@@ -1,4 +1,4 @@
-// Бот Telegram: вебхук. На /start присылает приветствие — картинку public/bot/welcome-2.jpg с текстом
+// Бот Telegram: вебхук. На /start присылает приветствие — картинку public/bot/welcome-2.jpg с текстом (дальше — по file_id из bot_settings, без повторной загрузки)
 // и кнопку «Старт», которая открывает мини-апп. Остальные сообщения пока игнорируем.
 //
 // POST /api/bot — сюда Telegram шлёт обновления. Проверяем заголовок X-Telegram-Bot-Api-Secret-Token.
@@ -7,6 +7,7 @@
 // Нужна переменная окружения TELEGRAM_BOT_TOKEN (уже есть — для входа по Telegram).
 // Текст приветствия — WELCOME ниже, картинка — public/bot/welcome-2.jpg.
 import crypto from 'node:crypto';
+import { createClient } from '@supabase/supabase-js';
 
 export const config = { maxDuration: 15 };
 
@@ -28,6 +29,32 @@ const WELCOME = [
 ].join('\n');
 
 const START_BUTTON = 'Старт';
+const WELCOME_PHOTO = '/bot/welcome-2.jpg';
+/** Ключ в bot_settings: file_id привязан к картинке — поменяли файл, меняем и ключ */
+const PHOTO_KEY = 'welcome_photo:' + WELCOME_PHOTO;
+
+// ---------- file_id картинки: по нему Telegram показывает фото сразу, по ссылке — каждый раз скачивает ----------
+// Храним в памяти функции (пока она «тёплая») и в Supabase (таблица bot_settings), чтобы переживать перезапуски.
+let photoId = process.env.TELEGRAM_WELCOME_FILE_ID || '';
+const env = (k) => process.env[k] || process.env['VITE_' + k] || '';
+const db = () => (env('SUPABASE_URL') && process.env.SUPABASE_SECRET_KEY
+  ? createClient(env('SUPABASE_URL'), process.env.SUPABASE_SECRET_KEY, { auth: { persistSession: false, autoRefreshToken: false } })
+  : null);
+
+async function readPhotoId() {
+  if (photoId) return photoId;
+  try {
+    const c = db(); if (!c) return '';
+    const { data } = await c.from('bot_settings').select('value').eq('key', PHOTO_KEY).maybeSingle();
+    photoId = (data && data.value) || '';
+  } catch (_) { /* таблицы нет — отправим по ссылке */ }
+  return photoId;
+}
+
+async function savePhotoId(id) {
+  photoId = id;
+  try { const c = db(); if (c) await c.from('bot_settings').upsert({ key: PHOTO_KEY, value: id, updated_at: new Date().toISOString() }); } catch (_) { /* не страшно */ }
+}
 
 /** Секрет вебхука — из токена бота, отдельная переменная не нужна */
 const webhookSecret = (token) => crypto.createHmac('sha256', token).update('rebutt-webhook').digest('hex').slice(0, 48);
@@ -79,13 +106,15 @@ export default async function handler(req, res) {
   try {
     if (msg && msg.chat && /^\/start(\s|@|$)/.test(text)) {
       const app = origin(req);
-      const result = await tg(token, 'sendPhoto', {
-        chat_id: msg.chat.id,
-        photo: app + '/bot/welcome-2.jpg',
-        caption: WELCOME,
-        parse_mode: 'HTML',
-        reply_markup: { inline_keyboard: [[{ text: START_BUTTON, web_app: { url: app + '/' } }]] }
-      });
+      const keyboard = { inline_keyboard: [[{ text: START_BUTTON, web_app: { url: app + '/' } }]] };
+      const send = (photo) => tg(token, 'sendPhoto', { chat_id: msg.chat.id, photo, caption: WELCOME, parse_mode: 'HTML', reply_markup: keyboard });
+      const cached = await readPhotoId();
+      let result = cached ? await send(cached) : { ok: false };
+      if (!result.ok) {
+        result = await send(app + WELCOME_PHOTO);
+        const sizes = result.ok && result.result && result.result.photo;
+        if (sizes && sizes.length) await savePhotoId(sizes[sizes.length - 1].file_id);
+      }
       // картинка не загрузилась — шлём хотя бы текст с кнопкой
       if (!result.ok) {
         await tg(token, 'sendMessage', {
