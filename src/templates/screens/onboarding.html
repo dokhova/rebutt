@@ -93,8 +93,17 @@
     </div>
     <sc-if value="{{askLastPeriod}}">
       <div class="gcard g-lav gblock onb-block">
-        <div class="onb-q">Когда начались последние месячные?</div>
-        <sc-include name="period-calendar"></sc-include>
+        <div class="onb-q">Месячные идут сейчас?</div>
+        <div class="gsegs"><button class="{{nowYes}}" onClick="{{pickNowYes}}">Да</button><button class="{{nowNo}}" onClick="{{pickNowNo}}">Нет</button></div>
+        <sc-if value="{{askDay}}">
+          <div class="onb-q fade-in">Какой сейчас день?</div>
+          <div class="chips"><sc-for list="{{nowDays}}" as="d"><button class="{{d.cls}}" aria-pressed="{{d.on}}" onClick="{{d.pick}}">{{d.label}}</button></sc-for></div>
+        </sc-if>
+        <sc-if value="{{askAgo}}">
+          <div class="onb-q fade-in">Когда начались последние?</div>
+          <div class="chips"><sc-for list="{{agoOptions}}" as="o"><button class="{{o.cls}}" aria-pressed="{{o.on}}" onClick="{{o.pick}}">{{o.label}}</button></sc-for></div>
+          <div class="hint">{{periodHint}}</div>
+        </sc-if>
       </div>
     </sc-if>
     <div class="section onb-extra">

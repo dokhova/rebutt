@@ -132,7 +132,8 @@ export default class App extends Component {
       // Пока проверяем, есть ли профиль на сервере, — показываем загрузку, а не онбординг
       booting: !IS_DEMO && !!supabase && !profile.onboardedAt,
       onbStep: 'consent', consent: false,
-      onbPeriodPicked: false, // в онбординге выбрали день начала месячных в календаре
+      onbPeriodPicked: false, // в онбординге выбрали день начала месячных
+      onbPeriodNow: '',       // онбординг, шаг «Цикл»: месячные идут сейчас? '' | 'yes' | 'no'
       cycleCal: false,        // в профиле раскрыт календарь «Когда начались месячные»
       legal: null,        // открытый документ: { id, title, html, error }
       assistant: false,   // открыта панель ИИ-помощника
@@ -569,6 +570,12 @@ export default class App extends Component {
     this.setState({ onbPeriodPicked: true });
     this.setLastPeriod(ago);
     track('period_start_picked', { days_ago: ago, screen: this.state.screen });
+  }
+
+  /** Онбординг, шаг «Цикл»: «Месячные идут сейчас?» — сбрасывает выбранный день, чтобы ответить заново */
+  setPeriodNow(v) {
+    this.setState({ onbPeriodNow: v, onbPeriodPicked: false });
+    track('period_now_answered', { value: v });
   }
 
   toggleCycleCalendar() { this.setState({ cycleCal: !this.state.cycleCal }); }
