@@ -582,3 +582,22 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
 .shell:has(.welcome) .checkbox { width: 18px; height: 18px; border-radius: 6px; }
 .shell:has(.welcome) .checkbox svg { width: 10px; height: 10px; }
 .shell:has(.welcome) .consent { gap: 10px; font-size: 13px; }
+
+/* 6 (по макету): фото сверху до краёв, лавандовая панель со скруглением, текст тёмно-фиолетовый, кнопка Deep Purple */
+.shell:has(.lay6) { background: #EDE5FF; }
+.lay6 .welcome-photo { height: calc(56% + 28px + var(--safe-top)); background-position: 30% 35%; -webkit-mask-image: none; mask-image: none; }
+.lay6::before { content: ''; position: absolute; z-index: 1; left: -16px; right: -16px; top: 51%; bottom: -300px; border-radius: 32px 32px 0 0; background: #EDE5FF; }
+.lay6 .welcome-title { color: #1F1630; }
+.lay6 .wt-1, .lay6 .wt-2 { font-size: 44px; }
+.lay6 .welcome-sub { color: #2E2A35; }
+.shell:has(.lay6) .welcome-btn, .shell:has(.lay6) .welcome-btn.off { background: #3A1F5C; color: #FFFFFF; }
+.shell:has(.lay6) .checkbox { border-color: rgba(31, 22, 48, .55); }
+.shell:has(.lay6) .checkbox.on { background: #3A1F5C; border-color: #3A1F5C; color: #FFFFFF; }
+.lay6 .welcome-text { position: absolute; left: 0; right: 0; top: calc(51% + 28px); margin: 0; }
+.lay6 .wt-1, .lay6 .wt-2 { font-size: 46px; }
+/* фото до середины экрана, как в макете */
+.lay6 .welcome-photo { height: calc(72% + 28px + var(--safe-top)); }
+.lay6::before { top: 66%; }
+.lay6 .welcome-text { top: calc(66% + 26px); }
+.lay6 .wt-1, .lay6 .wt-2 { font-size: 42px; }
+.lay6 .welcome-sub { margin-top: 12px; }
