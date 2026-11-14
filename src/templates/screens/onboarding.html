@@ -1,33 +1,23 @@
 <!-- Онбординг. Значения: src/views/onboarding.js -->
 
+<sc-if value="{{showTop}}">
 <div class="onb-top">
   <sc-if value="{{canBack}}"><button class="icon-btn onb-back" onClick="{{back}}" aria-label="Назад"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button></sc-if>
   <sc-if value="{{noBack}}"><span class="onb-back"></span></sc-if>
-  <span class="wordmark" aria-label="{{appName}}"><span class="wm-light">re</span>butt</span>
+  <img class="wordmark" src="/brand/wordmark.svg" alt="{{appName}}">
   <span class="onb-back"></span>
 </div>
 <div class="onb-progress" role="progressbar" aria-label="{{stepLabel}}"><sc-for list="{{progress}}" as="b"><span class="{{b.cls}}"></span></sc-for></div>
+</sc-if>
 
-<!-- Шаг: согласие с документами -->
+<!-- Шаг 1: приветствие (вариант заголовка и картинки — welcome в src/views/onboarding.js) + согласие внизу -->
 <sc-if value="{{step.consent}}">
-  <div class="onb-step fade-in">
-    <div class="page-head">
-      <h1 class="title">Ваши данные — только ваши</h1>
-      <div class="subtitle">Пара важных вещей перед стартом</div>
-    </div>
-    <div class="onb-tiles">
-      <div class="gcard g-moss onb-tile">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="3"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
-        <div><div class="onb-tile-title">Храним бережно</div><div class="onb-tile-sub">Записи шифруются и доступны только вам</div></div>
-      </div>
-      <div class="gcard g-lav onb-tile">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.9L19 9.7l-5.2 1.8L12 16.4l-1.8-4.9L5 9.7l5.2-1.8z"></path></svg>
-        <div><div class="onb-tile-title">ИИ — помощник, не врач</div><div class="onb-tile-sub">Помогает разобраться, но не ставит диагноз</div></div>
-      </div>
-      <div class="gcard g-sage onb-tile">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"></path></svg>
-        <div><div class="onb-tile-title">Можно удалить всё</div><div class="onb-tile-sub">В профиле, одной кнопкой</div></div>
-      </div>
+  <div class="{{welcome.cls}}" aria-hidden="true"></div>
+  <div class="welcome fade-in">
+    <img class="welcome-logo" src="/brand/wordmark.svg" alt="{{appName}}">
+    <div class="welcome-text">
+      <h1 class="welcome-title">{{welcome.title}}</h1>
+      <p class="welcome-sub">{{welcome.sub}}</p>
     </div>
   </div>
 </sc-if>

@@ -446,8 +446,8 @@
 .onb-top { display: flex; align-items: center; justify-content: space-between; height: 44px; }
 .onb-back { width: 44px; height: 44px; }
 button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2); }
-.wordmark { font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: -.03em; color: var(--ink); }
-.wm-light { font-weight: 300; }
+.wordmark { width: 84px; height: auto; }
+[data-theme="dark"] .wordmark, [data-theme="dark"] .welcome-logo { filter: invert(1) brightness(1.6); }
 .onb-progress { display: flex; gap: 6px; margin-top: 8px; }
 .onb-bar { flex: 1; height: 3px; border-radius: 2px; background: var(--track); transition: background .3s; }
 .onb-bar.on { background: var(--violet); }
@@ -490,3 +490,22 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
 .gcard .pc-day.on::before { background: var(--accent); }
 .gcard .pc-day.band { background: rgba(255, 255, 255, .24); }
 .gcard .pc-day.band-start { background: linear-gradient(90deg, transparent 50%, rgba(255, 255, 255, .24) 50%); }
+
+/* ---------- первый экран: приветствие на фоне Lavender (#EDE5FF — фон стартового экрана по брендбуку) ---------- */
+.shell:has(.welcome) { background: #EDE5FF; }
+[data-theme="dark"] .shell:has(.welcome) { background: #1E1A28; }
+.welcome-art { position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  -webkit-mask-image: linear-gradient(180deg, #000 42%, transparent 62%); mask-image: linear-gradient(180deg, #000 42%, transparent 62%); }
+/* контур знака: обрезка по верхнему и правому краю, внутренняя петля целиком (правила брендбука) */
+.welcome-art.contour { background: url(/brand/mark-outline.svg) no-repeat; background-size: 135% auto; background-position: 10% -170px; }
+.welcome-art.blur { background: url(/brand/mark-blur.svg) no-repeat; background-size: 135% auto; background-position: 10% -170px; opacity: .9; }
+.welcome-art.glass { background: url(../assets/hero/gut.webp) no-repeat; background-size: 120% auto; background-position: 60% -80px; }
+.welcome { position: relative; z-index: 1; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; }
+.welcome-logo { width: 116px; height: auto; margin-top: 4px; }
+.welcome-text { margin-top: auto; padding-bottom: 8px; }
+.welcome-title { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 40px; line-height: 1.02; letter-spacing: -.03em; color: #183A1B; }
+.welcome-sub { margin: 14px 0 0; font-size: 16px; line-height: 1.4; color: #3B3446; max-width: 320px; }
+[data-theme="dark"] .welcome-title { color: #F8F7F2; }
+[data-theme="dark"] .welcome-sub { color: rgba(248, 247, 242, .75); }
+.shell:has(.welcome) .onb-footer { position: relative; z-index: 1; }
+.shell:has(.welcome) .btn.off { background: rgba(255, 255, 255, .7); color: var(--muted); }

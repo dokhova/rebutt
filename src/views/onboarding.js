@@ -14,13 +14,16 @@ export function onboardingView(app) {
   const legal = (id) => ({ url: LEGAL_DOCS[id].url, open: (e) => app.openLegalDoc(id, 'onboarding', e) });
 
   let nextLabel = isLast ? 'Начать' : 'Дальше';
-  if (step === 'consent' && !isLast) nextLabel = 'Продолжить';
+  if (step === 'consent' && !isLast) nextLabel = 'Начать';
   if (step === 'cycle') nextLabel = 'Да, учитывать';
 
   return {
     step: { consent: step === 'consent', about: step === 'about', goals: step === 'goals', cycle: step === 'cycle' },
-    stepLabel: 'Шаг ' + (i + 1) + ' / ' + flow.length,
-    progress: flow.map((_, k) => ({ cls: 'onb-bar' + (k <= i ? ' on' : '') })),
+    // приветствие — без шапки; дальше вордмарк и полоса прогресса по шагам после приветствия
+    showTop: step !== 'consent',
+    stepLabel: 'Шаг ' + i + ' / ' + (flow.length - 1),
+    progress: flow.slice(1).map((_, k) => ({ cls: 'onb-bar' + (k < i ? ' on' : '') })),
+    welcome: welcomeVariant(),
     canBack: i > 0,
     noBack: i <= 0,
     back: () => app.onboardingBack(),
@@ -69,4 +72,18 @@ export function onboardingView(app) {
     askLastPeriod: !noCyclePhases(p),
     ...periodCalendarView(app, s.onbPeriodPicked)
   };
+}
+
+/** Варианты первого экрана (для выбора): ?welcome=a | b | c, по умолчанию — a */
+const WELCOME = {
+  a: { title: 'Узнай себя изнутри за 14 дней', art: 'contour' },
+  b: { title: 'Познакомься со своим кишечником за 14 дней', art: 'glass' },
+  c: { title: 'Свидание с кишечником', art: 'blur' }
+};
+const WELCOME_SUB = 'Пара минут в день — первые наблюдения на 7-й день, личный отчёт на 14-й';
+
+function welcomeVariant() {
+  const v = (typeof location !== 'undefined' && new URLSearchParams(location.search).get('welcome')) || 'a';
+  const w = WELCOME[v] || WELCOME.a;
+  return { title: w.title, sub: WELCOME_SUB, cls: 'welcome-art ' + w.art };
 }
