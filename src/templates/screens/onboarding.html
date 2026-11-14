@@ -16,15 +16,15 @@
       <div class="subtitle">Пара важных вещей перед стартом</div>
     </div>
     <div class="onb-tiles">
-      <div class="gcard g-moss onb-tile">
+      <div class="card onb-tile tint-moss">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="3"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
         <div><div class="onb-tile-title">Храним бережно</div><div class="onb-tile-sub">Записи шифруются и доступны только вам</div></div>
       </div>
-      <div class="gcard g-lav onb-tile">
+      <div class="card onb-tile tint-lav">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.9L19 9.7l-5.2 1.8L12 16.4l-1.8-4.9L5 9.7l5.2-1.8z"></path></svg>
         <div><div class="onb-tile-title">ИИ — помощник, не врач</div><div class="onb-tile-sub">Помогает разобраться, но не ставит диагноз</div></div>
       </div>
-      <div class="gcard g-sage onb-tile">
+      <div class="card onb-tile tint-sage">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"></path></svg>
         <div><div class="onb-tile-title">Можно удалить всё</div><div class="onb-tile-sub">В профиле, одной кнопкой</div></div>
       </div>
@@ -39,14 +39,14 @@
       <h1 class="title">Давайте знакомиться</h1>
       <div class="subtitle">Это займёт около минуты</div>
     </div>
-    <div class="gcard g-lav gblock onb-block fields">
+    <div class="card onb-block tint-lav fields">
       <div class="field">
         <label class="caption" for="onbName">Имя</label>
         <input id="onbName" class="field-input" type="text" autocapitalize="words" autocomplete="given-name" placeholder="Как к вам обращаться" value="{{name}}" onChange="{{setName}}">
       </div>
       <div class="field">
         <div class="caption">Пол</div>
-        <div class="gsegs">
+        <div class="segments">
           <button class="{{sexF}}" onClick="{{pickF}}">Женский</button>
           <button class="{{sexM}}" onClick="{{pickM}}">Мужской</button>
         </div>
@@ -79,7 +79,7 @@
       <h1 class="title">Чего хотите добиться?</h1>
       <div class="subtitle">Можно выбрать несколько</div>
     </div>
-    <div class="gcard g-moss gblock onb-block goal-list">
+    <div class="card onb-block tint-moss goal-list">
       <sc-for list="{{goals}}" as="g">
         <button class="{{g.cls}}" aria-pressed="{{g.on}}" onClick="{{g.pick}}">
           <span>{{g.label}}</span>
@@ -101,7 +101,7 @@
       <h1 class="title">Учитывать цикл?</h1>
       <div class="subtitle">Подскажем, когда кишечник может вести себя иначе</div>
     </div>
-    <div class="gcard g-lav gblock onb-block">
+    <div class="card onb-block tint-lav">
       <div class="caption">Если актуально</div>
       <div class="chips">
         <sc-for list="{{cycleOptions}}" as="o"><button class="{{o.cls}}" aria-pressed="{{o.on}}" onClick="{{o.pick}}">{{o.label}}</button></sc-for>

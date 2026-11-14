@@ -38,8 +38,8 @@ export function onboardingView(app) {
     // о себе
     name: p.name,
     setName: (e) => app.setName(e.target.value),
-    sexF: 'gseg' + (p.sex === 'f' ? ' on' : ''),
-    sexM: 'gseg' + (p.sex === 'm' ? ' on' : ''),
+    sexF: 'seg' + (p.sex === 'f' ? ' on' : ''),
+    sexM: 'seg' + (p.sex === 'm' ? ' on' : ''),
     pickF: () => app.setSex('f'),
     pickM: () => app.setSex('m'),
     ageLabel: p.age + ' ' + yearsWord(p.age),
@@ -54,7 +54,7 @@ export function onboardingView(app) {
     // цели
     goals: GOALS.map((g, k) => {
       const on = p.goals.includes(g.id);
-      return { label: g.label, num: '0' + (k + 1), on, cls: 'ggoal' + (on ? ' on' : ''), pick: () => app.toggleGoal(g.id) };
+      return { label: g.label, num: '0' + (k + 1), on, cls: 'goal' + (on ? ' on' : ''), pick: () => app.toggleGoal(g.id) };
     }),
     otherGoal: p.goals.includes('other'),
     otherText: p.other,
@@ -65,7 +65,7 @@ export function onboardingView(app) {
       const on = daysAgo == null ? p.lastUnknown : !p.lastUnknown && p.lastAgo === daysAgo;
       return { label, on, cls: 'chip' + (on ? ' on' : ''), pick: () => app.setLastPeriod(daysAgo) };
     }),
-    cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: 'gchip' + (p[id] ? ' on' : ''), pick: () => app.toggleCycleOption(id) })),
+    cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: 'chip' + (p[id] ? ' on' : ''), pick: () => app.toggleCycleOption(id) })),
     askLastPeriod: !noCyclePhases(p),
     ...periodCalendarView(app, s.onbPeriodPicked)
   };
