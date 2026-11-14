@@ -4,6 +4,7 @@ import { AGE_MIN, AGE_MAX, GOALS, LAST_PERIOD_OPTIONS, CYCLE_OPTIONS } from '../
 import { yearsWord } from '../domain/dates.js';
 import { bodyFieldsView } from './body-fields.js';
 import { noCyclePhases } from '../domain/profile.js';
+import { periodSteps } from './period-steps.js';
 
 export function onboardingView(app) {
   const s = app.state, p = s.profile, step = s.onbStep;
@@ -13,8 +14,7 @@ export function onboardingView(app) {
   const legal = (id) => ({ url: LEGAL_DOCS[id].url, open: (e) => app.openLegalDoc(id, 'onboarding', e) });
 
   let nextLabel = isLast ? 'Начать' : 'Дальше';
-  const welcome = welcomeVariant();
-  if (step === 'consent') nextLabel = welcome.cta;
+  if (step === 'consent') nextLabel = WELCOME.cta;
   if (step === 'cycle') nextLabel = 'Да, учитывать';
 
   return {
@@ -23,7 +23,7 @@ export function onboardingView(app) {
     showTop: step !== 'consent',
     stepLabel: 'Шаг ' + i + ' / ' + (flow.length - 1),
     progress: flow.slice(1).map((_, k) => ({ cls: 'onb-bar' + (k < i ? ' on' : '') })),
-    welcome,
+    welcome: WELCOME,
     canBack: i > 0,
     noBack: i <= 0,
     back: () => app.onboardingBack(),
@@ -70,66 +70,13 @@ export function onboardingView(app) {
     }),
     cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: 'chip' + (p[id] ? ' on' : ''), pick: () => app.toggleCycleOption(id) })),
     askLastPeriod: !noCyclePhases(p),
-    ...periodSteps(app)
+    ...periodSteps(app, 'glass')
   };
 }
 
-/** Варианты первого экрана (для выбора): ?welcome=a | b | c, по умолчанию — c9.
- *  t1 / t2 — две строки заголовка, accent — фиолетовое «за 14 дней» (в строке t2 или отдельной строкой). */
+/** Первый экран (приветствие): заголовок в две строки, короткое описание, кнопка */
 const WELCOME = {
-  a: { t1: 'Узнай себя', t2: 'изнутри', accent: 'за 14 дней', inline: true, art: 'glass', sub: 'Отмечай еду, воду и самочувствие, чтобы понять, как они связаны.', cta: 'Начать' },
-  b: { t1: 'Познакомься', t2: 'со своим кишечником', accent: 'за 14 дней', inline: false, art: 'contour', sub: 'Веди дневник и замечай, как кишечник реагирует на твои привычки.', cta: 'Начать дневник' },
-  c: { t1: 'Свидание', t2: 'с кишечником', accent: '', badge: '14 дней', inline: false, art: 'photo', sub: 'О кишечнике принято молчать. Мы предпочитаем его понимать. Ты увидишь, как организм реагирует на питание, сон, стресс и цикл.', cta: 'Пойти на свидание' }
+  t1: 'Свидание', t2: 'с кишечником',
+  sub: 'О кишечнике принято молчать. Мы предпочитаем его понимать.',
+  cta: 'Пойти на свидание'
 };
-// варианты раскладки экрана с фото (для выбора): ?welcome=c1 … c5
-for (let n = 1; n <= 5; n++) WELCOME['c' + n] = { ...WELCOME.c, layout: n };
-// вариант 1 с разным масштабом фото: c1a, c1b
-WELCOME.c1a = { ...WELCOME.c, layout: '1 zoom-a' };
-WELCOME.c1b = { ...WELCOME.c, layout: '1 zoom-b' };
-// c6 — по макету: фото сверху, лавандовая панель со скруглением, тёмно-фиолетовая кнопка
-WELCOME.c6 = { ...WELCOME.c, layout: 6 };
-// c7 — шторка стеклом, как блоки на главной: фото на весь экран, поверх — фиолетовое «зеркальное» стекло
-WELCOME.c7 = { ...WELCOME.c, layout: 7 };
-// c8 — как остальные шаги: светлый фон, фото сверху уходит в фон, текст в сиреневом блоке .gcard.g-lav, лаймовая кнопка
-WELCOME.c8 = { ...WELCOME.c, layout: 8, badge: '', sub: 'О кишечнике принято молчать. Мы предпочитаем его понимать.' };
-// c9 — шторка снизу (как c6), в стиле блоков с градиентом (.g-lav); фото со светлым фоном приложения
-WELCOME.c9 = { ...WELCOME.c8, layout: 9 };
-
-function welcomeVariant() {
-  const v = (typeof location !== 'undefined' && new URLSearchParams(location.search).get('welcome')) || 'c9';
-  const key = WELCOME[v] ? v : 'c9', w = WELCOME[key];
-  return {
-    ...w, cls: 'welcome fade-in ' + (w.art === 'photo' ? 'welcome-c' : 'welcome-' + key) + (w.layout ? ' lay lay' + w.layout : ''),
-    glass: w.art === 'glass', contour: w.art === 'contour', photo: w.art === 'photo',
-    // C — как главная: фото вместо 3D-кишечника, текст на фиолетовой стеклянной карточке (как «Комфорт за 7 дней»)
-    textCls: 'welcome-text' + (w.art === 'photo' && !w.layout ? ' gcard g-glass welcome-glass' : '') + (w.layout === 8 ? ' gcard g-lav welcome-block' : ''),
-    showLogo: true,
-    inlineAccent: !!w.accent && w.inline, blockAccent: !!w.accent && !w.inline
-  };
-}
-
-/** Шаг «Цикл»: два коротких вопроса на одном экране — «Месячные идут сейчас?», затем день или когда начались */
-const NOW_DAYS = [1, 2, 3, 4, 5, 6, 7];
-const AGO_OPTIONS = [['1–2 недели назад', 10], ['2–3 недели назад', 17], ['3–4 недели назад', 24], ['Больше месяца', 35], ['Не помню', null]];
-
-function periodSteps(app) {
-  const s = app.state, p = s.profile, now = s.onbPeriodNow, picked = s.onbPeriodPicked;
-  const chip = (on) => 'gchip' + (on ? ' on' : '');
-  return {
-    nowYes: 'gseg' + (now === 'yes' ? ' on' : ''),
-    nowNo: 'gseg' + (now === 'no' ? ' on' : ''),
-    pickNowYes: () => app.setPeriodNow('yes'),
-    pickNowNo: () => app.setPeriodNow('no'),
-    askDay: now === 'yes',
-    askAgo: now === 'no',
-    nowDays: NOW_DAYS.map((d) => {
-      const on = picked && !p.lastUnknown && p.lastAgo === d - 1;
-      return { label: d === 7 ? '7+' : d + '-й', on, cls: chip(on), pick: () => app.pickPeriodStart(d - 1) };
-    }),
-    agoOptions: AGO_OPTIONS.map(([label, ago]) => {
-      const on = picked && (ago == null ? p.lastUnknown : !p.lastUnknown && p.lastAgo === ago);
-      return { label, on, cls: chip(on), pick: () => app.pickPeriodStart(ago) };
-    }),
-    periodHint: now === 'no' ? 'Можно примерно — уточнится, когда отметите месячные' : ''
-  };
-}

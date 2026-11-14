@@ -51,7 +51,6 @@
 .date-input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; border: 0; padding: 0; }
 .date-input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
 
-
 .home-h2 { margin: 16px 0 4px 2px; font-family: var(--font-display); font-size: 20px; line-height: 26px; font-weight: 700; letter-spacing: -.01em; }
 .h2-row { display: flex; align-items: center; gap: 8px; }
 .h2-row .info-btn { margin-top: 14px; }
@@ -132,7 +131,6 @@
 .tip-icon.mild { background: rgba(127, 168, 102, .18); color: var(--accent-text); }
 .tip-icon.sens { background: rgba(167, 139, 250, .16); color: var(--violet-soft); }
 .tip-title { font-size: 16px; line-height: 21px; }
-
 
 /* ================= Новая запись ================= */
 
@@ -416,33 +414,19 @@
 .cycle-hint { padding: 14px 16px; font-size: 15px; line-height: 1.45; }
 .cycle-hint-title { font-weight: 600; }
 
-/* ---------- «Когда начались месячные» — лента дней (partials/period-calendar.html): онбординг и профиль ---------- */
-.pc { display: flex; flex-direction: column; gap: 10px; }
-.pc-strip { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin: 0 -4px; padding: 14px 4px 2px; scroll-snap-type: x proximity; }
-.pc-strip::-webkit-scrollbar { display: none; }
-.pc-day { position: relative; flex: 0 0 44px; height: 62px; border: 0; padding: 0; border-radius: 22px; background: transparent; color: var(--ink); font: inherit;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; scroll-snap-align: center; }
-.pc-wd { font-size: 11px; color: var(--muted); }
-.pc-n { font-size: 17px; font-weight: 500; font-variant-numeric: tabular-nums; }
-.pc-m { position: absolute; top: -14px; left: 0; right: 0; font-size: 10px; color: var(--muted); }
-.pc-day.today .pc-n { font-weight: 700; }
-.pc-day.band { background: rgba(167, 139, 250, .18); }
-.pc-day.on { background: var(--violet); color: #FFFFFF; }
-.pc-day.on .pc-wd { color: rgba(255, 255, 255, .8); }
-.pc-sum { font-size: 13px; color: var(--muted); }
-.pc-unknown { flex-shrink: 0; height: 32px; padding: 0 14px; border-radius: 16px; border: 1px solid var(--line-control); background: transparent; color: var(--ink); font-size: 13px; }
-.pc-unknown.on { background: var(--selected); border-color: var(--selected); color: var(--accent-ink); }
-.pc-wrap { padding: 12px 0 16px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+/* ---------- «Месячные идут сейчас?» (partials/period-steps.html): онбординг и профиль ---------- */
+.ps-q { font-family: var(--font-display); font-size: 16px; font-weight: 700; }
+.onb-block .ps-q { font-size: 19px; line-height: 1.25; color: #FFFFFF; text-shadow: none; }
+.ps-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pc-wrap { padding: 12px 0 18px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
 .pc-help { align-self: flex-start; border: 0; background: transparent; padding: 0; color: var(--violet); font-size: 14px; }
 .cal-chevron { transition: transform .2s; }
 .cal-chevron.open { transform: rotate(180deg); }
 
 /* ---------- онбординг: в стиле главной — светлый фон, стеклянные плитки и блоки (.gcard), вордмарк и полоса прогресса ---------- */
-.onb-top { display: flex; align-items: center; justify-content: space-between; height: 44px; }
 .onb-back { width: 44px; height: 44px; }
 button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2); }
-.wordmark { width: 84px; height: auto; }
-[data-theme="dark"] .wordmark, [data-theme="dark"] .welcome-logo { filter: invert(1) brightness(1.6); }
+
 .onb-progress { display: flex; gap: 6px; margin-top: 8px; }
 .onb-bar { flex: 1; height: 3px; border-radius: 2px; background: var(--track); transition: background .3s; }
 .onb-bar.on { background: var(--violet); }
@@ -473,239 +457,50 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
 .ggoal.on { background: #FFFFFF; color: var(--accent-ink); box-shadow: none; }
 .ggoal.on .goal-check { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 
-/* лента дней на цветном блоке */
-.gcard .pc { text-shadow: none; }
-.gcard .pc-day, .gcard .pc-sum { color: #FFFFFF; }
-.gcard .pc-wd, .gcard .pc-m { color: rgba(255, 255, 255, .78); }
-.gcard .pc-day.band { background: rgba(255, 255, 255, .2); }
-.gcard .pc-day.on { background: #FFFFFF; color: var(--accent-ink); }
-.gcard .pc-day.on .pc-wd { color: var(--accent-ink); opacity: .7; }
-.gcard .pc-unknown { color: #FFFFFF; border: 0; background: rgba(255, 255, 255, .2); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .45); }
-.gcard .pc-unknown.on { background: #FFFFFF; color: var(--accent-ink); box-shadow: none; }
-
-/* ---------- первый экран: приветствие (варианты A / B / C — src/views/onboarding.js) ---------- */
-.shell:has(.welcome-a) { background: #F8F7F2; }   /* Warm White */
-.shell:has(.welcome-b) { background: #EDE5FF; }   /* Lavender — фон стартового экрана по брендбуку */
-.welcome { position: relative; flex-grow: 1; display: flex; flex-direction: column; gap: 22px; min-height: 0; color: #17141C; }
-.welcome-logo { position: relative; z-index: 2; width: 112px; height: auto; margin-top: 6px; }
-.welcome-text { position: relative; z-index: 2; margin-top: auto; }
-.welcome-title { margin: 0; font-family: var(--font-display); font-weight: 800; letter-spacing: -.03em; color: #183A1B; line-height: 1.04; }
-.welcome-title span { display: block; }
-.wt-1 { font-size: 46px; }
-.wt-2 { font-size: 34px; }
-.wt-2 .wt-acc { display: inline; }
-.wt-acc { color: #7954C8; }
-.welcome-sub { margin: 16px 0 0; font-size: 16px; line-height: 1.45; color: #2E2A35; max-width: 340px; }
-.welcome-card { position: relative; z-index: 1; flex: 1 1 auto; min-height: 220px; border-radius: 28px; overflow: hidden; background: #F3F1EA; }
-.welcome-card img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; display: block; }
-/* B: всё по центру, знак целиком тонким контуром */
-.welcome-b { align-items: center; text-align: center; }
-.welcome-b .welcome-title { color: #1F1630; }
-.welcome-b .wt-1 { font-size: 44px; }
-.welcome-b .wt-2 { font-size: 26px; }
-.welcome-b .wt-acc.block { font-size: 44px; }
-.welcome-b .welcome-sub { margin-left: auto; margin-right: auto; }
-.welcome-mark { flex: 1 1 auto; min-height: 200px; max-height: 340px; width: 78%; object-fit: contain; }
-/* C — логика главной: фото на фоне (как 3D-кишечник за «Комфортом»), текст на фиолетовой стеклянной карточке .g-glass, ниже — согласия и лаймовая кнопка */
-.shell:has(.welcome-c) { background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 50%, var(--bg) 100%); }
-.welcome-photo { position: absolute; z-index: 0; left: -16px; right: -16px; top: calc(-28px - var(--safe-top)); height: calc(78% + 28px + var(--safe-top));
-  background: url(/brand/welcome-photo.webp) 38% center / cover no-repeat;
-  -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent 100%); mask-image: linear-gradient(180deg, #000 70%, transparent 100%); }
-.welcome-c .welcome-logo { filter: brightness(0) invert(1); }
-.welcome-glass { padding: 22px 20px 22px; border-radius: 28px; color: #FFFFFF; background: radial-gradient(70% 90% at 50% 55%, rgba(121, 84, 200, .78) 0%, rgba(150, 119, 230, .66) 100%); }
-.welcome-glass .welcome-title { color: #FFFFFF; text-shadow: 0 1px 12px rgba(40, 20, 90, .25); }
-.welcome-c .wt-1, .welcome-c .wt-2 { font-size: 40px; }
-.welcome-glass .welcome-sub { color: rgba(255, 255, 255, .92); margin-top: 12px; }
-.shell:has(.welcome-c) .welcome-btn, .shell:has(.welcome-c) .welcome-btn.off { background: var(--accent); color: var(--accent-ink); }
-.shell:has(.welcome-c) .consent { color: var(--muted); }
-.shell:has(.welcome-c) .consent a { color: var(--ink); }
+   /* Warm White */
+   /* Lavender — фон стартового экрана по брендбуку */
 
 .consents { display: flex; flex-direction: column; gap: 2px; padding-bottom: 8px; }
-.shell:has(.welcome) .consent { padding: 4px 2px; color: #2E2A35; font-size: 14px; align-items: center; }
-.shell:has(.welcome) .consent a { color: #17141C; }
-.shell:has(.welcome) .checkbox { border-color: rgba(23, 20, 28, .45); }
-.shell:has(.welcome) .onb-footer { position: relative; z-index: 2; }
-.welcome-btn { position: relative; background: #183A1B; color: #FFFFFF; font-weight: 600; }
-.shell:has(.welcome-b) .welcome-btn { background: #3A1F5C; }
-.welcome-btn .btn-arrow { position: absolute; right: 24px; }
-.welcome-btn.off { background: #183A1B; color: #FFFFFF; opacity: .35; }
-.shell:has(.welcome-b) .welcome-btn.off { background: #3A1F5C; }
-
-/* ---- варианты раскладки экрана с фото (?welcome=c1…c5), для выбора ---- */
-.lay:not(.lay8) .welcome-text { background: none; }
-/* 1: фото на весь экран, затемнение снизу, белый текст */
-.lay1 .welcome-photo { height: calc(100vh + 40px); -webkit-mask-image: none; mask-image: none; }
-.lay1 .welcome-photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(23, 14, 40, 0) 30%, rgba(23, 14, 40, .82) 70%); }
-.lay .welcome-logo { order: -1; }
-.lay1 .welcome-title, .shell:has(.lay1) .consent, .shell:has(.lay1) .consent a { color: #FFFFFF; }
-.lay1 .welcome-sub { color: rgba(255, 255, 255, .88); }
-.shell:has(.lay1) .checkbox { border-color: rgba(255, 255, 255, .8); }
-/* 2: Warm White, фото в скруглённой карточке, заголовок с акцентом */
-.shell:has(.lay2) { background: #F8F7F2; }
-.lay2 .welcome-photo { position: relative; left: 0; right: 0; top: 0; height: auto; flex: 1 1 auto; min-height: 240px; border-radius: 28px; -webkit-mask-image: none; mask-image: none; }
-.lay2 .welcome-logo { filter: none; }
-.shell:has(.lay2) .welcome-btn, .shell:has(.lay2) .welcome-btn.off { background: #183A1B; color: #FFFFFF; }
-/* 3: фото сверху до края, снизу белая панель со скруглением */
-.shell:has(.lay3) { background: #F8F7F2; }
-.lay3 .welcome-photo { height: calc(60% + 28px + var(--safe-top)); -webkit-mask-image: none; mask-image: none; }
-.lay3::before { content: ''; position: absolute; z-index: 1; left: -16px; right: -16px; top: 54%; bottom: -300px; border-radius: 32px 32px 0 0; background: #F8F7F2; }
-.shell:has(.lay3) .welcome-btn, .shell:has(.lay3) .welcome-btn.off { background: #183A1B; color: #FFFFFF; }
-/* 4: Lavender, фото аркой по центру, всё по центру */
-.shell:has(.lay4) { background: #EDE5FF; }
-.lay4 { align-items: center; text-align: center; }
-.lay4 .welcome-logo { filter: none; }
-.lay4 .welcome-photo { position: relative; left: 0; right: 0; top: 0; width: 82%; height: auto; flex: 1 1 auto; min-height: 260px; border-radius: 999px 999px 32px 32px; -webkit-mask-image: none; mask-image: none; }
-.lay4 .welcome-title { color: #1F1630; }
-.lay4 .welcome-sub { margin-left: auto; margin-right: auto; }
-.shell:has(.lay4) .welcome-btn, .shell:has(.lay4) .welcome-btn.off { background: #3A1F5C; color: #FFFFFF; }
-/* 5: фото сверху, фиолетовая панель Purple Accent, белый текст, лаймовая кнопка */
-.shell:has(.lay5) { background: #7954C8; }
-.lay5 .welcome-photo { height: calc(60% + 28px + var(--safe-top)); -webkit-mask-image: none; mask-image: none; }
-.lay5::before { content: ''; position: absolute; z-index: 1; left: -16px; right: -16px; top: 54%; bottom: -300px; border-radius: 32px 32px 0 0; background: #7954C8; }
-.lay5 .welcome-title, .shell:has(.lay5) .consent, .shell:has(.lay5) .consent a { color: #FFFFFF; }
-.lay5 .welcome-sub { color: rgba(255, 255, 255, .88); }
-.shell:has(.lay5) .checkbox { border-color: rgba(255, 255, 255, .8); }
-
-/* вариант 1: фото дальше — уже не на весь экран по высоте, ниже — тёмный фиолетовый фон под затемнением */
-.shell:has(.lay1) { background: #24173A; }
-.lay1.zoom-a .welcome-photo { background-size: 205% auto; background-position: 40% top; -webkit-mask-image: linear-gradient(180deg, #000 420px, transparent 600px); mask-image: linear-gradient(180deg, #000 420px, transparent 600px); }
-.lay1.zoom-b .welcome-photo { background-size: 170% auto; background-position: 35% top; -webkit-mask-image: linear-gradient(180deg, #000 320px, transparent 495px); mask-image: linear-gradient(180deg, #000 320px, transparent 495px); }
-/* чекбоксы на первом экране — меньше */
-.shell:has(.welcome) .checkbox { width: 18px; height: 18px; border-radius: 6px; }
-.shell:has(.welcome) .checkbox svg { width: 10px; height: 10px; }
-.shell:has(.welcome) .consent { gap: 10px; font-size: 13px; }
 
 /* 6 (по макету): фото сверху до краёв, лавандовая панель со скруглением, текст тёмно-фиолетовый, кнопка Deep Purple */
-.shell:has(.lay6) { background: #EDE5FF; }
-.lay6 .welcome-photo { height: calc(56% + 28px + var(--safe-top)); background-position: 30% 35%; -webkit-mask-image: none; mask-image: none; }
-.lay6::before { content: ''; position: absolute; z-index: 1; left: -16px; right: -16px; top: 51%; bottom: -300px; border-radius: 32px 32px 0 0; background: #EDE5FF; }
-.lay6 .welcome-title { color: #1F1630; }
-.lay6 .wt-1, .lay6 .wt-2 { font-size: 44px; }
-.lay6 .welcome-sub { color: #2E2A35; }
-.shell:has(.lay6) .welcome-btn, .shell:has(.lay6) .welcome-btn.off { background: #3A1F5C; color: #FFFFFF; }
-.shell:has(.lay6) .checkbox { border-color: rgba(31, 22, 48, .55); }
-.shell:has(.lay6) .checkbox.on { background: #3A1F5C; border-color: #3A1F5C; color: #FFFFFF; }
-.lay6 .welcome-text { position: absolute; left: 0; right: 0; top: calc(51% + 28px); margin: 0; }
-.lay6 .wt-1, .lay6 .wt-2 { font-size: 46px; }
-/* фото до середины экрана, как в макете */
-.lay6 .welcome-photo { height: calc(72% + 28px + var(--safe-top)); }
-.lay6::before { top: 66%; }
-.lay6 .welcome-text { top: calc(66% + 26px); }
-.lay6 .wt-1, .lay6 .wt-2 { font-size: 42px; }
-.lay6 .welcome-sub { margin-top: 12px; }
-/* невысокие телефоны: фото короче, заголовок меньше — чтобы текст не наезжал на согласия */
-@media (max-height: 760px) {
-  .lay6 .welcome-photo { height: calc(60% + 28px + var(--safe-top)); }
-  .lay6::before { top: 54%; }
-  .lay6 .welcome-text { top: calc(54% + 22px); }
-  .lay6 .wt-1, .lay6 .wt-2 { font-size: 34px; }
-  .lay6 .welcome-sub { font-size: 15px; }
-}
-/* «на 14 дней» — тем же размером и начертанием, что заголовок, цветом Purple Accent (как «за 14 дней» в других вариантах) */
-.lay6 .wt-acc.block { font-size: 42px; color: #7954C8; }
-.lay6 .welcome-text { top: calc(66% - 4px); }
-@media (max-height: 760px) { .lay6 .wt-acc.block { font-size: 34px; } .lay6 .welcome-text { top: calc(54% + 14px); } }
-/* с «на 14 дней» заголовок на строку длиннее — панель выше */
-.lay6 .welcome-photo { height: calc(66% + 28px + var(--safe-top)); }
-.lay6::before { top: 60%; }
-.lay6 .welcome-text { top: calc(60% + 24px); }
-.lay6 .wt-1, .lay6 .wt-2, .lay6 .wt-acc.block { font-size: 40px; }
-@media (max-height: 760px) {
-  .lay6 .welcome-photo { height: calc(60% + 28px + var(--safe-top)); }
-  .lay6::before { top: 54%; }
-  .lay6 .welcome-text { top: calc(54% + 18px); }
-  .lay6 .wt-1, .lay6 .wt-2, .lay6 .wt-acc.block { font-size: 34px; }
-}
-
-/* «14 дней» — фиолетовой плашкой над заголовком (акцент на числе, как «капля» в брендбуке), логотип выше и меньше */
-.welcome-badge { position: relative; display: inline-flex; align-items: center; height: 30px; padding: 0 14px; margin-bottom: 12px; border-radius: 15px; background: #7954C8; color: #FFFFFF; font-family: var(--font-display); font-size: 15px; font-weight: 700; }
-.lay6 .welcome-logo { width: 84px; margin-top: -14px; }
-.lay6 .welcome-photo { height: calc(68% + 28px + var(--safe-top)); }
-.lay6::before { top: 62%; }
-.lay6 .welcome-text { top: calc(62% + 22px); }
-@media (max-height: 760px) {
-  .lay6 .welcome-photo { height: calc(58% + 28px + var(--safe-top)); }
-  .lay6::before { top: 52%; }
-  .lay6 .welcome-text { top: calc(52% + 18px); }
-}
-@media (min-height: 761px) { .lay6 .welcome-photo { height: calc(65% + 28px + var(--safe-top)); } .lay6::before { top: 59%; } .lay6 .welcome-text { top: calc(59% + 22px); } }
-
-/* 7: фото на весь экран, шторка — фиолетовое стекло с размытием и бликом по краю (как «Комфорт за 7 дней» на главной) */
-.shell:has(.lay7) { background: #3B2A63; }
-.lay7 .welcome-photo { height: calc(100vh + 40px); background-position: 30% top; background-size: auto 72%; -webkit-mask-image: none; mask-image: none; background-color: #9C86D9; }
-.lay7::before { content: ''; position: absolute; z-index: 1; left: -16px; right: -16px; top: 57%; bottom: -300px; border-radius: 34px 34px 0 0;
-  background: radial-gradient(90% 60% at 50% 0%, rgba(167, 139, 250, .55) 0%, rgba(121, 84, 200, .62) 55%, rgba(84, 56, 160, .78) 100%);
-  -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), inset 0 0 0 1px rgba(255, 255, 255, .28), inset 0 18px 40px rgba(255, 255, 255, .14), 0 -10px 40px rgba(40, 20, 90, .25); }
-.lay7 .welcome-logo { width: 84px; margin-top: -14px; }
-.lay7 .welcome-text { position: absolute; left: 0; right: 0; top: calc(57% + 24px); margin: 0; }
-.lay7 .welcome-title { color: #FFFFFF; text-shadow: 0 1px 14px rgba(40, 20, 90, .3); }
-.lay7 .wt-1, .lay7 .wt-2 { font-size: 40px; }
-.lay7 .welcome-sub { color: rgba(255, 255, 255, .9); margin-top: 12px; }
-.lay7 .welcome-badge { background: rgba(255, 255, 255, .22); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .45); }
-.shell:has(.lay7) .welcome-btn, .shell:has(.lay7) .welcome-btn.off { background: var(--accent); color: var(--accent-ink); }
-.shell:has(.lay7) .welcome-btn.off { opacity: .45; }
-/* согласие — тихой строкой: мелко, без жирных подчёркиваний */
-.shell:has(.welcome) .consent { font-size: 12.5px; line-height: 1.4; gap: 10px; padding: 2px 2px 10px; }
-.shell:has(.welcome) .consent a { text-decoration-thickness: 1px; text-decoration-color: currentColor; text-underline-offset: 2px; }
-.shell:has(.lay7) .consent, .shell:has(.lay7) .consent a { color: rgba(255, 255, 255, .78); }
-.shell:has(.lay7) .checkbox { border-color: rgba(255, 255, 255, .7); border-width: 1.5px; }
-.shell:has(.lay7) .checkbox.on { background: #FFFFFF; border-color: #FFFFFF; color: #3A1F5C; }
-@media (max-height: 760px) {
-  .lay7::before { top: 50%; }
-  .lay7 .welcome-text { top: calc(50% + 18px); }
-  .lay7 .wt-1, .lay7 .wt-2 { font-size: 34px; }
-  .lay7 .welcome-sub { font-size: 15px; }
-}
-.lay7 .welcome-photo { height: calc(74% + 28px + var(--safe-top)); background-size: cover; background-position: 30% 30%; background-color: transparent; }
-
-/* 8: светлый фон как у всего приложения; фото сверху плавно уходит в фон; текст — в сиреневом блоке, как блоки на шагах 2–4 */
-.shell:has(.lay8) { background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 50%, var(--bg) 100%); }
-.lay8 .welcome-photo { height: calc(64% + 28px + var(--safe-top)); background-position: 30% 30%;
-  -webkit-mask-image: linear-gradient(180deg, #000 62%, transparent 100%); mask-image: linear-gradient(180deg, #000 62%, transparent 100%); }
-.welcome-block { padding: 22px 20px 24px; border-radius: 30px; }
-.welcome-block .welcome-title { color: #FFFFFF; }
-.lay8 .wt-1, .lay8 .wt-2 { font-size: 38px; }
-.welcome-block .welcome-sub { color: rgba(255, 255, 255, .92); margin-top: 10px; font-size: 16px; }
-.shell:has(.lay8) .welcome-btn, .shell:has(.lay8) .welcome-btn.off { background: var(--accent); color: var(--accent-ink); }
-.shell:has(.lay8) .welcome-btn.off { opacity: .5; }
-.shell:has(.lay8) .consent, .shell:has(.lay8) .consent a { color: var(--muted); }
-.lay8 .welcome-photo { height: calc(78% + 28px + var(--safe-top)); -webkit-mask-image: linear-gradient(180deg, #000 66%, transparent 96%); mask-image: linear-gradient(180deg, #000 66%, transparent 96%); }
-
-/* 9: фото со светлым фоном (стена перекрашена в фон приложения), шторка снизу во всю ширину — градиент как у сиреневых блоков (.g-lav) */
-.shell:has(.lay9) { background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 50%, var(--bg) 100%); }
-.lay9 .welcome-photo { height: calc(66% + 28px + var(--safe-top)); background-position: 30% 30%; -webkit-mask-image: none; mask-image: none; }
-.lay9::before { content: ''; position: absolute; z-index: 1; left: -16px; right: -16px; top: 60%; bottom: -300px; border-radius: 32px 32px 0 0;
-  background: radial-gradient(55% 45% at 50% 40%, #8A68DC 0%, rgba(138, 104, 220, 0) 100%), radial-gradient(70% 40% at 100% 70%, rgba(237, 229, 255, .3) 0%, rgba(237, 229, 255, 0) 70%), linear-gradient(160deg, #A68CF6 0%, #9B7FF2 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45); }
-.lay9 .welcome-logo { width: 84px; margin-top: -14px; filter: none; }
-.lay9 .welcome-text { position: absolute; left: 0; right: 0; top: calc(60% + 26px); margin: 0; }
-.lay9 .welcome-title { color: #FFFFFF; text-shadow: 0 1px 2px rgba(0, 0, 0, .1), 0 1px 12px rgba(0, 0, 0, .18); }
-.lay9 .wt-1, .lay9 .wt-2 { font-size: 40px; }
-.lay9 .welcome-sub { color: rgba(255, 255, 255, .92); margin-top: 10px; }
-.shell:has(.lay9) .welcome-btn, .shell:has(.lay9) .welcome-btn.off { background: var(--accent); color: var(--accent-ink); }
-.shell:has(.lay9) .welcome-btn.off { opacity: .55; }
-.shell:has(.lay9) .consent, .shell:has(.lay9) .consent a { color: rgba(255, 255, 255, .85); }
-.shell:has(.lay9) .checkbox { border-color: rgba(255, 255, 255, .75); border-width: 1.5px; }
-.shell:has(.lay9) .checkbox.on { background: #FFFFFF; border-color: #FFFFFF; color: #3A1F5C; }
-@media (max-height: 760px) {
-  .lay9 .welcome-photo { height: calc(58% + 28px + var(--safe-top)); }
-  .lay9::before { top: 52%; }
-  .lay9 .welcome-text { top: calc(52% + 20px); }
-  .lay9 .wt-1, .lay9 .wt-2 { font-size: 34px; }
-}
-.lay9 .welcome-logo { filter: brightness(0) invert(1) drop-shadow(0 1px 6px rgba(0, 0, 0, .25)); }
-@media (min-height: 761px) { .lay9 .welcome-photo { height: calc(70% + 28px + var(--safe-top)); } .lay9::before { top: 64%; } .lay9 .welcome-text { top: calc(64% + 26px); } }
 
 /* шаги 2–4: «назад» в одной строке с полосой прогресса, без логотипа */
 .onb-head { display: flex; align-items: center; gap: 14px; height: 44px; }
 .onb-head .onb-progress { flex: 1; margin-top: 0; }
 
 /* шаг «Цикл»: вопрос крупно в блоке, «Если актуально» — отдельно под блоком обычными чипами */
-.onb-q { font-family: var(--font-display); font-size: 19px; line-height: 1.25; font-weight: 700; color: #FFFFFF; text-shadow: none; }
-.pc-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.pc-month { font-size: 14px; font-weight: 500; color: var(--muted); }
-.gcard .pc-month { color: rgba(255, 255, 255, .85); }
-.pc-strip { padding-top: 14px; }
 .onb-extra .chips .chip { min-height: 36px; font-size: 14px; }
-.pc-strip { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 100%); mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 100%); }
+
+/* ---------- первый экран: приветствие (шаг «consent» онбординга) ----------
+   Фото сверху (стена за девушкой перекрашена в цвет фона приложения), снизу во всю ширину — шторка
+   с градиентом как у сиреневых блоков (.g-lav). Логотип белый, кнопка лаймовая, одно согласие. */
+.shell:has(.welcome) .onb-footer { position: relative; z-index: 2; }
+.welcome { position: relative; flex-grow: 1; display: flex; flex-direction: column; min-height: 0; }
+.welcome::before { content: ''; position: absolute; z-index: 1; left: -16px; right: -16px; top: 64%; bottom: -300px; border-radius: 32px 32px 0 0;
+  background: radial-gradient(55% 45% at 50% 40%, #8A68DC 0%, rgba(138, 104, 220, 0) 100%), radial-gradient(70% 40% at 100% 70%, rgba(237, 229, 255, .3) 0%, rgba(237, 229, 255, 0) 70%), linear-gradient(160deg, #A68CF6 0%, #9B7FF2 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45); }
+.welcome-photo { position: absolute; z-index: 0; left: -16px; right: -16px; top: calc(-28px - var(--safe-top)); height: calc(70% + 28px + var(--safe-top));
+  background: url(/brand/welcome-photo.webp) 30% 30% / cover no-repeat; }
+.welcome-logo { position: relative; z-index: 2; width: 84px; height: auto; margin-top: -14px; filter: brightness(0) invert(1) drop-shadow(0 1px 6px rgba(0, 0, 0, .25)); }
+.welcome-text { position: absolute; z-index: 2; left: 0; right: 0; top: calc(64% + 26px); }
+.welcome-title { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 40px; line-height: 1.04; letter-spacing: -.03em; color: #FFFFFF;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .1), 0 1px 12px rgba(0, 0, 0, .18); }
+.welcome-title span { display: block; }
+.welcome-sub { margin: 10px 0 0; font-size: 16px; line-height: 1.45; color: rgba(255, 255, 255, .92); max-width: 340px; }
+.welcome-btn, .welcome-btn.off { position: relative; background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.welcome-btn.off { opacity: .55; }
+.welcome-btn .btn-arrow { position: absolute; right: 24px; }
+.shell:has(.welcome) .consent { font-size: 12.5px; line-height: 1.4; gap: 10px; padding: 2px 2px 10px; align-items: center; }
+.shell:has(.welcome) .consent, .shell:has(.welcome) .consent a { color: rgba(255, 255, 255, .85); }
+.shell:has(.welcome) .consent a { text-decoration-thickness: 1px; text-decoration-color: currentColor; text-underline-offset: 2px; }
+.shell:has(.welcome) .checkbox { width: 18px; height: 18px; border-radius: 6px; border: 1.5px solid rgba(255, 255, 255, .75); }
+.shell:has(.welcome) .checkbox svg { width: 10px; height: 10px; }
+.shell:has(.welcome) .checkbox.on { background: #FFFFFF; border-color: #FFFFFF; color: #3A1F5C; }
+/* невысокие телефоны: фото короче, заголовок меньше — чтобы текст не наезжал на согласие */
+@media (max-height: 760px) {
+  .welcome-photo { height: calc(58% + 28px + var(--safe-top)); }
+  .welcome::before { top: 52%; }
+  .welcome-text { top: calc(52% + 20px); }
+  .welcome-title { font-size: 34px; }
+}
+

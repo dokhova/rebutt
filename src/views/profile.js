@@ -4,7 +4,7 @@ import { GOALS, CYCLE_OPTIONS } from '../domain/catalog.js';
 import { yearsWord, dayMonthShort, addDays } from '../domain/dates.js';
 import { cycleDay } from '../domain/cycle.js';
 import { homeScreenPlatform } from '../services/telegram.js';
-import { periodCalendarView } from './period-calendar.js';
+import { periodSteps } from './period-steps.js';
 import { IS_DEMO } from '../config.js';
 import { bodyFieldsView } from './body-fields.js';
 import { noCyclePhases } from '../domain/profile.js';
@@ -45,14 +45,16 @@ export function profileView(app) {
     cycleOn: p.cycle,
     cycleSwitch: sw(p.cycle),
     toggleCycle: () => app.toggleCycle(),
-    cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: sw(p[id]), toggle: () => app.toggleCycleOption(id) })),
+    cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: chip(p[id]), toggle: () => app.toggleCycleOption(id) })),
+    // свёрнуто — одна строка «День цикла»; по нажатию — короткие вопросы, длина цикла и особые случаи
+    cycleSummary: noCyclePhases(p) ? (p.pregnant ? 'беременность' : 'менопауза') : null,
     showCycleDates: p.cycle && !noCyclePhases(p),
     // день цикла сегодня: «−» / «+» двигают начало месячных; не знаем дату — начинаем с 1-го дня
     ...cycleDayView(app, p),
     cycleCalOpen: app.state.cycleCal,
     toggleCycleCal: () => app.toggleCycleCalendar(),
     cycleCalChevron: 'row-chevron cal-chevron' + (app.state.cycleCal ? ' open' : ''),
-    ...periodCalendarView(app),
+    ...periodSteps(app),
     cycleLen: p.len,
     lenMinus: () => app.setCycleLength(p.len - 1),
     lenPlus: () => app.setCycleLength(p.len + 1),
