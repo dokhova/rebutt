@@ -74,7 +74,7 @@ npx vercel dev               # фронт + /api на http://localhost:3000
 | Кнопки «Стакан / Чашка / Бутылка» | `src/domain/catalog.js` → `WATER_STEPS` |
 | Что ИИ знает о пользователе | `src/domain/ai-context.js` |
 | Подсказки «Что может помочь» на главной | `src/domain/suggestions.js` |
-| Цвета, шрифты (обе темы) | `src/styles/tokens.css`: `:root` — светлая, `[data-theme="dark"]` — тёмная. Шрифты Manrope / Onest / Doto подключены в `index.html` |
+| Цвета, шрифты (обе темы) | `src/styles/tokens.css`: `:root` — светлая, `[data-theme="dark"]` — тёмная. Шрифты Manrope / Onest / Doto — свои файлы из пакетов @fontsource, подключены в `src/main.js` |
 | Тема по умолчанию, цвета шапки Telegram | `src/services/theme.js` (`DEFAULT_THEME`, `CHROME`) |
 | Стеклянные карточки на главной | `src/styles/screens.css` → `.gcard`, `.g-violet` / `.g-lav` / `.g-moss` / `.g-deep` / `.g-sage` |
 | Промпты ИИ | `api/ask.js`, `api/food.js`, `api/insights.js`; общие правила — `SAFETY` в `api/_lib/openai.js` |

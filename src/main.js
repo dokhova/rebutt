@@ -1,4 +1,15 @@
 // Точка входа: стили, аналитика, регистрация шаблонов и запуск приложения.
+// Шрифты брендбука — свои файлы в сборке (а не Google Fonts): грузятся везде, в т. ч. где Google недоступен
+import '@fontsource/manrope/500.css';
+import '@fontsource/manrope/600.css';
+import '@fontsource/manrope/700.css';
+import '@fontsource/manrope/800.css';
+import '@fontsource/onest/300.css';
+import '@fontsource/onest/400.css';
+import '@fontsource/onest/500.css';
+import '@fontsource/onest/600.css';
+import '@fontsource/doto/700.css';
+import '@fontsource/doto/800.css';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/components.css';
@@ -29,6 +40,7 @@ import mealCardHtml from './templates/partials/meal-card.html?raw';
 import addSheetHtml from './templates/partials/add-sheet.html?raw';
 import infoCardHtml from './templates/partials/info-card.html?raw';
 import homePromptHtml from './templates/partials/home-prompt.html?raw';
+import periodStepsHtml from './templates/partials/period-steps.html?raw';
 import addCarouselHtml from './templates/partials/add-carousel.html?raw';
 import addCupsHtml from './templates/partials/add-cups.html?raw';
 import addFoodHtml from './templates/partials/add-food.html?raw';
@@ -57,6 +69,7 @@ registerPartial('meal-card', mealCardHtml);
 registerPartial('add-sheet', addSheetHtml);
 registerPartial('info-card', infoCardHtml);
 registerPartial('home-prompt', homePromptHtml);
+registerPartial('period-steps', periodStepsHtml);
 registerPartial('add-carousel', addCarouselHtml);
 registerPartial('add-cups', addCupsHtml);
 registerPartial('edit-modal', editModalHtml);

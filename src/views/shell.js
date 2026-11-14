@@ -14,6 +14,7 @@ export function shellView(app, screen, edit = null) {
   const tab = (name) => 'tab' + (screen === name ? ' on' : '');
   return {
     appName: APP_NAME,
+    shellCls: 'shell',
     is: {
       booting: screen === 'booting',
       legal: screen === 'legal',

@@ -51,7 +51,6 @@
 .date-input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; border: 0; padding: 0; }
 .date-input::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
 
-
 .home-h2 { margin: 16px 0 4px 2px; font-family: var(--font-display); font-size: 20px; line-height: 26px; font-weight: 700; letter-spacing: -.01em; }
 .h2-row { display: flex; align-items: center; gap: 8px; }
 .h2-row .info-btn { margin-top: 14px; }
@@ -132,7 +131,6 @@
 .tip-icon.mild { background: rgba(127, 168, 102, .18); color: var(--accent-text); }
 .tip-icon.sens { background: rgba(167, 139, 250, .16); color: var(--violet-soft); }
 .tip-title { font-size: 16px; line-height: 21px; }
-
 
 /* ================= Новая запись ================= */
 
@@ -415,3 +413,94 @@
 /* Цикл на «Сегодня»: короткая строка, только в окна месячных/овуляции */
 .cycle-hint { padding: 14px 16px; font-size: 15px; line-height: 1.45; }
 .cycle-hint-title { font-weight: 600; }
+
+/* ---------- «Месячные идут сейчас?» (partials/period-steps.html): онбординг и профиль ---------- */
+.ps-q { font-family: var(--font-display); font-size: 16px; font-weight: 700; }
+.onb-block .ps-q { font-size: 19px; line-height: 1.25; color: #FFFFFF; text-shadow: none; }
+.ps-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pc-wrap { padding: 12px 0 18px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
+.pc-help { align-self: flex-start; border: 0; background: transparent; padding: 0; color: var(--violet); font-size: 14px; }
+.cal-chevron { transition: transform .2s; }
+.cal-chevron.open { transform: rotate(180deg); }
+
+/* ---------- онбординг: в стиле главной — светлый фон, стеклянные плитки и блоки (.gcard), вордмарк и полоса прогресса ---------- */
+.onb-back { width: 44px; height: 44px; }
+button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2); }
+
+.onb-progress { display: flex; gap: 6px; margin-top: 8px; }
+.onb-bar { flex: 1; height: 3px; border-radius: 2px; background: var(--track); transition: background .3s; }
+.onb-bar.on { background: var(--violet); }
+
+.onb-tiles { display: flex; flex-direction: column; gap: 10px; }
+.onb-tile { display: flex; align-items: center; gap: 14px; padding: 18px; }
+.onb-tile svg { flex-shrink: 0; }
+.onb-tile-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+.onb-tile-sub { font-size: 14px; line-height: 1.35; margin-top: 2px; opacity: .92; }
+
+.onb-block { gap: 16px; }
+/* внутри цветных блоков — светлое стекло (как белые «+» и полоски на главной), без тёмных подложек */
+.onb-block .caption, .onb-block .hint { color: #FFFFFF; text-shadow: none; }
+.onb-block .field { gap: 8px; }
+.onb-block .field-input { background: rgba(255, 255, 255, .22); border-color: rgba(255, 255, 255, .45); color: #FFFFFF; text-shadow: none; }
+.onb-block .field-input::placeholder { color: rgba(255, 255, 255, .75); }
+.onb-block .field-input:focus { border-color: #FFFFFF; background: rgba(255, 255, 255, .3); }
+.onb-block .body-unit { color: rgba(255, 255, 255, .9); }
+.onb-block .gsegs { background: rgba(255, 255, 255, .2); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .4); }
+.onb-block .drum-frame { background: rgba(255, 255, 255, .24); border-color: rgba(255, 255, 255, .45); }
+.onb-block .drum-item { color: rgba(255, 255, 255, .6); }
+.onb-block .drum-item.on { color: #FFFFFF; }
+.onb-block .gchip { background: rgba(255, 255, 255, .2); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .45); }
+.onb-block .gchip.on { background: #FFFFFF; color: var(--accent-ink); box-shadow: none; }
+.ggoal { width: 100%; min-height: 56px; border-radius: 20px; border: 0; padding: 0 18px; display: flex; align-items: center; gap: 14px; font-size: 16px; text-align: left; color: #FFFFFF; text-shadow: none;
+  background: rgba(255, 255, 255, .18); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .4); }
+.ggoal .goal-check { border-color: rgba(255, 255, 255, .8); color: var(--accent-ink); }
+.ggoal.on { background: #FFFFFF; color: var(--accent-ink); box-shadow: none; }
+.ggoal.on .goal-check { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+   /* Warm White */
+   /* Lavender — фон стартового экрана по брендбуку */
+
+.consents { display: flex; flex-direction: column; gap: 2px; padding-bottom: 8px; }
+
+/* 6 (по макету): фото сверху до краёв, лавандовая панель со скруглением, текст тёмно-фиолетовый, кнопка Deep Purple */
+
+/* шаги 2–4: «назад» в одной строке с полосой прогресса, без логотипа */
+.onb-head { display: flex; align-items: center; gap: 14px; height: 44px; }
+.onb-head .onb-progress { flex: 1; margin-top: 0; }
+
+/* шаг «Цикл»: вопрос крупно в блоке, «Если актуально» — отдельно под блоком обычными чипами */
+.onb-extra .chips .chip { min-height: 36px; font-size: 14px; }
+
+/* ---------- первый экран: приветствие (шаг «consent» онбординга) ----------
+   Фото сверху (стена за девушкой перекрашена в цвет фона приложения), снизу во всю ширину — шторка
+   с градиентом как у сиреневых блоков (.g-lav). Логотип белый, кнопка лаймовая, одно согласие. */
+.shell:has(.welcome) .onb-footer { position: relative; z-index: 2; }
+.welcome { position: relative; flex-grow: 1; display: flex; flex-direction: column; min-height: 0; }
+.welcome::before { content: ''; position: absolute; z-index: 1; left: -16px; right: -16px; top: 64%; bottom: -300px; border-radius: 32px 32px 0 0;
+  background: radial-gradient(55% 45% at 50% 40%, #8A68DC 0%, rgba(138, 104, 220, 0) 100%), radial-gradient(70% 40% at 100% 70%, rgba(237, 229, 255, .3) 0%, rgba(237, 229, 255, 0) 70%), linear-gradient(160deg, #A68CF6 0%, #9B7FF2 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45); }
+.welcome-photo { position: absolute; z-index: 0; left: -16px; right: -16px; top: calc(-28px - var(--safe-top)); height: calc(70% + 28px + var(--safe-top));
+  background: url(/brand/welcome-photo.webp) 30% 30% / cover no-repeat; }
+.welcome-logo { position: relative; z-index: 2; width: 84px; height: auto; margin-top: -14px; filter: brightness(0) invert(1) drop-shadow(0 1px 6px rgba(0, 0, 0, .25)); }
+.welcome-text { position: absolute; z-index: 2; left: 0; right: 0; top: calc(64% + 26px); }
+.welcome-title { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 40px; line-height: 1.04; letter-spacing: -.03em; color: #FFFFFF;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .1), 0 1px 12px rgba(0, 0, 0, .18); }
+.welcome-title span { display: block; }
+.welcome-sub { margin: 10px 0 0; font-size: 16px; line-height: 1.45; color: rgba(255, 255, 255, .92); max-width: 340px; }
+.welcome-btn, .welcome-btn.off { position: relative; background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.welcome-btn.off { opacity: .55; }
+.welcome-btn .btn-arrow { position: absolute; right: 24px; }
+.shell:has(.welcome) .consent { font-size: 12.5px; line-height: 1.4; gap: 10px; padding: 2px 2px 10px; align-items: center; }
+.shell:has(.welcome) .consent, .shell:has(.welcome) .consent a { color: rgba(255, 255, 255, .85); }
+.shell:has(.welcome) .consent a { text-decoration-thickness: 1px; text-decoration-color: currentColor; text-underline-offset: 2px; }
+.shell:has(.welcome) .checkbox { width: 18px; height: 18px; border-radius: 6px; border: 1.5px solid rgba(255, 255, 255, .75); }
+.shell:has(.welcome) .checkbox svg { width: 10px; height: 10px; }
+.shell:has(.welcome) .checkbox.on { background: #FFFFFF; border-color: #FFFFFF; color: #3A1F5C; }
+/* невысокие телефоны: фото короче, заголовок меньше — чтобы текст не наезжал на согласие */
+@media (max-height: 760px) {
+  .welcome-photo { height: calc(58% + 28px + var(--safe-top)); }
+  .welcome::before { top: 52%; }
+  .welcome-text { top: calc(52% + 20px); }
+  .welcome-title { font-size: 34px; }
+}
+

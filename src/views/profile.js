@@ -4,6 +4,7 @@ import { GOALS, CYCLE_OPTIONS } from '../domain/catalog.js';
 import { yearsWord, dayMonthShort, addDays } from '../domain/dates.js';
 import { cycleDay } from '../domain/cycle.js';
 import { homeScreenPlatform } from '../services/telegram.js';
+import { periodSteps } from './period-steps.js';
 import { IS_DEMO } from '../config.js';
 import { bodyFieldsView } from './body-fields.js';
 import { noCyclePhases } from '../domain/profile.js';
@@ -44,10 +45,16 @@ export function profileView(app) {
     cycleOn: p.cycle,
     cycleSwitch: sw(p.cycle),
     toggleCycle: () => app.toggleCycle(),
-    cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: sw(p[id]), toggle: () => app.toggleCycleOption(id) })),
+    cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: chip(p[id]), toggle: () => app.toggleCycleOption(id) })),
+    // свёрнуто — одна строка «День цикла»; по нажатию — короткие вопросы, длина цикла и особые случаи
+    cycleSummary: noCyclePhases(p) ? (p.pregnant ? 'беременность' : 'менопауза') : null,
     showCycleDates: p.cycle && !noCyclePhases(p),
     // день цикла сегодня: «−» / «+» двигают начало месячных; не знаем дату — начинаем с 1-го дня
     ...cycleDayView(app, p),
+    cycleCalOpen: app.state.cycleCal,
+    toggleCycleCal: () => app.toggleCycleCalendar(),
+    cycleCalChevron: 'row-chevron cal-chevron' + (app.state.cycleCal ? ' open' : ''),
+    ...periodSteps(app),
     cycleLen: p.len,
     lenMinus: () => app.setCycleLength(p.len - 1),
     lenPlus: () => app.setCycleLength(p.len + 1),
@@ -85,13 +92,7 @@ function cycleDayView(app, p) {
   const cd = cycleDay(p, todayK, todayK);
   const start = cd ? addDays(todayK, -(cd - 1)) : '';
   return {
-    cycleDayValue: cd ? cd + '-й' : '—',
-    cycleDayMinus: () => app.setCycleDay(cd ? cd - 1 : 1),
-    cycleDayPlus: () => app.setCycleDay(cd ? cd + 1 : 1),
-    cycleDayMinusCls: 'round-btn' + (cd > 1 ? '' : ' off'),
-    cycleDayPlusCls: 'round-btn' + (!cd || cd < p.len ? '' : ' off'),
-    cycleDaySub: cd
-      ? 'Месячные начались ' + dayMonthShort(start) + ', следующие примерно ' + dayMonthShort(addDays(start, p.len))
-      : 'День 1 — первый день месячных. Можно примерно',
+    cycleDayValue: cd ? cd + '-й день' : 'не указан',
+    cycleStartLabel: cd ? 'Начались ' + dayMonthShort(start) : 'Укажите начало месячных',
   };
 }
