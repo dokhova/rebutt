@@ -113,7 +113,7 @@
     <sc-if value="{{step.consent}}">
       <div class="consent" onClick="{{toggleTerms}}">
         <button class="{{termsCls}}" role="checkbox" aria-checked="{{termsChecked}}" aria-label="Принимаю условия"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></button>
-        <span>Принимаю <a href="{{terms.url}}" target="_blank" rel="noopener" onClick="{{terms.open}}">соглашение</a>, <a href="{{privacy.url}}" target="_blank" rel="noopener" onClick="{{privacy.open}}">политику конфиденциальности</a> и даю <a href="{{healthConsent.url}}" target="_blank" rel="noopener" onClick="{{healthConsent.open}}">согласие на обработку данных о здоровье</a></span>
+        <span>Принимаю <a href="{{terms.url}}" target="_blank" rel="noopener" onClick="{{terms.open}}">условия</a>, <a href="{{privacy.url}}" target="_blank" rel="noopener" onClick="{{privacy.open}}">политику</a> и <a href="{{healthConsent.url}}" target="_blank" rel="noopener" onClick="{{healthConsent.open}}">согласие</a> на&nbsp;обработку данных о&nbsp;здоровье</span>
       </div>
     </sc-if>
     <button class="{{nextCls}}" onClick="{{next}}">{{nextLabel}}<sc-if value="{{step.consent}}"><svg class="btn-arrow" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"></path></svg></sc-if></button>

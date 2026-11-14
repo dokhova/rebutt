@@ -75,7 +75,7 @@ export function onboardingView(app) {
   };
 }
 
-/** Варианты первого экрана (для выбора): ?welcome=a | b | c, по умолчанию — c6.
+/** Варианты первого экрана (для выбора): ?welcome=a | b | c, по умолчанию — c7.
  *  t1 / t2 — две строки заголовка, accent — фиолетовое «за 14 дней» (в строке t2 или отдельной строкой). */
 const WELCOME = {
   a: { t1: 'Узнай себя', t2: 'изнутри', accent: 'за 14 дней', inline: true, art: 'glass', sub: 'Отмечай еду, воду и самочувствие, чтобы понять, как они связаны.', cta: 'Начать' },
@@ -89,10 +89,12 @@ WELCOME.c1a = { ...WELCOME.c, layout: '1 zoom-a' };
 WELCOME.c1b = { ...WELCOME.c, layout: '1 zoom-b' };
 // c6 — по макету: фото сверху, лавандовая панель со скруглением, тёмно-фиолетовая кнопка
 WELCOME.c6 = { ...WELCOME.c, layout: 6 };
+// c7 — шторка стеклом, как блоки на главной: фото на весь экран, поверх — фиолетовое «зеркальное» стекло
+WELCOME.c7 = { ...WELCOME.c, layout: 7 };
 
 function welcomeVariant() {
-  const v = (typeof location !== 'undefined' && new URLSearchParams(location.search).get('welcome')) || 'c6';
-  const key = WELCOME[v] ? v : 'c6', w = WELCOME[key];
+  const v = (typeof location !== 'undefined' && new URLSearchParams(location.search).get('welcome')) || 'c7';
+  const key = WELCOME[v] ? v : 'c7', w = WELCOME[key];
   return {
     ...w, cls: 'welcome fade-in ' + (w.art === 'photo' ? 'welcome-c' : 'welcome-' + key) + (w.layout ? ' lay lay' + w.layout : ''),
     glass: w.art === 'glass', contour: w.art === 'contour', photo: w.art === 'photo',
