@@ -9,9 +9,26 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
 </head>
-<body>
+<body style="background:#F2F1EC">
   <div id="app"></div>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- SDK Telegram — своя копия (Bot API 8.0, из пакета @twa-dev/sdk), а не с telegram.org:
+       у части российских провайдеров telegram.org не грузится, и мини-апп оставался белым экраном -->
+  <script src="/telegram-web-app.js"></script>
+  <!-- Если приложение упало при запуске (старый WebView и т. п.) — показываем понятный текст вместо белого экрана -->
+  <script>
+    (function () {
+      function show(msg) {
+        var app = document.getElementById('app');
+        if (!app || app.childElementCount) return;
+        app.innerHTML = '<div style="padding:40px 24px;font:16px/1.5 -apple-system,Roboto,sans-serif;color:#17141C">' +
+          '<b>Не получилось открыть приложение</b><br>Обновите Telegram и «Android System WebView» в Google Play, затем откройте снова.' +
+          '<div style="margin-top:16px;font-size:12px;color:#6F6A78;word-break:break-word">' + String(msg).replace(/[<>&]/g, '') + '</div></div>';
+      }
+      window.addEventListener('error', function (e) { show((e.message || 'error') + (e.filename ? ' @ ' + e.filename.split('/').pop() + ':' + e.lineno : '')); });
+      window.addEventListener('unhandledrejection', function (e) { show(e.reason && e.reason.message || 'promise'); });
+      setTimeout(function () { show('timeout'); }, 15000);
+    })();
+  </script>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
