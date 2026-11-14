@@ -87,6 +87,9 @@ const WELCOME = {
 };
 // варианты раскладки экрана с фото (для выбора): ?welcome=c1 … c5
 for (let n = 1; n <= 5; n++) WELCOME['c' + n] = { ...WELCOME.c, layout: n };
+// вариант 1 с разным масштабом фото: c1a, c1b
+WELCOME.c1a = { ...WELCOME.c, layout: '1 zoom-a' };
+WELCOME.c1b = { ...WELCOME.c, layout: '1 zoom-b' };
 
 function welcomeVariant() {
   const v = (typeof location !== 'undefined' && new URLSearchParams(location.search).get('welcome')) || 'c';

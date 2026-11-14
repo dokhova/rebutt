@@ -573,3 +573,12 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
 .lay5 .welcome-title, .shell:has(.lay5) .consent, .shell:has(.lay5) .consent a { color: #FFFFFF; }
 .lay5 .welcome-sub { color: rgba(255, 255, 255, .88); }
 .shell:has(.lay5) .checkbox { border-color: rgba(255, 255, 255, .8); }
+
+/* вариант 1: фото дальше — уже не на весь экран по высоте, ниже — тёмный фиолетовый фон под затемнением */
+.shell:has(.lay1) { background: #24173A; }
+.lay1.zoom-a .welcome-photo { background-size: 205% auto; background-position: 40% top; -webkit-mask-image: linear-gradient(180deg, #000 420px, transparent 600px); mask-image: linear-gradient(180deg, #000 420px, transparent 600px); }
+.lay1.zoom-b .welcome-photo { background-size: 170% auto; background-position: 35% top; -webkit-mask-image: linear-gradient(180deg, #000 320px, transparent 495px); mask-image: linear-gradient(180deg, #000 320px, transparent 495px); }
+/* чекбоксы на первом экране — меньше */
+.shell:has(.welcome) .checkbox { width: 18px; height: 18px; border-radius: 6px; }
+.shell:has(.welcome) .checkbox svg { width: 10px; height: 10px; }
+.shell:has(.welcome) .consent { gap: 10px; font-size: 13px; }
