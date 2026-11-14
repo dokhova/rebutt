@@ -442,45 +442,47 @@
 .cal-chevron { transition: transform .2s; }
 .cal-chevron.open { transform: rotate(180deg); }
 
-/* ---------- онбординг в бренд-стиле: фиолетовое поле, белый текст, заголовки капсом, лайм — выбор и кнопка ---------- */
-.shell.brand {
-  --ink: #FFFFFF; --ink-soft: #FFFFFF; --muted: rgba(255, 255, 255, .74); --faint: rgba(255, 255, 255, .6); --dim: rgba(255, 255, 255, .3);
-  --line: rgba(255, 255, 255, .14); --line-2: rgba(255, 255, 255, .18); --line-3: rgba(255, 255, 255, .22); --line-control: rgba(255, 255, 255, .42);
-  --wash-1: rgba(255, 255, 255, .08); --wash-2: rgba(255, 255, 255, .14);
-  --surface-1: rgba(255, 255, 255, .12); --surface-3: rgba(255, 255, 255, .12); --surface-4: rgba(255, 255, 255, .18);
-  --selected: #D3FA9D; --violet: #FFFFFF;
-  --card-bg: rgba(255, 255, 255, .1); --card-border: rgba(255, 255, 255, .16); --card-shadow: none;
-  color: var(--ink);
-  background: radial-gradient(120% 70% at 85% 0%, #8A62EA 0%, rgba(138, 98, 234, 0) 60%), linear-gradient(180deg, #774CD6 0%, #6B41C9 100%);
-}
-.shell.brand .title { font-size: 34px; line-height: 1.02; font-weight: 800; letter-spacing: -.02em; text-transform: uppercase; }
-.shell.brand .subtitle { font-size: 16px; }
-.shell.brand .caption { color: rgba(255, 255, 255, .8); }
-.shell.brand .field-input { color: #FFFFFF; border-color: transparent; }
-.shell.brand .field-input::placeholder { color: rgba(255, 255, 255, .55); }
-.shell.brand .field-input:focus { border-color: #D3FA9D; }
-.shell.brand .seg.on, .shell.brand .chip.on, .shell.brand .tag.on { color: #183A1B; }
-.shell.brand .chip { border-color: transparent; background: rgba(255, 255, 255, .12); }
-.shell.brand .goal { border-color: transparent; background: rgba(255, 255, 255, .1); min-height: 64px; font-size: 16px; }
-.shell.brand .goal.on { background: #D3FA9D; color: #183A1B; }
-.shell.brand .goal.on .goal-check { background: #183A1B; border-color: #183A1B; color: #D3FA9D; }
-.shell.brand .icon-tile { background: rgba(255, 255, 255, .14); color: #FFFFFF; }
-.shell.brand .drum-frame { background: rgba(255, 255, 255, .16); border-color: transparent; }
-.shell.brand .btn.off { background: rgba(255, 255, 255, .16); color: rgba(255, 255, 255, .6); }
-.shell.brand .consent a { text-decoration-color: rgba(255, 255, 255, .5); }
-.shell.brand .checkbox { border-color: rgba(255, 255, 255, .7); }
-.shell.brand .pc-day.on { color: #183A1B; }
-.shell.brand .pc-day.on::before { background: #D3FA9D; }
-.shell.brand .pc-day.band { background: rgba(211, 250, 157, .18); }
-.shell.brand .pc-day.band-start { background: linear-gradient(90deg, transparent 50%, rgba(211, 250, 157, .18) 50%); }
-.shell.brand .pc-unknown.on { color: #183A1B; }
-.shell.brand .pc-sum { color: #FFFFFF; }
-
+/* ---------- онбординг: в стиле главной — светлый фон, стеклянные плитки и блоки (.gcard), вордмарк и полоса прогресса ---------- */
 .onb-top { display: flex; align-items: center; justify-content: space-between; height: 44px; }
-.onb-back { width: 44px; height: 44px; color: #FFFFFF; background: rgba(255, 255, 255, .14); }
-span.onb-back { background: transparent; }
-.wordmark { font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: -.03em; color: #FFFFFF; }
+.onb-back { width: 44px; height: 44px; }
+button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2); }
+.wordmark { font-family: var(--font-display); font-size: 22px; font-weight: 800; letter-spacing: -.03em; color: var(--ink); }
 .wm-light { font-weight: 300; }
 .onb-progress { display: flex; gap: 6px; margin-top: 8px; }
-.onb-bar { flex: 1; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, .22); transition: background .3s; }
-.onb-bar.on { background: #D3FA9D; }
+.onb-bar { flex: 1; height: 3px; border-radius: 2px; background: var(--track); transition: background .3s; }
+.onb-bar.on { background: var(--violet); }
+
+.onb-tiles { display: flex; flex-direction: column; gap: 10px; }
+.onb-tile { display: flex; align-items: center; gap: 14px; padding: 18px; }
+.onb-tile svg { flex-shrink: 0; }
+.onb-tile-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+.onb-tile-sub { font-size: 14px; line-height: 1.35; margin-top: 2px; opacity: .92; }
+
+.onb-block { gap: 16px; }
+.onb-block .caption, .onb-block .hint { color: rgba(255, 255, 255, .88); text-shadow: none; }
+.onb-block .field { gap: 8px; }
+.onb-block .field-input { background: rgba(20, 18, 24, .22); border-color: rgba(255, 255, 255, .3); color: #FFFFFF; text-shadow: none; }
+.onb-block .field-input::placeholder { color: rgba(255, 255, 255, .6); }
+.onb-block .field-input:focus { border-color: var(--accent); }
+.onb-block .body-unit { color: rgba(255, 255, 255, .8); }
+.onb-block .drum-frame { background: rgba(20, 18, 24, .22); border-color: rgba(255, 255, 255, .3); }
+.onb-block .drum-item { color: rgba(255, 255, 255, .55); }
+.onb-block .drum-item.on { color: #FFFFFF; }
+.ggoal { width: 100%; min-height: 56px; border-radius: 20px; border: 0; padding: 0 18px; display: flex; align-items: center; gap: 14px; font-size: 16px; text-align: left; color: #FFFFFF; text-shadow: none;
+  background: rgba(20, 18, 24, .24); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .26); }
+.ggoal .goal-check { border-color: rgba(255, 255, 255, .6); color: var(--accent-ink); }
+.ggoal.on { background: var(--selected); color: var(--accent-ink); box-shadow: none; }
+.ggoal.on .goal-check { background: var(--accent-ink); border-color: var(--accent-ink); color: var(--accent); }
+
+/* календарь на стекле */
+.gcard .pc { text-shadow: none; }
+.gcard .pc-month, .gcard .pc-day { color: #FFFFFF; }
+.gcard .pc-wd span, .gcard .pc-m { color: rgba(255, 255, 255, .75); }
+.gcard .pc-sum { color: #FFFFFF; }
+.gcard .pc-unknown { color: #FFFFFF; border: 0; background: rgba(20, 18, 24, .24); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .3); }
+.gcard .pc-unknown.on { background: var(--selected); color: var(--accent-ink); box-shadow: none; }
+.gcard .pc-day.off { color: rgba(255, 255, 255, .35); }
+.gcard .pc-day.on { color: var(--accent-ink); }
+.gcard .pc-day.on::before { background: var(--accent); }
+.gcard .pc-day.band { background: rgba(211, 250, 157, .22); }
+.gcard .pc-day.band-start { background: linear-gradient(90deg, transparent 50%, rgba(211, 250, 157, .22) 50%); }

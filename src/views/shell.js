@@ -14,8 +14,7 @@ export function shellView(app, screen, edit = null) {
   const tab = (name) => 'tab' + (screen === name ? ' on' : '');
   return {
     appName: APP_NAME,
-    // онбординг — в бренд-стиле: фиолетовый фон, белый текст (styles/screens.css → .shell.brand)
-    shellCls: 'shell' + (screen === 'onboarding' ? ' brand' : ''),
+    shellCls: 'shell',
     is: {
       booting: screen === 'booting',
       legal: screen === 'legal',
