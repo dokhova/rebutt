@@ -1,11 +1,11 @@
-// Бот Telegram: вебхук. На /start присылает приветствие — картинку public/bot/welcome.jpg с текстом
+// Бот Telegram: вебхук. На /start присылает приветствие — картинку public/bot/welcome-2.jpg с текстом
 // и кнопку «Старт», которая открывает мини-апп. Остальные сообщения пока игнорируем.
 //
 // POST /api/bot — сюда Telegram шлёт обновления. Проверяем заголовок X-Telegram-Bot-Api-Secret-Token.
 // GET  /api/bot?setup=<TELEGRAM_BOT_TOKEN> — один раз: подключает вебхук к этому адресу (открыть в браузере).
 //
 // Нужна переменная окружения TELEGRAM_BOT_TOKEN (уже есть — для входа по Telegram).
-// Текст приветствия — WELCOME ниже, картинка — public/bot/welcome.jpg.
+// Текст приветствия — WELCOME ниже, картинка — public/bot/welcome-2.jpg.
 import crypto from 'node:crypto';
 
 export const config = { maxDuration: 15 };
@@ -81,7 +81,7 @@ export default async function handler(req, res) {
       const app = origin(req);
       const result = await tg(token, 'sendPhoto', {
         chat_id: msg.chat.id,
-        photo: app + '/bot/welcome.jpg',
+        photo: app + '/bot/welcome-2.jpg',
         caption: WELCOME,
         parse_mode: 'HTML',
         reply_markup: { inline_keyboard: [[{ text: START_BUTTON, web_app: { url: app + '/' } }]] }
