@@ -345,3 +345,22 @@ test('комфорт за 7 дней: стула меньше 3 раз при 4+
   // мало отмеченных дней — регулярность не учитываем
   assert.equal(weekComfort({ '2026-11-09': none() }, '2026-11-09', addDays).value, 92);
 });
+
+import { aiQuestions } from '../src/domain/ai-questions.js';
+import { AI_SUGGESTED_QUESTIONS } from '../src/domain/catalog.js';
+
+test('вопросы ИИ: из записей недели, иначе по целям и общие', () => {
+  const T = '2026-11-14';
+  const p = { ...blankProfile(), goals: ['bloat'] };
+  // нет данных — цель, потом общие
+  assert.deepEqual(aiQuestions(p, {}, T, addDays), ['Как мне уменьшить вздутие?', ...AI_SUGGESTED_QUESTIONS.slice(0, 2)]);
+  // вздутие два дня, твёрдый стул два раза, стресс два дня
+  const g2 = (type, sym, stress) => ({ id: type + sym.join() + stress, time: '09:00', type, sym, stress });
+  const log = {
+    [T]: { gut: [g2(2, ['Вздутие'], 8)], meals: [], period: false, water: 0 },
+    [addDays(T, -1)]: { gut: [g2(1, ['Вздутие'], 9)], meals: [], period: false, water: 0 }
+  };
+  const q = aiQuestions(p, log, T, addDays);
+  assert.equal(q.length, 3);
+  assert.deepEqual(q, ['Отчего у меня бывает вздутие?', 'Почему стул бывает твёрдым?', 'Как стресс влияет на мой кишечник?']);
+});
