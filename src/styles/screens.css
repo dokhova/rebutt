@@ -540,7 +540,7 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
 .shell:has(.welcome-b) .welcome-btn.off { background: #3A1F5C; }
 
 /* ---- варианты раскладки экрана с фото (?welcome=c1…c5), для выбора ---- */
-.lay .welcome-text { background: none; }
+.lay:not(.lay8) .welcome-text { background: none; }
 /* 1: фото на весь экран, затемнение снизу, белый текст */
 .lay1 .welcome-photo { height: calc(100vh + 40px); -webkit-mask-image: none; mask-image: none; }
 .lay1 .welcome-photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(23, 14, 40, 0) 30%, rgba(23, 14, 40, .82) 70%); }
@@ -666,3 +666,16 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
   .lay7 .welcome-sub { font-size: 15px; }
 }
 .lay7 .welcome-photo { height: calc(74% + 28px + var(--safe-top)); background-size: cover; background-position: 30% 30%; background-color: transparent; }
+
+/* 8: светлый фон как у всего приложения; фото сверху плавно уходит в фон; текст — в сиреневом блоке, как блоки на шагах 2–4 */
+.shell:has(.lay8) { background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 50%, var(--bg) 100%); }
+.lay8 .welcome-photo { height: calc(64% + 28px + var(--safe-top)); background-position: 30% 30%;
+  -webkit-mask-image: linear-gradient(180deg, #000 62%, transparent 100%); mask-image: linear-gradient(180deg, #000 62%, transparent 100%); }
+.welcome-block { padding: 22px 20px 24px; border-radius: 30px; }
+.welcome-block .welcome-title { color: #FFFFFF; }
+.lay8 .wt-1, .lay8 .wt-2 { font-size: 38px; }
+.welcome-block .welcome-sub { color: rgba(255, 255, 255, .92); margin-top: 10px; font-size: 16px; }
+.shell:has(.lay8) .welcome-btn, .shell:has(.lay8) .welcome-btn.off { background: var(--accent); color: var(--accent-ink); }
+.shell:has(.lay8) .welcome-btn.off { opacity: .5; }
+.shell:has(.lay8) .consent, .shell:has(.lay8) .consent a { color: var(--muted); }
+.lay8 .welcome-photo { height: calc(78% + 28px + var(--safe-top)); -webkit-mask-image: linear-gradient(180deg, #000 66%, transparent 96%); mask-image: linear-gradient(180deg, #000 66%, transparent 96%); }

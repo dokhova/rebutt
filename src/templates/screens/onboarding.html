@@ -4,8 +4,6 @@
 <div class="onb-top">
   <sc-if value="{{canBack}}"><button class="icon-btn onb-back" onClick="{{back}}" aria-label="Назад"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button></sc-if>
   <sc-if value="{{noBack}}"><span class="onb-back"></span></sc-if>
-  <img class="wordmark" src="/brand/wordmark.svg" alt="{{appName}}">
-  <span class="onb-back"></span>
 </div>
 <div class="onb-progress" role="progressbar" aria-label="{{stepLabel}}"><sc-for list="{{progress}}" as="b"><span class="{{b.cls}}"></span></sc-for></div>
 </sc-if>
@@ -14,7 +12,7 @@
 <sc-if value="{{step.consent}}">
   <div class="{{welcome.cls}}">
     <sc-if value="{{welcome.photo}}"><div class="welcome-photo" aria-hidden="true"></div></sc-if>
-    <img class="welcome-logo" src="/brand/wordmark.svg" alt="{{appName}}">
+    <sc-if value="{{welcome.showLogo}}"><img class="welcome-logo" src="/brand/wordmark.svg" alt="{{appName}}"></sc-if>
     <sc-if value="{{welcome.glass}}"><div class="welcome-card" aria-hidden="true"><img src="/brand/welcome-glass.webp" alt=""></div></sc-if>
     <sc-if value="{{welcome.contour}}"><img class="welcome-mark" src="/brand/mark-outline.svg" alt="" aria-hidden="true"></sc-if>
     <div class="{{welcome.textCls}}">
