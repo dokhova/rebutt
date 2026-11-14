@@ -538,3 +538,38 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
 .welcome-btn .btn-arrow { position: absolute; right: 24px; }
 .welcome-btn.off { background: #183A1B; color: #FFFFFF; opacity: .35; }
 .shell:has(.welcome-b) .welcome-btn.off { background: #3A1F5C; }
+
+/* ---- варианты раскладки экрана с фото (?welcome=c1…c5), для выбора ---- */
+.lay .welcome-text { background: none; }
+/* 1: фото на весь экран, затемнение снизу, белый текст */
+.lay1 .welcome-photo { height: calc(100vh + 40px); -webkit-mask-image: none; mask-image: none; }
+.lay1 .welcome-photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(23, 14, 40, 0) 30%, rgba(23, 14, 40, .82) 70%); }
+.lay .welcome-logo { order: -1; }
+.lay1 .welcome-title, .shell:has(.lay1) .consent, .shell:has(.lay1) .consent a { color: #FFFFFF; }
+.lay1 .welcome-sub { color: rgba(255, 255, 255, .88); }
+.shell:has(.lay1) .checkbox { border-color: rgba(255, 255, 255, .8); }
+/* 2: Warm White, фото в скруглённой карточке, заголовок с акцентом */
+.shell:has(.lay2) { background: #F8F7F2; }
+.lay2 .welcome-photo { position: relative; left: 0; right: 0; top: 0; height: auto; flex: 1 1 auto; min-height: 240px; border-radius: 28px; -webkit-mask-image: none; mask-image: none; }
+.lay2 .welcome-logo { filter: none; }
+.shell:has(.lay2) .welcome-btn, .shell:has(.lay2) .welcome-btn.off { background: #183A1B; color: #FFFFFF; }
+/* 3: фото сверху до края, снизу белая панель со скруглением */
+.shell:has(.lay3) { background: #F8F7F2; }
+.lay3 .welcome-photo { height: calc(60% + 28px + var(--safe-top)); -webkit-mask-image: none; mask-image: none; }
+.lay3::before { content: ''; position: absolute; z-index: 1; left: -16px; right: -16px; top: 54%; bottom: -300px; border-radius: 32px 32px 0 0; background: #F8F7F2; }
+.shell:has(.lay3) .welcome-btn, .shell:has(.lay3) .welcome-btn.off { background: #183A1B; color: #FFFFFF; }
+/* 4: Lavender, фото аркой по центру, всё по центру */
+.shell:has(.lay4) { background: #EDE5FF; }
+.lay4 { align-items: center; text-align: center; }
+.lay4 .welcome-logo { filter: none; }
+.lay4 .welcome-photo { position: relative; left: 0; right: 0; top: 0; width: 82%; height: auto; flex: 1 1 auto; min-height: 260px; border-radius: 999px 999px 32px 32px; -webkit-mask-image: none; mask-image: none; }
+.lay4 .welcome-title { color: #1F1630; }
+.lay4 .welcome-sub { margin-left: auto; margin-right: auto; }
+.shell:has(.lay4) .welcome-btn, .shell:has(.lay4) .welcome-btn.off { background: #3A1F5C; color: #FFFFFF; }
+/* 5: фото сверху, фиолетовая панель Purple Accent, белый текст, лаймовая кнопка */
+.shell:has(.lay5) { background: #7954C8; }
+.lay5 .welcome-photo { height: calc(60% + 28px + var(--safe-top)); -webkit-mask-image: none; mask-image: none; }
+.lay5::before { content: ''; position: absolute; z-index: 1; left: -16px; right: -16px; top: 54%; bottom: -300px; border-radius: 32px 32px 0 0; background: #7954C8; }
+.lay5 .welcome-title, .shell:has(.lay5) .consent, .shell:has(.lay5) .consent a { color: #FFFFFF; }
+.lay5 .welcome-sub { color: rgba(255, 255, 255, .88); }
+.shell:has(.lay5) .checkbox { border-color: rgba(255, 255, 255, .8); }

@@ -85,15 +85,17 @@ const WELCOME = {
   b: { t1: 'Познакомься', t2: 'со своим кишечником', accent: 'за 14 дней', inline: false, art: 'contour', sub: 'Веди дневник и замечай, как кишечник реагирует на твои привычки.', cta: 'Начать дневник' },
   c: { t1: 'Свидание', t2: 'с кишечником', accent: '', inline: false, art: 'photo', sub: '14 дней, чтобы прислушаться к себе и заметить, что влияет на самочувствие.', cta: 'Пойти на свидание' }
 };
+// варианты раскладки экрана с фото (для выбора): ?welcome=c1 … c5
+for (let n = 1; n <= 5; n++) WELCOME['c' + n] = { ...WELCOME.c, layout: n };
 
 function welcomeVariant() {
   const v = (typeof location !== 'undefined' && new URLSearchParams(location.search).get('welcome')) || 'c';
   const key = WELCOME[v] ? v : 'c', w = WELCOME[key];
   return {
-    ...w, cls: 'welcome fade-in welcome-' + key,
+    ...w, cls: 'welcome fade-in ' + (w.art === 'photo' ? 'welcome-c' : 'welcome-' + key) + (w.layout ? ' lay lay' + w.layout : ''),
     glass: w.art === 'glass', contour: w.art === 'contour', photo: w.art === 'photo',
     // C — как главная: фото вместо 3D-кишечника, текст на фиолетовой стеклянной карточке (как «Комфорт за 7 дней»)
-    textCls: 'welcome-text' + (w.art === 'photo' ? ' gcard g-glass welcome-glass' : ''),
+    textCls: 'welcome-text' + (w.art === 'photo' && !w.layout ? ' gcard g-glass welcome-glass' : ''),
     inlineAccent: !!w.accent && w.inline, blockAccent: !!w.accent && !w.inline
   };
 }
