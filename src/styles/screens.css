@@ -416,27 +416,23 @@
 .cycle-hint { padding: 14px 16px; font-size: 15px; line-height: 1.45; }
 .cycle-hint-title { font-weight: 600; }
 
-/* ---------- календарь «Когда начались месячные» (partials/period-calendar.html): онбординг и профиль ---------- */
-.pc { display: flex; flex-direction: column; gap: 8px; }
-.pc-head { display: flex; align-items: center; justify-content: space-between; }
-.pc-month { font-family: var(--font-display); font-size: 17px; font-weight: 600; text-transform: capitalize; }
-.pc-unknown { height: 32px; padding: 0 14px; border-radius: 16px; border: 1px solid var(--line-control); background: transparent; color: var(--ink); font-size: 13px; }
+/* ---------- «Когда начались месячные» — лента дней (partials/period-calendar.html): онбординг и профиль ---------- */
+.pc { display: flex; flex-direction: column; gap: 10px; }
+.pc-strip { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin: 0 -4px; padding: 14px 4px 2px; scroll-snap-type: x proximity; }
+.pc-strip::-webkit-scrollbar { display: none; }
+.pc-day { position: relative; flex: 0 0 44px; height: 62px; border: 0; padding: 0; border-radius: 22px; background: transparent; color: var(--ink); font: inherit;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; scroll-snap-align: center; }
+.pc-wd { font-size: 11px; color: var(--muted); }
+.pc-n { font-size: 17px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.pc-m { position: absolute; top: -14px; left: 0; right: 0; font-size: 10px; color: var(--muted); }
+.pc-day.today .pc-n { font-weight: 700; }
+.pc-day.band { background: rgba(167, 139, 250, .18); }
+.pc-day.on { background: var(--violet); color: #FFFFFF; }
+.pc-day.on .pc-wd { color: rgba(255, 255, 255, .8); }
+.pc-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pc-sum { font-size: 13px; color: var(--muted); }
+.pc-unknown { flex-shrink: 0; height: 32px; padding: 0 14px; border-radius: 16px; border: 1px solid var(--line-control); background: transparent; color: var(--ink); font-size: 13px; }
 .pc-unknown.on { background: var(--selected); border-color: var(--selected); color: var(--accent-ink); }
-.pc-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px 0; }
-.pc-wd span { text-align: center; font-size: 12px; color: var(--muted); }
-.pc-day { position: relative; height: 42px; border: 0; padding: 0; background: transparent; color: var(--ink); font: inherit; font-size: 15px; font-variant-numeric: tabular-nums; }
-.pc-day::before { content: ''; position: absolute; inset: 3px; border-radius: 50%; z-index: -1; }
-.pc-day.today { font-weight: 700; }
-.pc-day.today::after { content: ''; position: absolute; left: 50%; bottom: 4px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: currentColor; }
-.pc-day.band { background: rgba(167, 139, 250, .2); }
-.pc-day.on { color: #FFFFFF; font-weight: 700; }
-.pc-day.on::before { background: var(--violet); }
-.pc-day.band-start { background: linear-gradient(90deg, transparent 50%, rgba(167, 139, 250, .2) 50%); }
-.pc-day.band-end { border-radius: 0 21px 21px 0; }
-.pc-day.off { color: var(--dim); pointer-events: none; }
-.pc-m { position: absolute; top: -2px; left: 0; right: 0; font-size: 9px; line-height: 10px; color: var(--muted); font-weight: 400; }
-.pc-grid { isolation: isolate; }
-.pc-sum { font-size: 14px; color: var(--muted); }
 .pc-wrap { padding: 12px 0 16px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
 .pc-help { align-self: flex-start; border: 0; background: transparent; padding: 0; color: var(--violet); font-size: 14px; }
 .cal-chevron { transition: transform .2s; }
@@ -478,18 +474,15 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
 .ggoal.on { background: #FFFFFF; color: var(--accent-ink); box-shadow: none; }
 .ggoal.on .goal-check { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 
-/* календарь на стекле */
+/* лента дней на цветном блоке */
 .gcard .pc { text-shadow: none; }
-.gcard .pc-month, .gcard .pc-day { color: #FFFFFF; }
-.gcard .pc-wd span, .gcard .pc-m { color: rgba(255, 255, 255, .75); }
-.gcard .pc-sum { color: #FFFFFF; }
+.gcard .pc-day, .gcard .pc-sum { color: #FFFFFF; }
+.gcard .pc-wd, .gcard .pc-m { color: rgba(255, 255, 255, .78); }
+.gcard .pc-day.band { background: rgba(255, 255, 255, .2); }
+.gcard .pc-day.on { background: #FFFFFF; color: var(--accent-ink); }
+.gcard .pc-day.on .pc-wd { color: var(--accent-ink); opacity: .7; }
 .gcard .pc-unknown { color: #FFFFFF; border: 0; background: rgba(255, 255, 255, .2); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .45); }
 .gcard .pc-unknown.on { background: #FFFFFF; color: var(--accent-ink); box-shadow: none; }
-.gcard .pc-day.off { color: rgba(255, 255, 255, .35); }
-.gcard .pc-day.on { color: var(--accent-ink); }
-.gcard .pc-day.on::before { background: var(--accent); }
-.gcard .pc-day.band { background: rgba(255, 255, 255, .24); }
-.gcard .pc-day.band-start { background: linear-gradient(90deg, transparent 50%, rgba(255, 255, 255, .24) 50%); }
 
 /* ---------- первый экран: приветствие (варианты A / B / C — src/views/onboarding.js) ---------- */
 .shell:has(.welcome-a) { background: #F8F7F2; }   /* Warm White */
@@ -704,3 +697,7 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
 }
 .lay9 .welcome-logo { filter: brightness(0) invert(1) drop-shadow(0 1px 6px rgba(0, 0, 0, .25)); }
 @media (min-height: 761px) { .lay9 .welcome-photo { height: calc(70% + 28px + var(--safe-top)); } .lay9::before { top: 64%; } .lay9 .welcome-text { top: calc(64% + 26px); } }
+
+/* шаги 2–4: «назад» в одной строке с полосой прогресса, без логотипа */
+.onb-head { display: flex; align-items: center; gap: 14px; height: 44px; }
+.onb-head .onb-progress { flex: 1; margin-top: 0; }

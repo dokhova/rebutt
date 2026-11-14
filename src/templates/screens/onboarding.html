@@ -1,13 +1,10 @@
 <!-- Онбординг. Значения: src/views/onboarding.js -->
 
 <sc-if value="{{showTop}}">
-<div class="onb-top">
+<div class="onb-head">
   <sc-if value="{{canBack}}"><button class="icon-btn onb-back" onClick="{{back}}" aria-label="Назад"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button></sc-if>
-  <sc-if value="{{noBack}}"><span class="onb-back"></span></sc-if>
-  <img class="wordmark" src="/brand/wordmark.svg" alt="{{appName}}">
-  <span class="onb-back"></span>
+  <div class="onb-progress" role="progressbar" aria-label="{{stepLabel}}"><sc-for list="{{progress}}" as="b"><span class="{{b.cls}}"></span></sc-for></div>
 </div>
-<div class="onb-progress" role="progressbar" aria-label="{{stepLabel}}"><sc-for list="{{progress}}" as="b"><span class="{{b.cls}}"></span></sc-for></div>
 </sc-if>
 
 <!-- Шаг 1: приветствие. Вариант (картинка, заголовок, кнопка) — welcomeVariant в src/views/onboarding.js; согласия — внизу, в onb-footer -->
