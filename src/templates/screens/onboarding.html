@@ -13,11 +13,11 @@
 <!-- Шаг 1: приветствие. Вариант (картинка, заголовок, кнопка) — welcomeVariant в src/views/onboarding.js; согласия — внизу, в onb-footer -->
 <sc-if value="{{step.consent}}">
   <div class="{{welcome.cls}}">
-    <sc-if value="{{welcome.photo}}"><div class="welcome-photo" aria-hidden="true"></div><div class="welcome-panel" aria-hidden="true"></div></sc-if>
+    <sc-if value="{{welcome.photo}}"><div class="welcome-photo" aria-hidden="true"></div></sc-if>
     <img class="welcome-logo" src="/brand/wordmark.svg" alt="{{appName}}">
     <sc-if value="{{welcome.glass}}"><div class="welcome-card" aria-hidden="true"><img src="/brand/welcome-glass.webp" alt=""></div></sc-if>
     <sc-if value="{{welcome.contour}}"><img class="welcome-mark" src="/brand/mark-outline.svg" alt="" aria-hidden="true"></sc-if>
-    <div class="welcome-text">
+    <div class="{{welcome.textCls}}">
       <h1 class="welcome-title"><span class="wt-1">{{welcome.t1}}</span> <span class="wt-2">{{welcome.t2}}<sc-if value="{{welcome.inlineAccent}}"> <span class="wt-acc">{{welcome.accent}}</span></sc-if></span><sc-if value="{{welcome.blockAccent}}"> <span class="wt-acc block">{{welcome.accent}}</span></sc-if></h1>
       <p class="welcome-sub">{{welcome.sub}}</p>
     </div>

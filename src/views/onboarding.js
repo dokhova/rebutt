@@ -78,7 +78,7 @@ export function onboardingView(app) {
   };
 }
 
-/** Варианты первого экрана (для выбора): ?welcome=a | b | c, по умолчанию — a.
+/** Варианты первого экрана (для выбора): ?welcome=a | b | c, по умолчанию — c.
  *  t1 / t2 — две строки заголовка, accent — фиолетовое «за 14 дней» (в строке t2 или отдельной строкой). */
 const WELCOME = {
   a: { t1: 'Узнай себя', t2: 'изнутри', accent: 'за 14 дней', inline: true, art: 'glass', sub: 'Отмечай еду, воду и самочувствие, чтобы понять, как они связаны.', cta: 'Начать' },
@@ -87,11 +87,13 @@ const WELCOME = {
 };
 
 function welcomeVariant() {
-  const v = (typeof location !== 'undefined' && new URLSearchParams(location.search).get('welcome')) || 'a';
-  const key = WELCOME[v] ? v : 'a', w = WELCOME[key];
+  const v = (typeof location !== 'undefined' && new URLSearchParams(location.search).get('welcome')) || 'c';
+  const key = WELCOME[v] ? v : 'c', w = WELCOME[key];
   return {
     ...w, cls: 'welcome fade-in welcome-' + key,
     glass: w.art === 'glass', contour: w.art === 'contour', photo: w.art === 'photo',
+    // C — как главная: фото вместо 3D-кишечника, текст на фиолетовой стеклянной карточке (как «Комфорт за 7 дней»)
+    textCls: 'welcome-text' + (w.art === 'photo' ? ' gcard g-glass welcome-glass' : ''),
     inlineAccent: !!w.accent && w.inline, blockAccent: !!w.accent && !w.inline
   };
 }

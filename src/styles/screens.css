@@ -494,7 +494,6 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
 /* ---------- первый экран: приветствие (варианты A / B / C — src/views/onboarding.js) ---------- */
 .shell:has(.welcome-a) { background: #F8F7F2; }   /* Warm White */
 .shell:has(.welcome-b) { background: #EDE5FF; }   /* Lavender — фон стартового экрана по брендбуку */
-.shell:has(.welcome-c) { background: #D3FA9D; }   /* Lime */
 .welcome { position: relative; flex-grow: 1; display: flex; flex-direction: column; gap: 22px; min-height: 0; color: #17141C; }
 .welcome-logo { position: relative; z-index: 2; width: 112px; height: auto; margin-top: 6px; }
 .welcome-text { position: relative; z-index: 2; margin-top: auto; }
@@ -515,13 +514,19 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
 .welcome-b .wt-acc.block { font-size: 44px; }
 .welcome-b .welcome-sub { margin-left: auto; margin-right: auto; }
 .welcome-mark { flex: 1 1 auto; min-height: 200px; max-height: 340px; width: 78%; object-fit: contain; }
-/* C: фото сверху, лаймовая панель со скруглением наезжает на фото */
-.welcome-photo { position: absolute; z-index: 0; left: -20px; right: -20px; top: calc(-28px - var(--safe-top)); height: calc(62% + 28px + var(--safe-top)); background: url(/brand/welcome-photo.webp) center 30% / cover no-repeat; }
-.welcome-panel { position: absolute; z-index: 1; left: -20px; right: -20px; top: 52%; bottom: -200px; border-radius: 32px 32px 0 0; background: #D3FA9D; }
+/* C — логика главной: фото на фоне (как 3D-кишечник за «Комфортом»), текст на фиолетовой стеклянной карточке .g-glass, ниже — согласия и лаймовая кнопка */
+.shell:has(.welcome-c) { background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 50%, var(--bg) 100%); }
+.welcome-photo { position: absolute; z-index: 0; left: -16px; right: -16px; top: calc(-28px - var(--safe-top)); height: calc(78% + 28px + var(--safe-top));
+  background: url(/brand/welcome-photo.webp) 38% center / cover no-repeat;
+  -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent 100%); mask-image: linear-gradient(180deg, #000 70%, transparent 100%); }
 .welcome-c .welcome-logo { filter: brightness(0) invert(1); }
-.welcome-c .wt-1, .welcome-c .wt-2 { font-size: 48px; }
-.welcome-c .welcome-title { color: #183A1B; }
-.shell:has(.welcome-c) .checkbox.on { background: #183A1B; border-color: #183A1B; color: #D3FA9D; }
+.welcome-glass { padding: 22px 20px 22px; border-radius: 28px; color: #FFFFFF; background: radial-gradient(70% 90% at 50% 55%, rgba(121, 84, 200, .78) 0%, rgba(150, 119, 230, .66) 100%); }
+.welcome-glass .welcome-title { color: #FFFFFF; text-shadow: 0 1px 12px rgba(40, 20, 90, .25); }
+.welcome-c .wt-1, .welcome-c .wt-2 { font-size: 40px; }
+.welcome-glass .welcome-sub { color: rgba(255, 255, 255, .92); margin-top: 12px; }
+.shell:has(.welcome-c) .welcome-btn, .shell:has(.welcome-c) .welcome-btn.off { background: var(--accent); color: var(--accent-ink); }
+.shell:has(.welcome-c) .consent { color: var(--muted); }
+.shell:has(.welcome-c) .consent a { color: var(--ink); }
 
 .consents { display: flex; flex-direction: column; gap: 2px; padding-bottom: 8px; }
 .shell:has(.welcome) .consent { padding: 4px 2px; color: #2E2A35; font-size: 14px; align-items: center; }
