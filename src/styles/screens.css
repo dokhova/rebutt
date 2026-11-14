@@ -219,19 +219,16 @@
 
 /* ================= ИИ-помощник ================= */
 /* ИИ-помощник: лёгкая шторка — без рамок и «кнопочных» чипов, вопросы — мягкие стеклянные строки, поле — одна капсула */
-.ai-title { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 17px; }
-.ai-orb { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
-  background: radial-gradient(circle at 35% 30%, #FFFFFF 0%, var(--violet-soft) 38%, var(--violet) 72%, rgba(211, 250, 157, .9) 100%);
-  box-shadow: 0 0 0 4px rgba(167, 139, 250, .14), 0 4px 14px rgba(121, 84, 200, .35); }
+.ai-title { display: flex; align-items: center; gap: 10px; }
+.ai-badge { width: 36px; height: 36px; border-radius: 18px; display: grid; place-items: center; color: #FFFFFF; background: linear-gradient(160deg, var(--violet-soft), var(--violet)); }
 .ai-hello { padding: 10px 4px 4px; display: flex; flex-direction: column; gap: 6px; }
 .ai-hello-title { font-family: var(--font-display); font-size: 24px; line-height: 30px; font-weight: 500; letter-spacing: -.01em; }
 .ai-hello-sub { font-size: 14px; color: var(--muted); }
 
-.suggests { display: flex; flex-direction: column; gap: 8px; }
-.suggest { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 0; border-radius: 18px; text-align: left; font-size: 15px; line-height: 20px; color: var(--ink);
-  background: linear-gradient(120deg, rgba(167, 139, 250, .1), rgba(211, 250, 157, .08)), var(--wash-1); transition: background .2s, transform .15s; }
-.suggest svg { flex-shrink: 0; color: var(--violet); opacity: .7; }
-.suggest:active { transform: scale(.985); background: linear-gradient(120deg, rgba(167, 139, 250, .18), rgba(211, 250, 157, .14)), var(--wash-2); }
+/* подсказки — такие же лавандовые пузыри, как вопрос в диалоге, только с хвостиком слева */
+.suggests { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.suggest { max-width: 88%; padding: 10px 14px; border: 0; border-radius: 20px 20px 20px 6px; text-align: left; font-size: 15px; line-height: 20px; color: var(--ink); background: rgba(167, 139, 250, .16); transition: background .2s, transform .15s; }
+.suggest:active { transform: scale(.98); background: rgba(167, 139, 250, .26); }
 
 .chat { display: flex; flex-direction: column; gap: 12px; }
 .bubble-q { align-self: flex-end; max-width: 80%; padding: 10px 14px; border-radius: 20px 20px 6px 20px; background: rgba(167, 139, 250, .16); font-size: 15px; display: flex; flex-direction: column; gap: 8px; }
