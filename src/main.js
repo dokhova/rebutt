@@ -21,6 +21,7 @@ import { applyTheme, readTheme } from './services/theme.js';
 import { trackViewport } from './services/viewport.js';
 import { initAnalytics } from './services/analytics.js';
 import { preloadImages } from './services/preload.js';
+import { loadLocal } from './services/store.js';
 import App from './app/App.js';
 import Pebble from './components/Pebble.js';
 
@@ -48,7 +49,9 @@ import editModalHtml from './templates/partials/edit-modal.html?raw';
 
 initTelegram();
 const theme = applyTheme(readTheme()); // до первой отрисовки — без вспышки другой темы
-preloadImages(theme);
+// нет профиля на устройстве — скорее всего, впереди онбординг: заранее грузим фото первого экрана
+const local = loadLocal();
+preloadImages(theme, !(local && local.profile && local.profile.onboardedAt));
 trackViewport();
 initAnalytics();
 

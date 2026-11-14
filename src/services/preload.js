@@ -1,14 +1,16 @@
 // Картинки, которые должны появляться вместе с экраном, а не догружаться после перехода:
-// фон «Комфорт за 7 дней» на главной. Грузим и декодируем при старте (сначала текущую тему) и держим ссылки —
+// фон «Комфорт за 7 дней» на главной и фото первого экрана онбординга. Грузим и декодируем при старте (сначала текущую тему) и держим ссылки —
 // иначе WebView в Telegram выкидывает декодированную картинку, и при возврате на главную она «прыгает».
 import gutLight from '../assets/hero/gut.webp';
 import gutDark from '../assets/hero/gut-dark.webp';
 
 const keep = [];
 
-export function preloadImages(theme) {
+/** onboarding — профиля на устройстве нет: первым грузим фото первого экрана */
+export function preloadImages(theme, onboarding = false) {
   if (typeof Image === 'undefined') return;
   const order = theme === 'dark' ? [gutDark, gutLight] : [gutLight, gutDark];
+  if (onboarding) order.unshift('/brand/welcome-photo.webp');
   order.forEach((src, i) => {
     const img = new Image();
     img.decoding = 'async';

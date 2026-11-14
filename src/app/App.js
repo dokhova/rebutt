@@ -38,7 +38,10 @@ const TOAST_MS = 3500;
 const EXAMPLE_SCAN_MS = 1600;
 const PROFILE_SAVE_DELAY_MS = 700;
 const DRUM_ROW_PX = 40;
-const BOOT_TIMEOUT_MS = 6000;
+/** Сколько ждём ответа сервера, прежде чем показать онбординг человеку без профиля на устройстве.
+ *  Дольше не держим «Загружаем…»: если сервер ответит позже и профиль там есть — переключим на главную
+ *  (пока человек не отметил согласие на первом экране). */
+const BOOT_TIMEOUT_MS = 1500;
 const SENTENCE_DELAY_MS = 900;
 const WATER_MAX_ML = 20000;
 const WATER_CUP_ML = 250;
