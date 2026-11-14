@@ -679,3 +679,28 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
 .shell:has(.lay8) .welcome-btn.off { opacity: .5; }
 .shell:has(.lay8) .consent, .shell:has(.lay8) .consent a { color: var(--muted); }
 .lay8 .welcome-photo { height: calc(78% + 28px + var(--safe-top)); -webkit-mask-image: linear-gradient(180deg, #000 66%, transparent 96%); mask-image: linear-gradient(180deg, #000 66%, transparent 96%); }
+
+/* 9: фото со светлым фоном (стена перекрашена в фон приложения), шторка снизу во всю ширину — градиент как у сиреневых блоков (.g-lav) */
+.shell:has(.lay9) { background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 50%, var(--bg) 100%); }
+.lay9 .welcome-photo { height: calc(66% + 28px + var(--safe-top)); background-position: 30% 30%; -webkit-mask-image: none; mask-image: none; }
+.lay9::before { content: ''; position: absolute; z-index: 1; left: -16px; right: -16px; top: 60%; bottom: -300px; border-radius: 32px 32px 0 0;
+  background: radial-gradient(55% 45% at 50% 40%, #8A68DC 0%, rgba(138, 104, 220, 0) 100%), radial-gradient(70% 40% at 100% 70%, rgba(237, 229, 255, .3) 0%, rgba(237, 229, 255, 0) 70%), linear-gradient(160deg, #A68CF6 0%, #9B7FF2 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45); }
+.lay9 .welcome-logo { width: 84px; margin-top: -14px; filter: none; }
+.lay9 .welcome-text { position: absolute; left: 0; right: 0; top: calc(60% + 26px); margin: 0; }
+.lay9 .welcome-title { color: #FFFFFF; text-shadow: 0 1px 2px rgba(0, 0, 0, .1), 0 1px 12px rgba(0, 0, 0, .18); }
+.lay9 .wt-1, .lay9 .wt-2 { font-size: 40px; }
+.lay9 .welcome-sub { color: rgba(255, 255, 255, .92); margin-top: 10px; }
+.shell:has(.lay9) .welcome-btn, .shell:has(.lay9) .welcome-btn.off { background: var(--accent); color: var(--accent-ink); }
+.shell:has(.lay9) .welcome-btn.off { opacity: .55; }
+.shell:has(.lay9) .consent, .shell:has(.lay9) .consent a { color: rgba(255, 255, 255, .85); }
+.shell:has(.lay9) .checkbox { border-color: rgba(255, 255, 255, .75); border-width: 1.5px; }
+.shell:has(.lay9) .checkbox.on { background: #FFFFFF; border-color: #FFFFFF; color: #3A1F5C; }
+@media (max-height: 760px) {
+  .lay9 .welcome-photo { height: calc(58% + 28px + var(--safe-top)); }
+  .lay9::before { top: 52%; }
+  .lay9 .welcome-text { top: calc(52% + 20px); }
+  .lay9 .wt-1, .lay9 .wt-2 { font-size: 34px; }
+}
+.lay9 .welcome-logo { filter: brightness(0) invert(1) drop-shadow(0 1px 6px rgba(0, 0, 0, .25)); }
+@media (min-height: 761px) { .lay9 .welcome-photo { height: calc(70% + 28px + var(--safe-top)); } .lay9::before { top: 64%; } .lay9 .welcome-text { top: calc(64% + 26px); } }

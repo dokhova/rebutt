@@ -75,7 +75,7 @@ export function onboardingView(app) {
   };
 }
 
-/** Варианты первого экрана (для выбора): ?welcome=a | b | c, по умолчанию — c8.
+/** Варианты первого экрана (для выбора): ?welcome=a | b | c, по умолчанию — c9.
  *  t1 / t2 — две строки заголовка, accent — фиолетовое «за 14 дней» (в строке t2 или отдельной строкой). */
 const WELCOME = {
   a: { t1: 'Узнай себя', t2: 'изнутри', accent: 'за 14 дней', inline: true, art: 'glass', sub: 'Отмечай еду, воду и самочувствие, чтобы понять, как они связаны.', cta: 'Начать' },
@@ -93,16 +93,18 @@ WELCOME.c6 = { ...WELCOME.c, layout: 6 };
 WELCOME.c7 = { ...WELCOME.c, layout: 7 };
 // c8 — как остальные шаги: светлый фон, фото сверху уходит в фон, текст в сиреневом блоке .gcard.g-lav, лаймовая кнопка
 WELCOME.c8 = { ...WELCOME.c, layout: 8, badge: '', sub: 'О кишечнике принято молчать. Мы предпочитаем его понимать.' };
+// c9 — шторка снизу (как c6), в стиле блоков с градиентом (.g-lav); фото со светлым фоном приложения
+WELCOME.c9 = { ...WELCOME.c8, layout: 9 };
 
 function welcomeVariant() {
-  const v = (typeof location !== 'undefined' && new URLSearchParams(location.search).get('welcome')) || 'c8';
-  const key = WELCOME[v] ? v : 'c8', w = WELCOME[key];
+  const v = (typeof location !== 'undefined' && new URLSearchParams(location.search).get('welcome')) || 'c9';
+  const key = WELCOME[v] ? v : 'c9', w = WELCOME[key];
   return {
     ...w, cls: 'welcome fade-in ' + (w.art === 'photo' ? 'welcome-c' : 'welcome-' + key) + (w.layout ? ' lay lay' + w.layout : ''),
     glass: w.art === 'glass', contour: w.art === 'contour', photo: w.art === 'photo',
     // C — как главная: фото вместо 3D-кишечника, текст на фиолетовой стеклянной карточке (как «Комфорт за 7 дней»)
     textCls: 'welcome-text' + (w.art === 'photo' && !w.layout ? ' gcard g-glass welcome-glass' : '') + (w.layout === 8 ? ' gcard g-lav welcome-block' : ''),
-    showLogo: w.layout !== 8,
+    showLogo: true,
     inlineAccent: !!w.accent && w.inline, blockAccent: !!w.accent && !w.inline
   };
 }
