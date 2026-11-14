@@ -601,3 +601,11 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
 .lay6 .welcome-text { top: calc(66% + 26px); }
 .lay6 .wt-1, .lay6 .wt-2 { font-size: 42px; }
 .lay6 .welcome-sub { margin-top: 12px; }
+/* невысокие телефоны: фото короче, заголовок меньше — чтобы текст не наезжал на согласия */
+@media (max-height: 760px) {
+  .lay6 .welcome-photo { height: calc(60% + 28px + var(--safe-top)); }
+  .lay6::before { top: 54%; }
+  .lay6 .welcome-text { top: calc(54% + 22px); }
+  .lay6 .wt-1, .lay6 .wt-2 { font-size: 34px; }
+  .lay6 .welcome-sub { font-size: 15px; }
+}
