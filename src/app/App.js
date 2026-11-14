@@ -131,7 +131,7 @@ export default class App extends Component {
       screen,
       // Пока проверяем, есть ли профиль на сервере, — показываем загрузку, а не онбординг
       booting: !IS_DEMO && !!supabase && !profile.onboardedAt,
-      onbStep: 'consent', consent: false,
+      onbStep: 'consent', consent: false, consentData: false, // согласия на первом экране: соглашение + политика, данные о здоровье
       onbPeriodPicked: false, // в онбординге выбрали день начала месячных в календаре
       cycleCal: false,        // в профиле раскрыт календарь «Когда начались месячные»
       legal: null,        // открытый документ: { id, title, html, error }
@@ -465,10 +465,11 @@ export default class App extends Component {
     this.setState({ onbStep: flow[i - 1] });
   }
 
-  toggleConsent() {
-    const checked = !this.state.consent;
-    this.setState({ consent: checked });
-    track('consent_checkbox_toggled', { checked });
+  /** which: 'terms' — соглашение и политика, 'data' — согласие на обработку данных о здоровье */
+  toggleConsent(which = 'terms') {
+    const key = which === 'data' ? 'consentData' : 'consent', checked = !this.state[key];
+    this.setState({ [key]: checked });
+    track('consent_checkbox_toggled', { checked, which });
   }
 
   /** «Дальше». На шаге цикла: cycleAnswer — «Да, учитывать» (true) или «Не сейчас» (false). */
@@ -477,7 +478,7 @@ export default class App extends Component {
     const flow = this.onboardingFlow(), i = flow.indexOf(step);
 
     if (step === 'consent') {
-      if (!s.consent) { this.showToast('Отметьте согласие, чтобы продолжить'); track('consent_blocked'); return; }
+      if (!s.consent || !s.consentData) { this.showToast('Отметьте оба согласия, чтобы продолжить'); track('consent_blocked'); return; }
       track('consent_accepted', { version: LEGAL_VERSION, documents: Object.keys(LEGAL_DOCS) });
       if (!IS_DEMO) store.saveConsents(Object.keys(LEGAL_DOCS), LEGAL_VERSION);
     }
@@ -637,7 +638,7 @@ export default class App extends Component {
     this.onboardingStartedAt = Date.now();
     this.draftPhotoPending = false;
     this.setState({
-      screen: 'onboarding', onbStep: 'consent', consent: false, legal: null, assistant: false, mealEdit: null, entryEdit: null, waterEdit: null, chat: [],
+      screen: 'onboarding', onbStep: 'consent', consent: false, consentData: false, legal: null, assistant: false, mealEdit: null, entryEdit: null, waterEdit: null, chat: [],
       profile: blankProfile(), log: {}, form: blankForm(), insights: null
     });
     this.showToast(ok ? 'Данные удалены' : 'Удалено на устройстве, сервер не ответил');

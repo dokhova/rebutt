@@ -10,11 +10,12 @@ export function onboardingView(app) {
   const s = app.state, p = s.profile, step = s.onbStep;
   const flow = app.onboardingFlow(), i = flow.indexOf(step);
   const isLast = i === flow.length - 1;
-  const blocked = (step === 'consent' && !s.consent) || (step === 'about' && !(p.name.trim() && p.sex));
+  const blocked = (step === 'consent' && !(s.consent && s.consentData)) || (step === 'about' && !(p.name.trim() && p.sex));
   const legal = (id) => ({ url: LEGAL_DOCS[id].url, open: (e) => app.openLegalDoc(id, 'onboarding', e) });
 
   let nextLabel = isLast ? 'Начать' : 'Дальше';
-  if (step === 'consent' && !isLast) nextLabel = 'Начать';
+  const welcome = welcomeVariant();
+  if (step === 'consent') nextLabel = welcome.cta;
   if (step === 'cycle') nextLabel = 'Да, учитывать';
 
   return {
@@ -23,19 +24,22 @@ export function onboardingView(app) {
     showTop: step !== 'consent',
     stepLabel: 'Шаг ' + i + ' / ' + (flow.length - 1),
     progress: flow.slice(1).map((_, k) => ({ cls: 'onb-bar' + (k < i ? ' on' : '') })),
-    welcome: welcomeVariant(),
+    welcome,
     canBack: i > 0,
     noBack: i <= 0,
     back: () => app.onboardingBack(),
     nextLabel,
-    nextCls: 'btn' + (blocked ? ' off' : ''),
+    nextCls: 'btn' + (step === 'consent' ? ' welcome-btn' : '') + (blocked ? ' off' : ''),
     next: () => app.onboardingNext(true),
     skipCycle: () => app.onboardingNext(false),
 
     // согласие
-    consentChecked: s.consent,
-    consentCls: 'checkbox' + (s.consent ? ' on' : ''),
-    toggleConsent: () => app.toggleConsent(),
+    termsChecked: s.consent,
+    termsCls: 'checkbox' + (s.consent ? ' on' : ''),
+    toggleTerms: () => app.toggleConsent('terms'),
+    dataChecked: s.consentData,
+    dataCls: 'checkbox' + (s.consentData ? ' on' : ''),
+    toggleData: () => app.toggleConsent('data'),
     terms: legal('terms'), privacy: legal('privacy'), healthConsent: legal('consent'),
 
     // о себе
@@ -74,16 +78,20 @@ export function onboardingView(app) {
   };
 }
 
-/** Варианты первого экрана (для выбора): ?welcome=a | b | c, по умолчанию — a */
+/** Варианты первого экрана (для выбора): ?welcome=a | b | c, по умолчанию — a.
+ *  t1 / t2 — две строки заголовка, accent — фиолетовое «за 14 дней» (в строке t2 или отдельной строкой). */
 const WELCOME = {
-  a: { title: 'Узнай себя изнутри за 14 дней', art: 'contour' },
-  b: { title: 'Познакомься со своим кишечником за 14 дней', art: 'glass' },
-  c: { title: 'Свидание с кишечником', art: 'blur' }
+  a: { t1: 'Узнай себя', t2: 'изнутри', accent: 'за 14 дней', inline: true, art: 'glass', sub: 'Отмечай еду, воду и самочувствие, чтобы понять, как они связаны.', cta: 'Начать' },
+  b: { t1: 'Познакомься', t2: 'со своим кишечником', accent: 'за 14 дней', inline: false, art: 'contour', sub: 'Веди дневник и замечай, как кишечник реагирует на твои привычки.', cta: 'Начать дневник' },
+  c: { t1: 'Свидание', t2: 'с кишечником', accent: '', inline: false, art: 'photo', sub: '14 дней, чтобы прислушаться к себе и заметить, что влияет на самочувствие.', cta: 'Пойти на свидание' }
 };
-const WELCOME_SUB = 'Пара минут в день — первые наблюдения на 7-й день, личный отчёт на 14-й';
 
 function welcomeVariant() {
   const v = (typeof location !== 'undefined' && new URLSearchParams(location.search).get('welcome')) || 'a';
-  const w = WELCOME[v] || WELCOME.a;
-  return { title: w.title, sub: WELCOME_SUB, cls: 'welcome-art ' + w.art };
+  const key = WELCOME[v] ? v : 'a', w = WELCOME[key];
+  return {
+    ...w, cls: 'welcome fade-in welcome-' + key,
+    glass: w.art === 'glass', contour: w.art === 'contour', photo: w.art === 'photo',
+    inlineAccent: !!w.accent && w.inline, blockAccent: !!w.accent && !w.inline
+  };
 }
