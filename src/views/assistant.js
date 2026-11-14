@@ -1,5 +1,6 @@
 // ИИ-помощник: панель, которая выезжает снизу поверх любого экрана. Открывается круглой кнопкой рядом с меню.
-import { AI_SUGGESTED_QUESTIONS } from '../domain/catalog.js';
+import { aiQuestions } from '../domain/ai-questions.js';
+import { addDays } from '../domain/dates.js';
 
 const ASK_MAX_PX = 136; // как max-height у .ask-input: дальше поле прокручивается
 
@@ -35,7 +36,9 @@ export function assistantView(app) {
     messages,
     chatLoading: s.chatLoading,
     emptyChat: !s.chat.length,
-    suggestions: AI_SUGGESTED_QUESTIONS.slice(0, 3).map((q) => ({ q, pick: () => app.ask(q, 'suggestion') })),
+    greeting: s.profile.name.trim() ? s.profile.name.trim() + ', что разберём?' : 'Что разберём?',
+    // подсказки — по записям за неделю (domain/ai-questions.js)
+    suggestions: aiQuestions(s.profile, s.log, app.today(), addDays).map((q) => ({ q, pick: () => app.ask(q, 'suggestion') })),
     askText: s.askText,
     onAskInput: (e) => app.setState({ askText: e.target.value }),
     fitAsk,

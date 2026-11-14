@@ -9,9 +9,14 @@
 
   <div class="sheet-body">
     <sc-if value="{{emptyChat}}">
-      <div class="hint">Отвечу с учётом ваших записей. Можно приложить фото.</div>
+      <div class="ai-hello">
+        <div class="ai-hello-title">{{greeting}}</div>
+        <div class="ai-hello-sub">Отвечу по вашим записям. Можно приложить фото.</div>
+      </div>
       <div class="suggests">
-        <sc-for list="{{suggestions}}" as="s"><button class="suggest" onClick="{{s.pick}}">{{s.q}}</button></sc-for>
+        <sc-for list="{{suggestions}}" as="s">
+          <button class="suggest" onClick="{{s.pick}}">{{s.q}}</button>
+        </sc-for>
       </div>
     </sc-if>
     <div class="chat">
