@@ -1,4 +1,15 @@
 // Точка входа: стили, аналитика, регистрация шаблонов и запуск приложения.
+// Шрифты брендбука — свои файлы в сборке (а не Google Fonts): грузятся везде, в т. ч. где Google недоступен
+import '@fontsource/manrope/500.css';
+import '@fontsource/manrope/600.css';
+import '@fontsource/manrope/700.css';
+import '@fontsource/manrope/800.css';
+import '@fontsource/onest/300.css';
+import '@fontsource/onest/400.css';
+import '@fontsource/onest/500.css';
+import '@fontsource/onest/600.css';
+import '@fontsource/doto/700.css';
+import '@fontsource/doto/800.css';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/components.css';

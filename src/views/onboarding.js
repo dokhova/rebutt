@@ -10,7 +10,7 @@ export function onboardingView(app) {
   const s = app.state, p = s.profile, step = s.onbStep;
   const flow = app.onboardingFlow(), i = flow.indexOf(step);
   const isLast = i === flow.length - 1;
-  const blocked = (step === 'consent' && !(s.consent && s.consentData)) || (step === 'about' && !(p.name.trim() && p.sex));
+  const blocked = (step === 'consent' && !s.consent) || (step === 'about' && !(p.name.trim() && p.sex));
   const legal = (id) => ({ url: LEGAL_DOCS[id].url, open: (e) => app.openLegalDoc(id, 'onboarding', e) });
 
   let nextLabel = isLast ? 'Начать' : 'Дальше';
@@ -37,9 +37,6 @@ export function onboardingView(app) {
     termsChecked: s.consent,
     termsCls: 'checkbox' + (s.consent ? ' on' : ''),
     toggleTerms: () => app.toggleConsent('terms'),
-    dataChecked: s.consentData,
-    dataCls: 'checkbox' + (s.consentData ? ' on' : ''),
-    toggleData: () => app.toggleConsent('data'),
     terms: legal('terms'), privacy: legal('privacy'), healthConsent: legal('consent'),
 
     // о себе
@@ -83,7 +80,7 @@ export function onboardingView(app) {
 const WELCOME = {
   a: { t1: 'Узнай себя', t2: 'изнутри', accent: 'за 14 дней', inline: true, art: 'glass', sub: 'Отмечай еду, воду и самочувствие, чтобы понять, как они связаны.', cta: 'Начать' },
   b: { t1: 'Познакомься', t2: 'со своим кишечником', accent: 'за 14 дней', inline: false, art: 'contour', sub: 'Веди дневник и замечай, как кишечник реагирует на твои привычки.', cta: 'Начать дневник' },
-  c: { t1: 'Свидание', t2: 'с кишечником', accent: 'на 14 дней', inline: false, art: 'photo', sub: 'О кишечнике принято молчать. Мы предпочитаем его понимать. Ты увидишь, как организм реагирует на питание, сон, стресс и цикл.', cta: 'Пойти на свидание' }
+  c: { t1: 'Свидание', t2: 'с кишечником', accent: '', badge: '14 дней', inline: false, art: 'photo', sub: 'О кишечнике принято молчать. Мы предпочитаем его понимать. Ты увидишь, как организм реагирует на питание, сон, стресс и цикл.', cta: 'Пойти на свидание' }
 };
 // варианты раскладки экрана с фото (для выбора): ?welcome=c1 … c5
 for (let n = 1; n <= 5; n++) WELCOME['c' + n] = { ...WELCOME.c, layout: n };

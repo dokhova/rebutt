@@ -624,3 +624,16 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
   .lay6 .welcome-text { top: calc(54% + 18px); }
   .lay6 .wt-1, .lay6 .wt-2, .lay6 .wt-acc.block { font-size: 34px; }
 }
+
+/* «14 дней» — фиолетовой плашкой над заголовком (акцент на числе, как «капля» в брендбуке), логотип выше и меньше */
+.welcome-badge { position: relative; display: inline-flex; align-items: center; height: 30px; padding: 0 14px; margin-bottom: 12px; border-radius: 15px; background: #7954C8; color: #FFFFFF; font-family: var(--font-display); font-size: 15px; font-weight: 700; }
+.lay6 .welcome-logo { width: 84px; margin-top: -14px; }
+.lay6 .welcome-photo { height: calc(68% + 28px + var(--safe-top)); }
+.lay6::before { top: 62%; }
+.lay6 .welcome-text { top: calc(62% + 22px); }
+@media (max-height: 760px) {
+  .lay6 .welcome-photo { height: calc(58% + 28px + var(--safe-top)); }
+  .lay6::before { top: 52%; }
+  .lay6 .welcome-text { top: calc(52% + 18px); }
+}
+@media (min-height: 761px) { .lay6 .welcome-photo { height: calc(65% + 28px + var(--safe-top)); } .lay6::before { top: 59%; } .lay6 .welcome-text { top: calc(59% + 22px); } }
