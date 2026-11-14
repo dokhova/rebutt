@@ -429,7 +429,6 @@
 .pc-day.band { background: rgba(167, 139, 250, .18); }
 .pc-day.on { background: var(--violet); color: #FFFFFF; }
 .pc-day.on .pc-wd { color: rgba(255, 255, 255, .8); }
-.pc-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .pc-sum { font-size: 13px; color: var(--muted); }
 .pc-unknown { flex-shrink: 0; height: 32px; padding: 0 14px; border-radius: 16px; border: 1px solid var(--line-control); background: transparent; color: var(--ink); font-size: 13px; }
 .pc-unknown.on { background: var(--selected); border-color: var(--selected); color: var(--accent-ink); }
@@ -701,3 +700,12 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
 /* шаги 2–4: «назад» в одной строке с полосой прогресса, без логотипа */
 .onb-head { display: flex; align-items: center; gap: 14px; height: 44px; }
 .onb-head .onb-progress { flex: 1; margin-top: 0; }
+
+/* шаг «Цикл»: вопрос крупно в блоке, «Если актуально» — отдельно под блоком обычными чипами */
+.onb-q { font-family: var(--font-display); font-size: 19px; line-height: 1.25; font-weight: 700; color: #FFFFFF; text-shadow: none; }
+.pc-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pc-month { font-size: 14px; font-weight: 500; color: var(--muted); }
+.gcard .pc-month { color: rgba(255, 255, 255, .85); }
+.pc-strip { padding-top: 14px; }
+.onb-extra .chips .chip { min-height: 36px; font-size: 14px; }
+.pc-strip { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 100%); mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 100%); }

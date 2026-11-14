@@ -91,17 +91,18 @@
       <h1 class="title">Учитывать цикл?</h1>
       <div class="subtitle">Подскажем, когда кишечник может вести себя иначе</div>
     </div>
-    <div class="gcard g-lav gblock onb-block">
+    <sc-if value="{{askLastPeriod}}">
+      <div class="gcard g-lav gblock onb-block">
+        <div class="onb-q">Когда начались последние месячные?</div>
+        <sc-include name="period-calendar"></sc-include>
+      </div>
+    </sc-if>
+    <div class="section onb-extra">
       <div class="caption">Если актуально</div>
       <div class="chips">
         <sc-for list="{{cycleOptions}}" as="o"><button class="{{o.cls}}" aria-pressed="{{o.on}}" onClick="{{o.pick}}">{{o.label}}</button></sc-for>
       </div>
-      <sc-if value="{{askLastPeriod}}">
-        <div class="caption">Когда начались последние месячные?</div>
-        <sc-include name="period-calendar"></sc-include>
-      </sc-if>
     </div>
-    </sc-if>
   </div>
 </sc-if>
 

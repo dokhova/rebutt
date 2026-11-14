@@ -3,6 +3,8 @@
 // Дни старше 60 дней не показываем (как ограничение в App.setLastPeriod).
 import { addDays, diffDays, dayMonth, dayMonthShort, parseKey, MONTHS_GEN } from '../domain/dates.js';
 
+const MONTHS_NOM = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+
 const DAYS = 45;
 const PERIOD_DAYS = 5;
 const WD = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
@@ -35,11 +37,14 @@ export function periodCalendarView(app, picked = true) {
   });
   const cd = startK ? (p.lastAgo % p.len) + 1 : 0;
   return {
+    // над лентой — месяц выбранного дня (или текущий), чтобы было понятно, что за даты
+    pcMonths: MONTHS_NOM[parseKey(startK || todayK).getMonth()],
+    pcPicked: startK ? 'Начались ' + dayMonth(startK) : '',
     pcDays: days,
     pcScroll: scrollStrip,
     pcSummary: startK
       ? 'Сегодня ' + cd + '-й день цикла · следующие примерно ' + dayMonthShort(addDays(startK, p.len * Math.ceil((p.lastAgo + 1) / p.len)))
-      : 'Нажмите на первый день — можно примерно',
+      : 'Выберите первый день месячных — можно примерно. Справа — сегодня',
     pcUnknownCls: 'pc-unknown' + (picked && p.lastUnknown ? ' on' : ''),
     pcUnknown: () => app.pickPeriodStart(null)
   };

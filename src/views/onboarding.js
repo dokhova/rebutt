@@ -69,7 +69,7 @@ export function onboardingView(app) {
       const on = daysAgo == null ? p.lastUnknown : !p.lastUnknown && p.lastAgo === daysAgo;
       return { label, on, cls: 'chip' + (on ? ' on' : ''), pick: () => app.setLastPeriod(daysAgo) };
     }),
-    cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: 'gchip' + (p[id] ? ' on' : ''), pick: () => app.toggleCycleOption(id) })),
+    cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: 'chip' + (p[id] ? ' on' : ''), pick: () => app.toggleCycleOption(id) })),
     askLastPeriod: !noCyclePhases(p),
     ...periodCalendarView(app, s.onbPeriodPicked)
   };
