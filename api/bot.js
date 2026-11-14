@@ -4,7 +4,7 @@
 // POST /api/bot — сюда Telegram шлёт обновления. Проверяем заголовок X-Telegram-Bot-Api-Secret-Token.
 // GET  /api/bot?setup=<TELEGRAM_BOT_TOKEN> — один раз: подключает вебхук к этому адресу (открыть в браузере).
 //
-// Нужна переменная окружения TELEGRAM_BOT_TOKEN (уже есть — для входа по Telegram).
+// Нужна переменная окружения TELEGRAM_BOT_TOKEN (уже есть — для входа по Telegram). MINIAPP_URL — по желанию (см. miniAppUrl).
 // Текст приветствия — WELCOME ниже, картинка — public/bot/welcome-2.jpg.
 import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
@@ -64,7 +64,11 @@ const sameString = (a, b) => {
   return x.length === y.length && crypto.timingSafeEqual(x, y);
 };
 
-/** https://www.rebutt.app — адрес, на котором открыли функцию (тот же домен, что у мини-аппа) */
+/** Адрес мини-аппа для кнопки «Старт». MINIAPP_URL — если приложение открывают с другого адреса,
+ *  например с *.vercel.app (свой домен на Vercel из России часто не грузится без VPN). Иначе — домен этой функции. */
+const miniAppUrl = (req) => (process.env.MINIAPP_URL || origin(req)).replace(/\/+$/, '') + '/';
+
+/** https://www.rebutt.app — адрес, на котором открыли функцию */
 function origin(req) {
   const host = req.headers['x-forwarded-host'] || req.headers.host;
   return 'https://' + host;
@@ -106,7 +110,7 @@ export default async function handler(req, res) {
   try {
     if (msg && msg.chat && /^\/start(\s|@|$)/.test(text)) {
       const app = origin(req);
-      const keyboard = { inline_keyboard: [[{ text: START_BUTTON, web_app: { url: app + '/' } }]] };
+      const keyboard = { inline_keyboard: [[{ text: START_BUTTON, web_app: { url: miniAppUrl(req) } }]] };
       const send = (photo) => tg(token, 'sendPhoto', { chat_id: msg.chat.id, photo, caption: WELCOME, parse_mode: 'HTML', reply_markup: keyboard });
       const cached = await readPhotoId();
       let result = cached ? await send(cached) : { ok: false };
@@ -121,7 +125,7 @@ export default async function handler(req, res) {
           chat_id: msg.chat.id,
           text: WELCOME,
           parse_mode: 'HTML',
-          reply_markup: { inline_keyboard: [[{ text: START_BUTTON, web_app: { url: app + '/' } }]] }
+          reply_markup: keyboard
         });
       }
     }
