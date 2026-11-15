@@ -15,7 +15,7 @@ export const LEGAL_VERSION = '2026-10-20.1';
 export const LEGAL_DOCS = {
   terms: { url: '/legal/terms.html', title: 'Пользовательское соглашение' },
   privacy: { url: '/legal/privacy.html', title: 'Политика конфиденциальности' },
-  consent: { url: '/legal/consent.html', title: 'Согласие на обработку данных о здоровье' }
+  consent: { url: '/legal/consent.html', title: 'Согласие на обработку данных' }
 };
 
 // Переменные окружения (.env.local локально, Settings → Environment Variables на Vercel). Описание — .env.example

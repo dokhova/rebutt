@@ -136,7 +136,7 @@ function tipsOf(s, day, sc, tone, isToday, todayK, opts) {
     ...t,
     tileCls: 'tip-icon ' + t.tone,
     // пояснение под заголовком — только когда в нём совет показаться врачу; остальное — по «?» у заголовка блока
-    showText: /врач/i.test(t.text || ''),
+    showText: /специалист/i.test(t.text || ''),
     isWater: t.icon === 'water', isFiber: t.icon === 'fiber', isWalk: t.icon === 'walk',
     isWarm: t.icon === 'warm' || t.icon === 'slow', isCalm: t.icon === 'calm', isAi: t.icon === 'ai', isPhoto: t.icon === 'photo'
   }));
