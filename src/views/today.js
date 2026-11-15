@@ -116,11 +116,15 @@ function metrics(sc, day, app, targets, dc) {
   };
 }
 
-/** «Что может помочь»: совет ИИ на сегодня (если есть) + правила из domain/suggestions.js; пусто — заготовка по тону */
+/** «Что может помочь»: сначала персональные советы ИИ по записям человека (есть с первого дня с записями, даже если сегодня пусто),
+ *  потом правила из domain/suggestions.js с его цифрами; пусто — заготовка */
 function tipsOf(s, day, sc, tone, isToday, todayK, opts) {
   const items = [];
   const ai = s.insights;
-  if (isToday && sc && ai && ai.date === todayK && ai.tipTitle) items.push({ id: 'ai', icon: 'ai', tone: 'calm', title: ai.tipTitle, text: ai.tipText });
+  if (isToday && ai && ai.date === todayK) {
+    const aiTips = ai.tips && ai.tips.length ? ai.tips : ai.tipTitle ? [ai.tipTitle] : [];
+    aiTips.forEach((title, i) => items.push({ id: 'ai' + i, icon: 'ai', tone: 'calm', title, text: i === 0 ? ai.tipText : '' }));
+  }
   if (hasData(day)) items.push(...suggestionsFor(day, sc, opts));
   // сегодня записей нет — подсказки по прошлым дням и целям (если и их нет — приглашение)
   else if (isToday) items.push(...suggestionsFromHistory(s.log, todayK, { ...opts, addDays }));
