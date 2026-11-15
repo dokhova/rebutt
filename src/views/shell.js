@@ -40,7 +40,7 @@ export function shellView(app, screen, edit = null) {
     openAssistantDock: () => app.openAssistant('dock'),
     tabToday: tab('today'),
     tabInsights: tab('insights'),
-    tabAdd: 'plus' + (s.addSheet ? ' on' : ''),
+    tabAdd: 'tab-cta' + (s.addSheet ? ' on' : ''),
     goToday: () => app.navigate('today'),
     goAdd: () => (s.addSheet ? app.closeAddSheet() : app.openAddSheet('tab')),
     goInsights: () => app.navigate('insights'),

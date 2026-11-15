@@ -38,6 +38,12 @@ export function todayView(app) {
     dateMax: todayK,
     dateValue: sel,
     pickDay: (e) => app.pickDay(e.target.value),
+    // переключатель темы в шапке (выбор хранится на устройстве — services/theme.js)
+    themeSwitch: {
+      dark: s.theme === 'dark',
+      cls: 'theme-switch' + (s.theme === 'dark' ? ' dark' : ''),
+      toggle: () => app.setTheme(s.theme === 'dark' ? 'light' : 'dark', 'home')
+    },
 
     // пустой день — кнопка внести данные; для прошлого дня «+» пишет именно в него (App.entryDay)
 
@@ -86,8 +92,8 @@ function metrics(sc, day, app, targets, dc) {
   // комфорт за 7 дней — главная цифра (domain/score.js → weekComfort): за неделю записей нет — «–»
   const hasComfort = !!dc;
   const comfort = hasComfort
-    ? { text: String(dc.value), heroCls: 'hero-value num' }
-    : { text: '–', heroCls: 'hero-value num is-dash' };
+    ? { has: true, empty: false, text: String(dc.value), heroCls: 'hero-value num' }
+    : { has: false, empty: true, text: '–', heroCls: 'hero-value num is-dash' };
   const C = 2 * Math.PI * 50, pct = hasComfort ? Math.max(0, Math.min(100, dc.value)) / 100 : 0;
   const ring = { dash: (C * pct).toFixed(1) + ' ' + C.toFixed(1), text: hasComfort ? String(dc.value) : '–', cls: 'ring-num' + (hasComfort ? '' : ' is-dash') };
   // шкала-полукруг: центр (66, 70), радиус 50; конец дуги — белая точка
@@ -103,6 +109,7 @@ function metrics(sc, day, app, targets, dc) {
     addStool: () => app.pickAddSection('stool'),
     addFood: () => app.pickAddSection('food'),
     addWater: () => app.pickAddSection('water'),
+    addFirst: () => app.openAddSheet('home_hero'),
     stool, form, formDots, comfort, ring, gauge,
     fiber: fiber == null ? empty(fiberUnit) : { text: String(fiber), tileCls: TILE, unit: fiberUnit, bar: bar(fiberPct, toneOf(fiberPct)) },
     water: !water ? empty(waterUnit) : { text: litres(water), tileCls: TILE, unit: waterUnit, bar: bar(waterPct, toneOf(waterPct)) }

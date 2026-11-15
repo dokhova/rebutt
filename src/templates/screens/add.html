@@ -16,7 +16,7 @@
     <sc-if value="{{cycleEnabled}}">
       <div class="grow"><span>Месячные<sc-if value="{{cycleDayKnown}}"><span class="grow-sub num"> · день {{cycleDay}}</span></sc-if></span><button class="{{periodSwitch}}" onClick="{{togglePeriod}}" role="switch" aria-checked="{{periodOn}}" aria-label="Месячные"></button></div>
     </sc-if>
-    <div class="grow"><span>Стресс</span><div class="gsegs small"><sc-for list="{{stressLevels}}" as="l"><button class="{{l.cls}}" aria-pressed="{{l.on}}" onClick="{{l.pick}}">{{l.label}}</button></sc-for></div></div>
+    <div class="grow stack"><span>Стресс</span><div class="gsegs small"><sc-for list="{{stressLevels}}" as="l"><button class="{{l.cls}}" aria-pressed="{{l.on}}" onClick="{{l.pick}}">{{l.label}}</button></sc-for></div></div>
   </div>
 </div>
 

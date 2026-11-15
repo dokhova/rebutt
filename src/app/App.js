@@ -138,6 +138,7 @@ export default class App extends Component {
       onbPeriodPicked: false, // в онбординге выбрали день начала месячных
       onbPeriodNow: '',       // онбординг, шаг «Цикл»: месячные идут сейчас? '' | 'yes' | 'no'
       cycleCal: false,        // в профиле раскрыт календарь «Когда начались месячные»
+      docsOpen: false,        // в профиле раскрыт список документов
       legal: null,        // открытый документ: { id, title, html, error }
       assistant: false,   // открыта панель ИИ-помощника
       // модалка «На главный экран»: null | 'ios' | 'android' (как рисовать иконки)
@@ -583,6 +584,8 @@ export default class App extends Component {
 
   toggleCycleCalendar() { this.setState({ cycleCal: !this.state.cycleCal }); }
 
+  toggleDocs() { this.setState({ docsOpen: !this.state.docsOpen }); }
+
   setCycleLength(len) { this.updateProfile({ len: Math.min(CYCLE_LEN_MAX, Math.max(CYCLE_LEN_MIN, len)) }, 'cycle_length'); }
 
   toggleCycle() {
@@ -603,12 +606,12 @@ export default class App extends Component {
   }
 
   /** Тема оформления: светлая или тёмная. Хранится на устройстве, не в профиле */
-  setTheme(theme) {
+  setTheme(theme, source = 'home') {
     if (theme === this.state.theme) return;
     const applied = applyTheme(theme);
     saveTheme(applied);
     this.setState({ theme: applied });
-    track('theme_changed', { theme: applied });
+    track('theme_changed', { theme: applied, source });
   }
 
   toggleReminder(slot) {

@@ -21,23 +21,24 @@
   -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 45%); mask-image: linear-gradient(180deg, transparent 0%, #000 45%);
 }
 /* нижняя панель: меню и рядом круглая кнопка ИИ */
-.dock { position: absolute; left: 0; right: 0; bottom: calc(22px + var(--safe-bottom)); display: flex; justify-content: center; align-items: center; gap: 10px; }
+.dock { position: absolute; left: 0; right: 0; bottom: calc(22px + var(--safe-bottom)); display: flex; justify-content: center; align-items: center; gap: 12px; }
 /* Android: Telegram уже отдаёт в --safe-bottom высоту системной панели (≈48px) — свой отступ поверх неё поднимал меню слишком высоко */
 [data-platform="android"] .dock { bottom: max(10px, calc(var(--safe-bottom) - 18px)); }
 [data-platform="android"] .screen.with-tabs::after { height: calc(70px + var(--safe-bottom)); }
 .tabbar {
-  padding: 5px; box-sizing: border-box; display: flex; gap: 6px; align-items: center; border-radius: 40px;
-  background: var(--tab-bg); box-shadow: var(--tab-shadow); border: 1px solid var(--line-2); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  padding: 6px; box-sizing: border-box; display: flex; gap: 6px; align-items: center; border-radius: 38px;
+  background: var(--tab-bg); box-shadow: var(--tab-shadow); border: 1px solid var(--tab-border);
+  backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4);
 }
-/* меню — капсула из трёх кругов: «Сегодня», «+», «Инсайты» */
-.tab { width: 56px; height: 56px; border: 0; border-radius: 50%; padding: 0; background: transparent; color: var(--ink-soft); display: flex; align-items: center; justify-content: center; }
-.tab.on { background: var(--wash-2); color: var(--ink); }
-.plus { width: 64px; height: 64px; border-radius: 50%; border: 0; padding: 0; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform .2s; }
-.plus.on { box-shadow: inset 0 0 0 2px var(--accent-ink); }
-.ai-fab {
-  width: 64px; height: 64px; border-radius: 50%; padding: 0; flex-shrink: 0; color: #FFFFFF; display: flex; align-items: center; justify-content: center; border: 0;
-  background: linear-gradient(160deg, var(--violet-soft), var(--violet)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 10px 28px rgba(121, 84, 200, .35);
-}
+/* меню (вариант B): тёмная дымчатая капсула в обеих темах; иконки в кругах без подписей (подпись в aria-label),
+   выбранная — светлая подложка; в центре справа — лаймовая таблетка «+», в конце — ИИ (лавандовая иконка) */
+.tab { width: 54px; height: 54px; flex-shrink: 0; border: 0; border-radius: 50%; padding: 0; background: transparent; color: var(--tab-ink-off);
+  display: grid; place-items: center; transition: background .2s, color .2s; }
+.tab.on { background: var(--tab-on-bg); color: var(--tab-ink); }
+.tab-ai { color: #C7B4FF; }
+.tab-cta { width: 96px; height: 54px; flex-shrink: 0; padding: 0; box-sizing: border-box; border: 0; border-radius: 27px; background: var(--accent); color: var(--accent-ink);
+  display: grid; place-items: center; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6); }
+.tab-cta.on { box-shadow: inset 0 0 0 2px var(--accent-ink); }
 
 /* тост поверх всего — и шторки «+», и карточки «?»; длинный текст переносится, а не обрезается */
 .toast { position: absolute; left: 50%; top: calc(52px + var(--safe-top)); transform: translateX(-50%); z-index: 50; width: max-content; max-width: calc(100% - 32px); box-sizing: border-box; padding: 12px 20px; border-radius: 22px; background: #17141C; color: #FFFFFF; font-size: 14px; line-height: 1.35; text-align: center; white-space: normal; box-shadow: 0 10px 30px rgba(0, 0, 0, .25); }
@@ -54,13 +55,13 @@
 .section { display: flex; flex-direction: column; gap: 12px; }
 
 /* ---------- кнопки ---------- */
-.btn { width: 100%; height: 56px; border-radius: 28px; border: 0; background: var(--accent); color: var(--accent-ink); font-size: 16px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 10px; }
-.btn.secondary { background: var(--surface-4); color: var(--ink); height: 48px; border-radius: 24px; font-size: 15px; }
+.btn { width: 100%; min-height: 56px; padding: 8px 20px; box-sizing: border-box; text-align: center; border-radius: 28px; border: 0; background: var(--accent); color: var(--accent-ink); font-size: 16px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.btn.secondary { background: var(--surface-4); color: var(--ink); min-height: 48px; border-radius: 24px; font-size: 15px; }
 .btn.off { background: var(--surface-4); color: var(--muted); cursor: default; }
 .icon-btn { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0; color: var(--ink); border: 0; }
 .icon-btn.glass { background: var(--btn-glass); border: 1px solid var(--line-2); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
 .icon-btn.small { width: 36px; height: 36px; flex-shrink: 0; border: 1px solid var(--line-control); background: transparent; }
-.text-btn { border: 0; background: transparent; color: var(--muted); height: 44px; font-size: 14px; }
+.text-btn { border: 0; background: transparent; color: var(--muted); min-height: 44px; font-size: 14px; }
 .round-btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line-control); background: transparent; font-size: 17px; padding: 0; display: flex; align-items: center; justify-content: center; }
 
 /* ---------- карточки и списки ---------- */
@@ -106,7 +107,7 @@
 .chip.on { background: var(--selected); border-color: var(--selected); color: var(--accent-ink); }
 
 .segments { border-radius: 26px; padding: 4px; display: flex; gap: 4px; background: var(--surface-3); }
-.seg { flex-grow: 1; height: 44px; border: 0; border-radius: 22px; background: transparent; font-size: 14px; color: var(--ink); }
+.seg { flex-grow: 1; min-height: 44px; border: 0; border-radius: 22px; background: transparent; font-size: 14px; color: var(--ink); }
 .seg.on { background: var(--selected); color: var(--accent-ink); font-weight: 500; }
 
 .switch { width: 52px; height: 32px; border-radius: 16px; border: 0; background: var(--surface-4); position: relative; flex-shrink: 0; padding: 0; transition: background .2s; }
@@ -119,10 +120,10 @@
 
 .field-input { width: 100%; height: 56px; border-radius: 18px; border: 1px solid var(--line-control); background: var(--surface-1); padding: 0 18px; font-size: 16px; outline: none; box-sizing: border-box; }
 .field-input:focus { border-color: var(--ink); }
-.inline-input { border: 0; background: transparent; text-align: right; font-size: 15px; outline: none; width: 180px; padding: 8px 0; }
+.inline-input { border: 0; background: transparent; text-align: right; font-size: 16px; outline: none; width: 180px; padding: 8px 0; }
 
 /* ---------- метки ---------- */
-.tag { display: inline-flex; align-items: center; height: 32px; padding: 0 14px; border-radius: 16px; background: var(--wash-2); border: 1px solid var(--line-control); font-size: 13px; white-space: nowrap; box-sizing: border-box; }
+.tag { display: inline-flex; align-items: center; min-height: 32px; padding: 0 14px; border-radius: 16px; background: var(--wash-2); border: 1px solid var(--line-control); font-size: 13px; white-space: nowrap; box-sizing: border-box; }
 .tag.on { background: var(--selected); border-color: var(--selected); color: var(--accent-ink); font-weight: 500; }
 
 .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dim); }
@@ -142,7 +143,7 @@
 .pebble { position: relative; flex-shrink: 0; }
 .pebble img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
 
-.field-input.area { height: auto; min-height: 56px; padding: 14px 18px; line-height: 1.4; resize: none; font-size: 15px; }
+.field-input.area { height: auto; min-height: 56px; padding: 14px 18px; line-height: 1.4; resize: none; font-size: 16px; }
 .text-link { border: 0; background: transparent; color: var(--ink); font-size: 14px; font-weight: 500; padding: 8px 0; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line-control); }
 .tappable { cursor: pointer; }
 .row-chevron { flex-shrink: 0; margin-left: -6px; color: var(--muted); }
@@ -217,7 +218,7 @@
 .home-prompt-title { margin: 0; font-family: var(--font-display); font-size: 22px; line-height: 28px; font-weight: 600; }
 .home-prompt-sub { margin: 0; font-size: 15px; line-height: 22px; color: var(--muted); }
 .home-prompt-actions { display: flex; flex-direction: column; gap: 4px; }
-.home-prompt-later { height: 48px; border: 0; border-radius: 24px; background: none; color: var(--muted); font-size: 15px; font-weight: 500; }
+.home-prompt-later { min-height: 48px; border: 0; border-radius: 24px; background: none; color: var(--muted); font-size: 15px; font-weight: 500; }
 
 /* иллюстрация: телефон с сеткой иконок и карточка приложения поверх */
 .hp-art { position: relative; height: 230px; border-radius: 20px; background: var(--bg-mid); overflow: hidden; }
