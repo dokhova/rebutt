@@ -139,6 +139,7 @@ export default class App extends Component {
       onbPeriodNow: '',       // онбординг, шаг «Цикл»: месячные идут сейчас? '' | 'yes' | 'no'
       cycleCal: false,        // в профиле раскрыт календарь «Когда начались месячные»
       docsOpen: false,        // в профиле раскрыт список документов
+      goalsOpen: false,       // в профиле раскрыты цели
       legal: null,        // открытый документ: { id, title, html, error }
       assistant: false,   // открыта панель ИИ-помощника
       // модалка «На главный экран»: null | 'ios' | 'android' (как рисовать иконки)
@@ -585,6 +586,8 @@ export default class App extends Component {
   toggleCycleCalendar() { this.setState({ cycleCal: !this.state.cycleCal }); }
 
   toggleDocs() { this.setState({ docsOpen: !this.state.docsOpen }); }
+
+  toggleGoals() { this.setState({ goalsOpen: !this.state.goalsOpen }); }
 
   setCycleLength(len) { this.updateProfile({ len: Math.min(CYCLE_LEN_MAX, Math.max(CYCLE_LEN_MIN, len)) }, 'cycle_length'); }
 
