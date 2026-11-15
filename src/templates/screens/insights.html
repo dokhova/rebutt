@@ -5,11 +5,10 @@
 </div>
 
 <div class="gcard g-violet ins-hero">
+  <!-- подпись — отдельной строкой во всю ширину (не переносится из-за плашки справа), ниже — процент и плашка -->
+  <div class="g-label ins-label">Кишечник работал в среднем</div>
   <div class="ins-hero-top">
-    <div>
-      <div class="g-label">Кишечник работал в среднем</div>
-      <div class="ins-value num">{{avg}}<sc-if value="{{hasAvg}}"><span class="hero-unit">%</span></sc-if></div>
-    </div>
+    <div class="ins-value num">{{avg}}<sc-if value="{{hasAvg}}"><span class="hero-unit">%</span></sc-if></div>
     <div class="ins-word">{{avgWord}}</div>
   </div>
   <div class="gbars">
