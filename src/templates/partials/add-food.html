@@ -6,7 +6,7 @@
       <button class="icon-btn small on-photo" onClick="{{removePhoto}}" aria-label="Убрать фото"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
     </div>
   </sc-if>
-  <!-- фото — маленькая кнопка слева от поля, описание — само поле -->
+  <!-- фото — маленькая кнопка слева от поля, описание — само поле; в поле — пример, что писать -->
   <div class="food-row">
     <sc-if value="{{noPhoto}}">
       <label class="food-cam" for="foodFile" aria-label="{{photoLabel}}">
@@ -16,7 +16,8 @@
       </label>
     </sc-if>
     <label class="sr-only" for="foodNote">Описание блюда</label>
-    <input id="foodNote" class="field-input food-note" type="text" enterkeyhint="done" placeholder="Опишите блюдо" value="{{note}}" onChange="{{onNote}}">
+    <!-- textarea: длинное описание переносится вниз, поле растёт (core/autogrow.js) -->
+    <textarea id="foodNote" class="field-input food-note" rows="1" enterkeyhint="done" placeholder="{{notePlaceholder}}" ref="{{growNote}}" onChange="{{onNote}}">{{note}}</textarea>
   </div>
 </sc-if>
 

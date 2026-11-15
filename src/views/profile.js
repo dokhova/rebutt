@@ -1,4 +1,4 @@
-// «Профиль»: данные, цели, цикл, напоминания, экспорт, поддержка, документы, удаление данных.
+// «Профиль»: четыре группы — о себе (данные и цели), цикл, приложение (напоминания, ярлык), данные и помощь.
 import { APP_VERSION, SUPPORT_URL, LEGAL_DOCS } from '../config.js';
 import { GOALS, CYCLE_OPTIONS } from '../domain/catalog.js';
 import { yearsWord, dayMonthShort, addDays } from '../domain/dates.js';
@@ -63,13 +63,6 @@ export function profileView(app) {
     showHomeScreen: !!homeScreenPlatform() || IS_DEMO,
     addHomeScreen: () => app.addToHomeFromProfile(),
 
-    themeLight: 'seg' + (app.state.theme === 'light' ? ' on' : ''),
-    themeDark: 'seg' + (app.state.theme === 'dark' ? ' on' : ''),
-    themeLightOn: app.state.theme === 'light',
-    themeDarkOn: app.state.theme === 'dark',
-    pickLight: () => app.setTheme('light'),
-    pickDark: () => app.setTheme('dark'),
-
     remAm: p.am, remAmSwitch: sw(p.am), toggleAm: () => app.toggleReminder('morning'),
     remPm: p.pm, remPmSwitch: sw(p.pm), togglePm: () => app.toggleReminder('evening'),
 
@@ -79,6 +72,9 @@ export function profileView(app) {
     supportUrl: SUPPORT_URL,
     supportHandle: '@' + SUPPORT_URL.split('/').pop(),
     openSupport: (e) => app.openSupport(e),
+    docsOpen: app.state.docsOpen,
+    toggleDocs: () => app.toggleDocs(),
+    docsChevron: 'row-chevron cal-chevron' + (app.state.docsOpen ? ' open' : ''),
     docs: Object.keys(LEGAL_DOCS).map((id) => ({ ...LEGAL_DOCS[id], open: (e) => app.openLegalDoc(id, 'profile', e) })),
 
     deleteAll: () => app.deleteAllData(),

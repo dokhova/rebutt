@@ -14,6 +14,9 @@ import { cycleDay } from '../domain/cycle.js';
 import { noCyclePhases } from '../domain/profile.js';
 import { draftSections } from '../domain/draft.js';
 import { isAndroid } from '../services/telegram.js';
+import { autogrow } from '../core/autogrow.js';
+
+const growNote = autogrow();
 
 export function addEntryView(app) {
   // День записи — выбранный на главной (можно дописать забытый день), по умолчанию сегодня
@@ -88,6 +91,9 @@ export function addEntryView(app) {
     noPhoto: !f.photo,
     note: f.note,
     onNote: (e) => app.setForm({ note: e.target.value }),
+    growNote,
+    // пример прямо в поле: что и как писать, чтобы ИИ посчитал точнее
+    notePlaceholder: 'Например: гречка с курицей и салат из огурцов',
     onPhoto: (e) => {
       const file = e.target.files && e.target.files[0];
       e.target.value = ''; // чтобы можно было выбрать то же фото повторно

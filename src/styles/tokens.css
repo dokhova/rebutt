@@ -1,5 +1,5 @@
 /* Дизайн-токены. Две темы: светлая (по умолчанию, :root) и тёмная ([data-theme="dark"] на <html>).
-   Тему ставит services/theme.js до первой отрисовки, выбор — в профиле.
+   Тему ставит services/theme.js до первой отрисовки, переключатель — в шапке главной.
    Цвета — только из брендбука Rebutt или производные от них:
      Deep Forest #183A1B · Forest #30472C · Sage #7FA866 · Pale Green #DDE5CF · Lime #D3FA9D
      Lavender #EDE5FF · Soft Violet #A78BFA · Purple Accent #7954C8 · Warm White #F8F7F2
@@ -35,8 +35,13 @@
 
   /* круглые кнопки и меню */
   --btn-glass: rgba(255, 255, 255, .78);
-  --tab-bg: radial-gradient(95% 120% at 30% 20%, rgba(255, 255, 255, .96) 0%, rgba(244, 243, 239, .86) 60%, rgba(232, 231, 225, .8) 100%);
-  --tab-shadow: inset 0 0 18px rgba(255, 255, 255, .85), 0 2px 6px rgba(23, 20, 28, .06), 0 14px 36px rgba(23, 20, 28, .12);
+  /* нижнее меню (вариант B): тёмное дымчатое стекло — на светлом фоне заметно, сквозь него чуть видно контент */
+  --tab-bg: rgba(30, 26, 40, .86);
+  --tab-border: rgba(255, 255, 255, .08);
+  --tab-shadow: 0 12px 32px rgba(23, 20, 28, .22);
+  --tab-ink: #FFFFFF;
+  --tab-ink-off: rgba(255, 255, 255, .68);
+  --tab-on-bg: rgba(255, 255, 255, .14);
   --overlay: rgba(236, 235, 229, .55);
 
   /* текст */
@@ -101,8 +106,13 @@
   --card-shadow: none;
 
   --btn-glass: rgba(43, 40, 51, .7);
-  --tab-bg: rgba(36, 33, 43, .9);
-  --tab-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07);
+  /* в тёмной теме капсула чуть светлее фона и с обводкой, чтобы не сливалась */
+  --tab-bg: rgba(52, 48, 61, .78);
+  --tab-border: rgba(255, 255, 255, .14);
+  --tab-shadow: 0 12px 32px rgba(0, 0, 0, .45);
+  --tab-ink: #FFFFFF;
+  --tab-ink-off: rgba(255, 255, 255, .68);
+  --tab-on-bg: rgba(255, 255, 255, .14);
   --overlay: rgba(10, 9, 12, .55);
 
   --ink: #F8F7F2;

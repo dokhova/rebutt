@@ -3,6 +3,7 @@ import { IS_DEMO } from '../config.js';
 import { parseKey, addDays, MONTHS_GEN, WEEKDAYS_SHORT } from '../domain/dates.js';
 import { gutScore, symptomsOf, toneOf, hasData, TONE_WORD } from '../domain/score.js';
 import { cycleDay, daysToLuteal } from '../domain/cycle.js';
+import { splitSentences } from '../domain/text.js';
 
 const BAR_MIN_PCT = 8;
 
@@ -74,16 +75,17 @@ function weekLabel(firstK) {
     : a.getDate() + ' ' + MONTHS_GEN[a.getMonth()] + ' – ' + b.getDate() + ' ' + MONTHS_GEN[b.getMonth()]);
 }
 
-/** Блок «ИИ заметил»: ответ ИИ → «смотрю…» → подсказка «нужно больше данных» → простая статистика */
+/** Блок «ИИ заметил» — одна короткая строка: ответ ИИ → «смотрю…» → «нужно больше данных» → простая статистика */
 function noticedText(app, todayK, stats) {
   const s = app.state;
   if (IS_DEMO) {
     const pizza = gutScore(app.day('2026-09-24'));
-    return 'После пиццы вечером кишечник работал на ' + (pizza ? pizza.idx : '—') + '%. В дни с овсянкой на завтрак — не ниже 80%.';
+    return 'После пиццы — ' + (pizza ? pizza.idx : '—') + '%, в дни с овсянкой — от 80%.';
   }
-  if (s.insights && s.insights.noticed && s.insights.date === todayK) return s.insights.noticed;
+  // от ИИ — только первое предложение: внизу экрана должно быть коротко
+  if (s.insights && s.insights.noticed && s.insights.date === todayK) return splitSentences(s.insights.noticed)[0] || s.insights.noticed;
   if (s.insightsLoading) return 'Смотрю на ваши записи…';
-  if (stats.dataDays < 3) return 'Добавьте записи хотя бы за 3 дня — здесь появятся закономерности между едой и самочувствием.';
-  const normal = stats.normalPct == null ? '' : 'За 7 дней гладкий стул (тип 3–4) был в ' + stats.normalPct + '% случаев. ';
-  return normal + 'Дней с дискомфортом: ' + stats.symptomDays + '.';
+  if (stats.dataDays < 3) return 'Записи за 3 дня — и здесь появятся закономерности.';
+  if (stats.normalPct == null) return 'Отмечайте стул — так станет видно, что на него влияет.';
+  return 'Гладкий стул (тип 3–4) — в ' + stats.normalPct + '% случаев за неделю.';
 }

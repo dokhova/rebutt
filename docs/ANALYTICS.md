@@ -46,7 +46,7 @@
 ### Запись дня (экран «+»)
 | Событие | Когда | Свойства |
 |---|---|---|
-| `nav_clicked` (`to: add_entry`) | нажат «+» — показаны три карточки | `from` — экран под шторкой, `source` (`tab` / `empty_day`) |
+| `nav_clicked` (`to: add_entry`) | нажат «+» — открыт экран «Запись» | `from` — экран под шторкой, `source` (`tab` / `empty_day` / `home_hero` — «Первая запись» в карточке комфорта, когда за 7 дней записей нет) |
 | `add_section_opened` | «+» в плитке на главной — модалка раздела | `section` (`stool` / `food` / `water`) |
 | `add_sheet_closed` | «+» закрыли без сохранения («×», затемнение, крестик, «Назад»); черновик остаётся | `has_draft` |
 | `add_draft_restored` | при запуске восстановлен незаконченный черновик «+» | `has_stool`, `has_food`, `has_water`, `food_state` (`pick` / `done`) |
@@ -112,7 +112,7 @@
 | `cycle_toggled` | переключатель цикла | `enabled` |
 | `cycle_option_toggled` | беременность / КОК (онбординг и профиль) | `option` (`pregnant` / `coc`), `enabled` |
 | `reminder_toggled` | напоминания | `slot` (`morning` / `evening`), `enabled` |
-| `theme_changed` | профиль → «Оформление» | `theme` (`light` / `dark`) |
+| `theme_changed` | переключатель темы в шапке главной | `theme` (`light` / `dark`), `source` (`home`) |
 | `export_clicked` | экспорт | `format` (`csv` / `pdf_report`), `rows` / `days` |
 | `support_clicked` | «Написать в Telegram» | `source` |
 | `data_deleted` / `data_delete_cancelled` | «Удалить все данные» | — |

@@ -15,7 +15,7 @@
 </div>
 
 <div class="gcard g-lav gblock">
-  <div class="grows"><div class="grow"><span>Стресс</span><div class="gsegs small"><sc-for list="{{stressLevels}}" as="l"><button class="{{l.cls}}" aria-pressed="{{l.on}}" onClick="{{l.pick}}">{{l.label}}</button></sc-for></div></div></div>
+  <div class="grows"><div class="grow stack"><span>Стресс</span><div class="gsegs small"><sc-for list="{{stressLevels}}" as="l"><button class="{{l.cls}}" aria-pressed="{{l.on}}" onClick="{{l.pick}}">{{l.label}}</button></sc-for></div></div></div>
 </div>
 
 <button class="btn" onClick="{{saveEntry}}">Сохранить</button>
