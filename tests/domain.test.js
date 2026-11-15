@@ -73,7 +73,7 @@ test('онбординг: шаги по полу', () => {
 test('цикл: беременность отключает фазы, на КОК — две фазы', () => {
   const p = { ...blankProfile(), cycle: true, lastAgo: 0, len: 28 };
   assert.equal(cycleDay({ ...p, pregnant: true }, '2026-10-18', '2026-10-18'), 0);
-  assert.equal(cyclePhase(3, 28, true)[0], 'Кровотечение отмены');
+  assert.equal(cyclePhase(3, 28, true)[0], 'Перерыв в таблетках');
   assert.equal(cyclePhase(20, 28, true)[0], 'Приём таблеток');
 });
 

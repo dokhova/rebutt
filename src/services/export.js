@@ -54,12 +54,12 @@ export function openDoctorReport(profile, log, appName) {
   }).join('');
 
   const who = [profile.name, profile.age ? profile.age + ' лет' : '', profile.sex === 'f' ? 'жен.' : profile.sex === 'm' ? 'муж.' : ''].filter(Boolean).join(' · ');
-  const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Отчёт для врача</title>
+  const html = `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Сводка записей</title>
 <style>body{font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#1C1A22;margin:32px}h1{font-size:22px;margin:0 0 4px}p{color:#5F5A67;margin:0 0 20px}table{border-collapse:collapse;width:100%}th,td{border-bottom:1px solid #E2DFE8;padding:8px 6px;text-align:left;vertical-align:top}th{font-size:12px;color:#5F5A67;font-weight:500}.note{margin-top:24px;font-size:12px;color:#78737F}@media print{body{margin:12mm}}</style></head><body>
 <h1>Дневник кишечника</h1><p>${escapeHtml(who)} · последние ${days.length} дн. · ${escapeHtml(appName)}</p>
-<table><thead><tr><th>Дата</th><th>Стул (Бристоль)</th><th>Симптомы</th><th>Еда</th><th>Месячные</th><th>Работа кишечника</th></tr></thead>
+<table><thead><tr><th>Дата</th><th>Стул (Бристоль)</th><th>Самочувствие</th><th>Еда</th><th>Месячные</th><th>Работа кишечника</th></tr></thead>
 <tbody>${rows || '<tr><td colspan="6">Записей пока нет</td></tr>'}</tbody></table>
-<div class="note">Данные внесены пользователем самостоятельно. Показатель «работа кишечника» — ориентир приложения, не медицинский показатель.</div>
+<div class="note">Данные внесены пользователем самостоятельно. Показатель «работа кишечника» — ориентир приложения, не оценка специалиста.</div>
 <script>setTimeout(function(){window.print()},400)</script></body></html>`;
 
   const w = window.open('', '_blank');
