@@ -93,7 +93,7 @@ export function addEntryView(app) {
     onNote: (e) => app.setForm({ note: e.target.value }),
     growNote,
     // пример прямо в поле: что и как писать, чтобы ИИ посчитал точнее
-    notePlaceholder: 'Например: гречка с курицей и салат из огурцов',
+    notePlaceholder: 'Например: гречка с курицей',
     onPhoto: (e) => {
       const file = e.target.files && e.target.files[0];
       e.target.value = ''; // чтобы можно было выбрать то же фото повторно

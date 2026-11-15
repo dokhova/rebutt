@@ -36,6 +36,10 @@ export function profileView(app) {
     pickF: () => app.setSex('f'),
     pickM: () => app.setSex('m'),
 
+    goalsOpen: app.state.goalsOpen,
+    toggleGoals: () => app.toggleGoals(),
+    goalsChevron: 'row-chevron cal-chevron' + (app.state.goalsOpen ? ' open' : ''),
+    goalsSummary: GOALS.filter((g) => p.goals.includes(g.id)).map((g) => g.short).join(', ') || 'не выбраны',
     goals: GOALS.map((g) => {
       const on = p.goals.includes(g.id);
       return { label: g.short, on, cls: chip(on), pick: () => app.toggleGoal(g.id) };
