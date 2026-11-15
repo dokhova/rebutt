@@ -27,7 +27,7 @@ export function infoCards(t) {
     sources: ['who_fiber']
   };
   const water = {
-    title: 'Вода — ' + L(t.waterMl) + ' в день',
+    title: 'Жидкость — ' + L(t.waterMl) + ' в день',
     text: 'EFSA считает достаточным ' + L(WATER_EFSA_ML.f) + ' воды в день для женщин и ' + L(WATER_EFSA_ML.m) + ' для мужчин, при беременности — на ' + (WATER_EFSA_ML.pregnancy / 1000).toString().replace('.', ',') + ' л больше. Это вся вода за день: примерно пятая часть приходит с едой. В жару и при нагрузке нужно больше.',
     sources: ['efsa_water']
   };

@@ -41,7 +41,7 @@ export function suggestionsFor(day, sc, opts = {}) {
   const out = [];
   const add = (s) => { if (out.length < MAX && !out.some((x) => x.id === s.id)) out.push(s); };
 
-  const waterTip = (text) => add({ id: 'water', icon: 'water', tone: 'sens', title: 'Вода: ' + litres(water) + ' из ' + litres(waterGoal) + ' л — ещё ' + glassesLeft + ' ' + glassesWord(glassesLeft), text });
+  const waterTip = (text) => add({ id: 'water', icon: 'water', tone: 'sens', title: 'Жидкость: ' + litres(water) + ' из ' + litres(waterGoal) + ' л — ещё ' + glassesLeft + ' ' + glassesWord(glassesLeft), text });
   const fiberTip = () => add({
     id: 'fiber', icon: 'fiber', tone: 'sens',
     title: fiber == null ? 'Еды в записях нет — добавь овощи к обеду' : 'Клетчатка: ' + fiber + ' из ' + fiberGoal + ' г — овощи к ужину',
@@ -146,7 +146,7 @@ export function suggestionsFromHistory(log, k, opts = {}) {
       add({ id: 'calm', icon: 'calm', tone: 'mild', title: 'Высокий стресс ' + nOf(stressed) + ' — время на отдых', text: 'В последние дни стресс был высоким — он часто отражается на кишечнике' });
     }
     if (withWater.length && avgWater < targets.waterMl * 0.75) {
-      add({ id: 'water', icon: 'water', tone: 'sens', title: 'Вода в среднем ' + litres(avgWater) + ' из ' + litres(targets.waterMl) + ' л — стакан утром', text: 'В последние дни выходило около ' + litres(avgWater) + ' л из ' + litres(targets.waterMl) + ' — можно начать со стакана утром' });
+      add({ id: 'water', icon: 'water', tone: 'sens', title: 'Жидкость в среднем ' + litres(avgWater) + ' из ' + litres(targets.waterMl) + ' л — стакан утром', text: 'В последние дни выходило около ' + litres(avgWater) + ' л из ' + litres(targets.waterMl) + ' — можно начать со стакана утром' });
     }
     if (avgFiber != null && avgFiber < targets.fiberG * 0.6) {
       add({ id: 'fiber', icon: 'fiber', tone: 'sens', title: 'Клетчатка в среднем ' + Math.round(avgFiber) + ' из ' + targets.fiberG + ' г — овощи к обеду', text: 'В последние дни клетчатки было меньше ориентира ВОЗ — овощи, цельные злаки, бобовые' });

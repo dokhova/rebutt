@@ -28,7 +28,6 @@
     <!-- цели свёрнуты: строка с выбранными, по нажатию — чипы -->
     <button class="list-row link" onClick="{{toggleGoals}}" aria-expanded="{{goalsOpen}}"><span class="muted">Цели</span><span class="goals-sum"><span class="nowrap">{{goalsSummary}}</span><svg class="{{goalsChevron}}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg></span></button>
     <sc-if value="{{goalsOpen}}"><div class="list-row settings-goals fade-in"><div class="chips"><sc-for list="{{goals}}" as="g"><button class="{{g.cls}}" aria-pressed="{{g.on}}" onClick="{{g.pick}}">{{g.label}}</button></sc-for></div></div></sc-if>
-    <div class="list-row"><span class="muted">Нормы на день <button class="info-btn" onClick="{{info.targets}}" aria-label="Откуда нормы воды и клетчатки">?</button></span><span class="num settings-value">{{body.targets}}</span></div>
   </div>
 </div>
 
