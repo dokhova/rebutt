@@ -566,14 +566,15 @@ export default class App extends Component {
   }
 
   /** daysAgo = null — «не помню» */
-  setLastPeriod(daysAgo) {
-    this.updateProfile(daysAgo == null ? { lastUnknown: true } : { lastUnknown: false, lastAgo: Math.min(60, Math.max(0, daysAgo)) }, 'cycle_last');
+  /** approx — выбрали примерно («2–3 недели назад»): день цикла тогда не показываем числом, уточнится по первой отметке месячных */
+  setLastPeriod(daysAgo, approx = false) {
+    this.updateProfile(daysAgo == null ? { lastUnknown: true, lastApprox: false } : { lastUnknown: false, lastApprox: !!approx, lastAgo: Math.min(60, Math.max(0, daysAgo)) }, 'cycle_last');
   }
 
   /** Календарь «Когда начались месячные» (онбординг и профиль): ago — дней назад, null — «не помню» */
-  pickPeriodStart(ago) {
+  pickPeriodStart(ago, approx = false) {
     this.setState({ onbPeriodPicked: true });
-    this.setLastPeriod(ago);
+    this.setLastPeriod(ago, approx);
     track('period_start_picked', { days_ago: ago, screen: this.state.screen });
   }
 

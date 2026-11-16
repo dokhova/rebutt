@@ -75,7 +75,7 @@ export function addEntryView(app) {
 
 
     cycleEnabled: p.cycle && !noCyclePhases(p),
-    cycleDayKnown: cycleDay(p, dayK, todayK) > 0,
+    cycleDayKnown: cycleDay(p, dayK, todayK) > 0 && !p.lastApprox,
     cycleDay: cycleDay(p, dayK, todayK),
     periodNo: seg(f.period === 'no'),
     periodYes: seg(f.period === 'yes'),

@@ -92,7 +92,7 @@ function cycleDayView(app, p) {
   const cd = cycleDay(p, todayK, todayK);
   const start = cd ? addDays(todayK, -(cd - 1)) : '';
   return {
-    cycleDayValue: cd ? cd + '-й день' : 'не указан',
-    cycleStartLabel: cd ? 'Начались ' + dayMonthShort(start) : 'Укажите начало месячных',
+    cycleDayValue: !cd ? 'не указан' : p.lastApprox ? 'примерно ' + cd + '-й' : cd + '-й день',
+    cycleStartLabel: !cd ? 'Укажите начало месячных' : p.lastApprox ? 'Уточнится, когда отметишь месячные' : 'Начались ' + dayMonthShort(start),
   };
 }

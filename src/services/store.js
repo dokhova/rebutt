@@ -87,6 +87,7 @@ function profileToRow(p, todayK) {
     goal_other: p.other || null,
     cycle_enabled: !!p.cycle,
     cycle_last_start: p.cycle && !p.lastUnknown ? addDays(todayK, -p.lastAgo) : null,
+    cycle_last_approx: !!(p.cycle && !p.lastUnknown && p.lastApprox),
     cycle_length: p.len || 28,
     pregnant: !!p.pregnant,
     coc: !!p.coc,
@@ -109,6 +110,7 @@ function rowToProfile(r, todayK) {
     other: r.goal_other || '',
     cycle: !!r.cycle_enabled,
     lastUnknown: r.cycle_enabled && !r.cycle_last_start,
+    lastApprox: !!r.cycle_last_approx,
     lastAgo: r.cycle_last_start ? Math.max(0, diffDays(todayK, r.cycle_last_start)) : 11,
     len: r.cycle_length || 28,
     pregnant: !!r.pregnant,
@@ -185,7 +187,7 @@ async function withUser(fn) {
 }
 
 // колонки из поздних миграций: если миграция ещё не применена, сохраняем профиль без них
-const OPTIONAL_PROFILE_COLUMNS = ['height_cm', 'weight_kg', 'menopause'];
+const OPTIONAL_PROFILE_COLUMNS = ['height_cm', 'weight_kg', 'menopause', 'cycle_last_approx'];
 
 export const saveProfile = (p, todayK) =>
   withUser(async (u) => {

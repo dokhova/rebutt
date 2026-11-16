@@ -49,11 +49,13 @@ export const daysToLuteal = (cd, len) => Math.max(1, (len - 11) - cd);
  * Да, если накануне месячных не было, а по расчёту этот день не попадает в первые 5 дней цикла
  * (или дата начала была неизвестна). Тогда возвращает новое profile.lastAgo (дней от сегодня до начала), иначе null.
  * Если по расчёту уже идут месячные (день 1–5), ничего не двигаем: скорее всего, первые дни просто не отметили.
+ * Если дату начала указали примерно (profile.lastApprox), первая отметка всегда считается днём 1.
  */
 export function newCycleStartAgo(profile, dayK, todayK, prevDayPeriod) {
   if (!profile.cycle || profile.pregnant || profile.menopause || prevDayPeriod) return null;
   const ago = diffDays(todayK, dayK);
   if (ago < 0 || ago > 60) return null;
+  if (profile.lastApprox) return ago; // дата была примерной — первая отметка уточняет начало цикла
   const cd = cycleDay(profile, dayK, todayK);
   if (cd >= 1 && cd <= 5) return null;
   return ago;

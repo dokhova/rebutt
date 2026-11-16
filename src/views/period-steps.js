@@ -23,7 +23,7 @@ export function periodSteps(app, look = 'plain') {
     }),
     agoOptions: AGO_OPTIONS.map(([label, ago]) => {
       const on = picked && (ago == null ? p.lastUnknown : !p.lastUnknown && p.lastAgo === ago);
-      return { label, on, cls: chip(on), pick: () => app.pickPeriodStart(ago) };
+      return { label, on, cls: chip(on), pick: () => app.pickPeriodStart(ago, true) };
     }),
     periodHint: now === 'no' ? 'Можно примерно — уточнится, когда отметите месячные' : ''
   };
