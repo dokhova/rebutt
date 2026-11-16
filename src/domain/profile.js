@@ -6,7 +6,7 @@ import { GOALS, HEIGHT_MIN, HEIGHT_MAX, WEIGHT_MIN, WEIGHT_MAX } from './catalog
  *   name, age, sex ('f' | 'm' | ''), goals: string[] (id из GOALS), other — своя цель
  *   height — рост, см; weight — вес, кг (по желанию, целые числа или null)
  *   cycle — учитывать цикл, lastUnknown — дата начала неизвестна,
- *   lastAgo — дней назад начались месячные, len — длина цикла
+ *   lastAgo — дней назад начались месячные, lastApprox — дата примерная («2–3 недели назад»), len — длина цикла
  *   pregnant — беременность (фазы цикла не считаются), coc — приём КОК (фазы сглажены),
  *   menopause — менопауза (фазы цикла и даты месячных не считаются)
  *   am / pm — напоминания утром / вечером
@@ -15,7 +15,7 @@ import { GOALS, HEIGHT_MIN, HEIGHT_MAX, WEIGHT_MIN, WEIGHT_MAX } from './catalog
  */
 export const blankProfile = () => ({
   name: '', age: 28, sex: '', height: null, weight: null, goals: [], other: '',
-  cycle: false, lastUnknown: false, lastAgo: 11, len: 28, pregnant: false, coc: false, menopause: false,
+  cycle: false, lastUnknown: false, lastApprox: false, lastAgo: 11, len: 28, pregnant: false, coc: false, menopause: false,
   am: true, pm: false, onboardedAt: null, since: ''
 });
 

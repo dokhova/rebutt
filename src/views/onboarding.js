@@ -66,7 +66,7 @@ export function onboardingView(app) {
     // цикл
     lastPeriodOptions: LAST_PERIOD_OPTIONS.map(([label, daysAgo]) => {
       const on = daysAgo == null ? p.lastUnknown : !p.lastUnknown && p.lastAgo === daysAgo;
-      return { label, on, cls: 'chip' + (on ? ' on' : ''), pick: () => app.setLastPeriod(daysAgo) };
+      return { label, on, cls: 'chip' + (on ? ' on' : ''), pick: () => app.setLastPeriod(daysAgo, true) };
     }),
     cycleOptions: CYCLE_OPTIONS.map(([id, label]) => ({ label, on: !!p[id], cls: 'chip' + (p[id] ? ' on' : ''), pick: () => app.toggleCycleOption(id) })),
     askLastPeriod: !noCyclePhases(p),

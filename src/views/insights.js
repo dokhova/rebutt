@@ -62,7 +62,7 @@ export function insightsView(app) {
     symptomDaysText: symptomDays + ' из ' + pastDays,
     fiberAvg: meals ? (fiberSum / meals).toFixed(1).replace('.', ',') + ' г' : '—',
     noticed: noticedText(app, todayK, { dataDays, normalPct, symptomDays }),
-    showCycleNote: cdToday > 0 && !p.coc,
+    showCycleNote: cdToday > 0 && !p.coc && !p.lastApprox,
     daysToLuteal: daysToLuteal(cdToday, p.len)
   };
 }
