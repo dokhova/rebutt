@@ -16,7 +16,6 @@ import { fiberOf, waterOf } from './score.js';
 const MAX = 3;
 /** Сколько прошлых дней смотрим для подсказок на пустой день */
 const HISTORY_DAYS = 7;
-const GLASS_ML = 250;
 
 /**
  * @param day  — запись дня (score.js)
@@ -36,15 +35,14 @@ export function suggestionsFor(day, sc, opts = {}) {
   const noStool = day.gut.some((g) => g.type === 0) && !typed.length;
   const sym = new Set(day.gut.flatMap((g) => g.sym).filter((s) => s !== SYMPTOM_OK));
   const stress = Math.max(-1, ...day.gut.map((g) => (g.stress == null ? -1 : g.stress)));
-  const glassesLeft = Math.max(1, Math.min(4, Math.round((waterGoal - water) / GLASS_ML)));
 
   const out = [];
   const add = (s) => { if (out.length < MAX && !out.some((x) => x.id === s.id)) out.push(s); };
 
-  const waterTip = (text) => add({ id: 'water', icon: 'water', tone: 'sens', title: 'Жидкость: ' + litres(water) + ' из ' + litres(waterGoal) + ' л — ещё ' + glassesLeft + ' ' + glassesWord(glassesLeft), text });
+  const waterTip = (text) => add({ id: 'water', icon: 'water', tone: 'sens', title: 'Ещё немного воды до вечера', text });
   const fiberTip = () => add({
     id: 'fiber', icon: 'fiber', tone: 'sens',
-    title: fiber == null ? 'Еды в записях нет — добавь овощи к обеду' : 'Клетчатка: ' + fiber + ' из ' + fiberGoal + ' г — овощи к ужину',
+    title: fiber == null ? 'Овощи к обеду' : 'Овощи или фрукты к ужину',
     text: goals.has('bloat')
       ? 'Добавляй клетчатку понемногу — так обычно меньше вздутия'
       : fiber == null ? 'Еды за сегодня пока нет в записях — овощи, цельные злаки, бобовые' : 'Клетчатки сегодня пока меньше ориентира ВОЗ'
@@ -58,23 +56,23 @@ export function suggestionsFor(day, sc, opts = {}) {
   if (last === 1 || last === 2 || noStool) {
     if (waterLow(0.75)) waterTip('С клетчаткой и водой стул обычно мягче');
     if (fiberLow(0.6)) fiberTip();
-    add({ id: 'walk', icon: 'walk', tone: 'mild', title: noStool ? 'Стула сегодня не было — прогулка поможет' : 'Стул тип ' + last + ' — прогулка поможет', text: 'Движение помогает кишечнику работать ровнее' });
+    add({ id: 'walk', icon: 'walk', tone: 'mild', title: 'Прогулка поможет кишечнику', text: 'Движение помогает кишечнику работать ровнее' });
   }
 
   // стул жидкий (6–7)
   if (last === 6 || last === 7) {
-    add({ id: 'sip', icon: 'water', tone: 'sens', title: 'Стул тип ' + last + ' — пей понемногу весь день', text: 'При жидком стуле важно восполнять жидкость' });
+    add({ id: 'sip', icon: 'water', tone: 'sens', title: 'Пей понемногу весь день', text: 'При жидком стуле важно восполнять жидкость' });
     add({ id: 'eat', icon: 'warm', tone: 'mild', title: 'Можно есть как обычно', text: 'Если это держится несколько дней или есть кровь — лучше обратиться к специалисту' });
   }
 
   if (sym.has('Вздутие') || sym.has('Газы')) {
-    add({ id: 'slow', icon: 'slow', tone: 'mild', title: (sym.has('Вздутие') ? 'Вздутие' : 'Газы') + ' сегодня — ешь чуть медленнее', text: 'Регулярная еда без спешки помогает при вздутии' });
+    add({ id: 'slow', icon: 'slow', tone: 'mild', title: 'Ешь чуть медленнее', text: 'Регулярная еда без спешки помогает при вздутии' });
   }
   if (sym.has('Боль') || sym.has('Тяжесть')) {
-    add({ id: 'pain', icon: 'calm', tone: 'mild', title: (sym.has('Боль') ? 'Боль' : 'Тяжесть') + ' сегодня — прислушайся к себе', text: 'Если она сильная или повторяется — лучше обратиться к специалисту' });
+    add({ id: 'pain', icon: 'calm', tone: 'mild', title: 'Прислушайся к себе сегодня', text: 'Если она сильная или повторяется — лучше обратиться к специалисту' });
   }
   if (stress >= 6) {
-    add({ id: 'calm', icon: 'calm', tone: 'mild', title: 'Стресс ' + stress + ' из 10 — найди время на отдых', text: 'Стресс часто отражается на кишечнике' });
+    add({ id: 'calm', icon: 'calm', tone: 'mild', title: 'Найди время на отдых', text: 'Стресс часто отражается на кишечнике' });
   }
 
   // ---------- цели из онбординга ----------
@@ -93,7 +91,7 @@ export function suggestionsFor(day, sc, opts = {}) {
   if (fiber != null && fiberLow(0.6)) fiberTip();
 
   if (!out.length && sc && sc.idx >= 80) {
-    add({ id: 'keep', icon: 'calm', tone: 'calm', title: 'Комфорт ' + sc.idx + '% — можно ничего не менять', text: 'Вода и привычная еда помогают держать этот ритм' });
+    add({ id: 'keep', icon: 'calm', tone: 'calm', title: 'Можно ничего не менять', text: 'Вода и привычная еда помогают держать этот ритм' });
   }
   return out;
 }
@@ -124,32 +122,31 @@ export function suggestionsFromHistory(log, k, opts = {}) {
     const isHard = (d) => typesOf(d).some((t) => t <= 2) || (d.gut.some((g) => g.type === 0) && !typesOf(d).length);
     const isLoose = (d) => typesOf(d).some((t) => t >= 6);
     const hard = often(isHard), loose = often(isLoose);
-    const nOf = (pred) => days.filter(pred).length + ' из ' + days.length + ' дн.';
     const withWater = days.filter((d) => d.water > 0);
     const avgWater = withWater.length ? withWater.reduce((a, d) => a + d.water, 0) / withWater.length : 0;
     const withFood = days.map(fiberOf).filter((f) => f != null);
     const avgFiber = withFood.length ? withFood.reduce((a, f) => a + f, 0) / withFood.length : null;
 
     if (hard) {
-      add({ id: 'water', icon: 'water', tone: 'sens', title: 'Твёрдый стул ' + nOf(isHard) + ' — стакан воды с утра', text: 'Вода и клетчатка обычно делают стул мягче' });
+      add({ id: 'water', icon: 'water', tone: 'sens', title: 'Стакан воды с утра', text: 'Вода и клетчатка обычно делают стул мягче' });
       add({ id: 'walk', icon: 'walk', tone: 'mild', title: 'Прогулка сегодня поможет ритму', text: 'Движение помогает кишечнику работать ровнее' });
     }
     if (loose) {
-      add({ id: 'sip', icon: 'water', tone: 'sens', title: 'Жидкий стул ' + nOf(isLoose) + ' — пей понемногу', text: 'В последние дни стул бывал жидким — важно восполнять жидкость. Если это держится — лучше обратиться к специалисту' });
+      add({ id: 'sip', icon: 'water', tone: 'sens', title: 'Пей понемногу весь день', text: 'В последние дни стул бывал жидким — важно восполнять жидкость. Если это держится — лучше обратиться к специалисту' });
     }
     const bloated = (d) => symsOf(d).has('Вздутие') || symsOf(d).has('Газы');
     if (often(bloated)) {
-      add({ id: 'slow', icon: 'slow', tone: 'mild', title: 'Вздутие ' + nOf(bloated) + ' — ешь чуть медленнее', text: 'В последние дни отмечалось вздутие — регулярная еда без спешки обычно помогает' });
+      add({ id: 'slow', icon: 'slow', tone: 'mild', title: 'Ешь чуть медленнее', text: 'В последние дни отмечалось вздутие — регулярная еда без спешки обычно помогает' });
     }
     const stressed = (d) => d.gut.some((g) => g.stress != null && g.stress >= 6);
     if (often(stressed)) {
-      add({ id: 'calm', icon: 'calm', tone: 'mild', title: 'Высокий стресс ' + nOf(stressed) + ' — время на отдых', text: 'В последние дни стресс был высоким — он часто отражается на кишечнике' });
+      add({ id: 'calm', icon: 'calm', tone: 'mild', title: 'Найди время на отдых', text: 'В последние дни стресс был высоким — он часто отражается на кишечнике' });
     }
     if (withWater.length && avgWater < targets.waterMl * 0.75) {
-      add({ id: 'water', icon: 'water', tone: 'sens', title: 'Жидкость в среднем ' + litres(avgWater) + ' из ' + litres(targets.waterMl) + ' л — стакан утром', text: 'В последние дни выходило около ' + litres(avgWater) + ' л из ' + litres(targets.waterMl) + ' — можно начать со стакана утром' });
+      add({ id: 'water', icon: 'water', tone: 'sens', title: 'Стакан воды с утра', text: 'В последние дни выходило около ' + litres(avgWater) + ' л из ' + litres(targets.waterMl) + ' — можно начать со стакана утром' });
     }
     if (avgFiber != null && avgFiber < targets.fiberG * 0.6) {
-      add({ id: 'fiber', icon: 'fiber', tone: 'sens', title: 'Клетчатка в среднем ' + Math.round(avgFiber) + ' из ' + targets.fiberG + ' г — овощи к обеду', text: 'В последние дни клетчатки было меньше ориентира ВОЗ — овощи, цельные злаки, бобовые' });
+      add({ id: 'fiber', icon: 'fiber', tone: 'sens', title: 'Овощи к обеду', text: 'В последние дни клетчатки было меньше ориентира ВОЗ — овощи, цельные злаки, бобовые' });
     }
   }
 
@@ -159,8 +156,6 @@ export function suggestionsFromHistory(log, k, opts = {}) {
   if (goals.has('bloat')) add({ id: 'slow', icon: 'slow', tone: 'mild', title: 'Можно есть чуть медленнее', text: 'Регулярная еда без спешки помогает обойтись без вздутия' });
   return out;
 }
-
-const glassesWord = (n) => (n === 1 ? 'стакан' : n < 5 ? 'стакана' : 'стаканов');
 
 /** 1200 → '1,2' */
 export const litres = (ml) => (Math.round(ml / 100) / 10).toString().replace('.', ',');
