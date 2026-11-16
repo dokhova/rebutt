@@ -32,7 +32,7 @@ import { VIEWS, shellView } from '../views/index.js';
 
 const LS_INSIGHTS = 'gt_insights';
 /** Версия формата совета ИИ: при смене промпта старый кэш за день пересчитывается */
-const INSIGHTS_V = 3; // 3 — два персональных совета tips для главной
+const INSIGHTS_V = 4; // 3 — два персональных совета tips для главной; 4 — короткие советы без цифр
 const LS_HOME_PROMPT = 'gt_home_prompt';
 const TOAST_MS = 3500;
 const EXAMPLE_SCAN_MS = 1600;
