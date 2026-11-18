@@ -10,7 +10,7 @@
 import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
-export const config = { maxDuration: 15 };
+export const config = { maxDuration: 30 };
 
 const WELCOME = [
   '<b>Добро пожаловать в rebutt!</b>',
@@ -47,7 +47,10 @@ async function readVideoId() {
 
 async function saveVideoId(id) {
   videoId = id;
-  try { const c = db(); if (c) await c.from('bot_settings').upsert({ key: VIDEO_KEY, value: id, updated_at: new Date().toISOString() }); } catch (_) { /* не страшно */ }
+  try { const c = db(); if (c) {
+    const { error } = await c.from('bot_settings').upsert({ key: VIDEO_KEY, value: id, updated_at: new Date().toISOString() });
+    if (error) console.error('bot: file_id не сохранён', error.message);
+  } } catch (e) { console.error('bot: file_id не сохранён', e); }
 }
 
 /** Секрет вебхука — из токена бота, отдельная переменная не нужна */
@@ -74,6 +77,17 @@ async function tg(token, method, body) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
+  return r.json().catch(() => ({ ok: false, description: 'HTTP ' + r.status }));
+}
+
+/** Загружает видео в Telegram файлом: быстрее, чем ждать, пока Telegram сам скачает его по ссылке */
+async function uploadVideo(token, url, fields) {
+  const file = await fetch(url, { signal: AbortSignal.timeout(5000) });
+  if (!file.ok) return { ok: false, description: 'video HTTP ' + file.status };
+  const form = new FormData();
+  for (const [k, v] of Object.entries(fields)) form.append(k, typeof v === 'object' ? JSON.stringify(v) : String(v));
+  form.append('animation', new Blob([await file.arrayBuffer()], { type: 'video/mp4' }), 'rebutt.mp4');
+  const r = await fetch('https://api.telegram.org/bot' + token + '/sendAnimation', { method: 'POST', body: form, signal: AbortSignal.timeout(15000) });
   return r.json().catch(() => ({ ok: false, description: 'HTTP ' + r.status }));
 }
 
@@ -106,14 +120,18 @@ export default async function handler(req, res) {
       const app = origin(req);
       const keyboard = { inline_keyboard: [[{ text: START_BUTTON, web_app: { url: miniAppUrl(req) } }]] };
       const message = { chat_id: msg.chat.id, caption: WELCOME, parse_mode: 'HTML', reply_markup: keyboard };
-      const sendVideo = (animation) => tg(token, 'sendAnimation', { ...message, animation, width: 1280, height: 720, duration: 12 });
+      const videoFields = { ...message, width: 1280, height: 720, duration: 12 };
+      const startedAt = Date.now();
+      // пока видео идёт, в чате виден статус отправки
+      await tg(token, 'sendChatAction', { chat_id: msg.chat.id, action: 'upload_video' });
       const cached = await readVideoId();
-      let result = cached ? await sendVideo(cached) : { ok: false };
+      let result = cached ? await tg(token, 'sendAnimation', { ...videoFields, animation: cached }) : { ok: false };
       if (!result.ok) {
-        result = await sendVideo(app + WELCOME_VIDEO);
+        result = await uploadVideo(token, app + WELCOME_VIDEO, videoFields).catch((e) => ({ ok: false, description: String(e) }));
         const video = result.ok && result.result && result.result.animation;
         if (video && video.file_id) await saveVideoId(video.file_id);
       }
+      console.log('bot /start', { cached: !!cached, ok: !!result.ok, ms: Date.now() - startedAt, error: result.ok ? undefined : result.description });
       // видео не отправилось — шлём картинку
       if (!result.ok) result = await tg(token, 'sendPhoto', { ...message, photo: app + WELCOME_PHOTO });
       // и она не загрузилась — шлём хотя бы текст с кнопкой
