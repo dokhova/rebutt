@@ -71,7 +71,7 @@ api/                           серверные функции Vercel (Node)
   food.js ask.js insights.js   ИИ
   meal-image.js                картинка блюда по описанию (OpenAI Images, OPENAI_IMAGE_MODEL), когда фото нет
   auth/telegram.js             вход по Telegram-аккаунту
-  bot.js                       вебхук бота: приветствие на /start (public/bot/welcome-3.jpg + кнопка «Старт»); ?setup=<токен> — подключить вебхук
+  bot.js                       вебхук бота: приветствие на /start (public/bot/welcome-loop.mp4 + кнопка «Старт»); ?setup=<токен> — подключить вебхук
   health.js                    диагностика настроек
 public/
   legal/                       документы (статичные страницы)
