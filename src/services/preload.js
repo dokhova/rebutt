@@ -10,7 +10,7 @@ const keep = [];
 export function preloadImages(theme, onboarding = false) {
   if (typeof Image === 'undefined') return;
   const order = theme === 'dark' ? [gutDark, gutLight] : [gutLight, gutDark];
-  if (onboarding) order.unshift('/brand/welcome-photo.webp');
+  if (onboarding) order.unshift('/brand/welcome-cover.webp');
   order.forEach((src, i) => {
     const img = new Image();
     img.decoding = 'async';

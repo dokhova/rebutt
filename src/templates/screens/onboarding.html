@@ -7,11 +7,10 @@
 </div>
 </sc-if>
 
-<!-- Шаг 1: приветствие — фото, шторка с заголовком; согласие и кнопка — внизу, в onb-footer. Тексты: WELCOME в src/views/onboarding.js -->
+<!-- Шаг 1: приветствие — обложка, шторка с заголовком; согласие и кнопка — внизу, в onb-footer. Тексты: WELCOME в src/views/onboarding.js -->
 <sc-if value="{{step.consent}}">
   <div class="welcome fade-in">
     <div class="welcome-photo" aria-hidden="true"></div>
-    <img class="welcome-logo" src="/brand/wordmark.svg" alt="{{appName}}">
     <div class="welcome-text">
       <h1 class="welcome-title"><span>{{welcome.t1}}</span> <span>{{welcome.t2}}</span></h1>
       <p class="welcome-sub">{{welcome.sub}}</p>
