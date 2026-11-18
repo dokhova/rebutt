@@ -1,11 +1,11 @@
-// Бот Telegram: вебхук. На /start присылает приветствие — картинку public/bot/welcome-2.jpg с текстом (дальше — по file_id из bot_settings, без повторной загрузки)
+// Бот Telegram: вебхук. На /start присылает приветствие — картинку public/bot/welcome-3.jpg с текстом (дальше — по file_id из bot_settings, без повторной загрузки)
 // и кнопку «Старт», которая открывает мини-апп. Остальные сообщения пока игнорируем.
 //
 // POST /api/bot — сюда Telegram шлёт обновления. Проверяем заголовок X-Telegram-Bot-Api-Secret-Token.
 // GET  /api/bot?setup=<TELEGRAM_BOT_TOKEN> — один раз: подключает вебхук к этому адресу (открыть в браузере).
 //
 // Нужна переменная окружения TELEGRAM_BOT_TOKEN (уже есть — для входа по Telegram). MINIAPP_URL — по желанию (см. miniAppUrl).
-// Текст приветствия — WELCOME ниже, картинка — public/bot/welcome-2.jpg.
+// Текст приветствия — WELCOME ниже, картинка — public/bot/welcome-3.jpg.
 import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
@@ -21,7 +21,7 @@ const WELCOME = [
 ].join('\n');
 
 const START_BUTTON = 'Старт';
-const WELCOME_PHOTO = '/bot/welcome-2.jpg';
+const WELCOME_PHOTO = '/bot/welcome-3.jpg';
 /** Ключ в bot_settings: file_id привязан к картинке — поменяли файл, меняем и ключ */
 const PHOTO_KEY = 'welcome_photo:' + WELCOME_PHOTO;
 

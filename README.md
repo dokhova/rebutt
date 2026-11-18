@@ -58,7 +58,7 @@ npx vercel dev               # фронт + /api на http://localhost:3000
 Открывшие по прямой ссылке не нажимают /start, поэтому после онбординга приложение просит разрешение боту писать (`requestWriteAccess`).
 **Россия.** Свой домен на Vercel у части российских провайдеров не грузится без VPN, а адрес `*.vercel.app` того же проекта открывается. Поэтому в BotFather (Menu Button и Configure Mini App) лучше указывать `https://<проект>.vercel.app` и тот же адрес — в переменной `MINIAPP_URL` (кнопка «Старт» в приветствии).
 
-**Приветствие в боте** (картинка + текст + кнопка «Старт» на /start): после деплоя один раз открыть в браузере `https://<домен>/api/bot?setup=<TELEGRAM_BOT_TOKEN>` — должно вернуть `"ok": true`. Текст — `WELCOME` в `api/bot.js`, картинка — `public/bot/welcome-2.jpg`.
+**Приветствие в боте** (картинка + текст + кнопка «Старт» на /start): после деплоя один раз открыть в браузере `https://<домен>/api/bot?setup=<TELEGRAM_BOT_TOKEN>` — должно вернуть `"ok": true`. Текст — `WELCOME` в `api/bot.js`, картинка — `public/bot/welcome-3.jpg`.
 В Telegram пользователь входит по своему аккаунту (`/api/auth/telegram`): данные привязаны к Telegram id, имя и аватар берутся из Telegram.
 
 ## Где что менять
