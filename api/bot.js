@@ -1,11 +1,12 @@
-// Бот Telegram: вебхук. На /start присылает приветствие — картинку public/bot/welcome-3.jpg с текстом (дальше — по file_id из bot_settings, без повторной загрузки)
+// Бот Telegram: вебхук. На /start присылает приветствие — зацикленное видео public/bot/welcome-loop.mp4 с текстом (дальше — по file_id из bot_settings, без повторной загрузки)
 // и кнопку «Старт», которая открывает мини-апп. Остальные сообщения пока игнорируем.
 //
 // POST /api/bot — сюда Telegram шлёт обновления. Проверяем заголовок X-Telegram-Bot-Api-Secret-Token.
 // GET  /api/bot?setup=<TELEGRAM_BOT_TOKEN> — один раз: подключает вебхук к этому адресу (открыть в браузере).
 //
 // Нужна переменная окружения TELEGRAM_BOT_TOKEN (уже есть — для входа по Telegram). MINIAPP_URL — по желанию (см. miniAppUrl).
-// Текст приветствия — WELCOME ниже, картинка — public/bot/welcome-3.jpg.
+// Текст приветствия — WELCOME ниже, видео — public/bot/welcome-loop.mp4 (без звука: так Telegram сам зацикливает его как GIF),
+// запасная картинка, если видео не отправилось, — public/bot/welcome-3.jpg.
 import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
@@ -21,31 +22,32 @@ const WELCOME = [
 ].join('\n');
 
 const START_BUTTON = 'Старт';
+const WELCOME_VIDEO = '/bot/welcome-loop.mp4';
 const WELCOME_PHOTO = '/bot/welcome-3.jpg';
-/** Ключ в bot_settings: file_id привязан к картинке — поменяли файл, меняем и ключ */
-const PHOTO_KEY = 'welcome_photo:' + WELCOME_PHOTO;
+/** Ключ в bot_settings: file_id привязан к файлу — поменяли файл, меняем и ключ */
+const VIDEO_KEY = 'welcome_animation:' + WELCOME_VIDEO;
 
-// ---------- file_id картинки: по нему Telegram показывает фото сразу, по ссылке — каждый раз скачивает ----------
+// ---------- file_id видео: по нему Telegram показывает его сразу, по ссылке — каждый раз скачивает ----------
 // Храним в памяти функции (пока она «тёплая») и в Supabase (таблица bot_settings), чтобы переживать перезапуски.
-let photoId = process.env.TELEGRAM_WELCOME_FILE_ID || '';
+let videoId = '';
 const env = (k) => process.env[k] || process.env['VITE_' + k] || '';
 const db = () => (env('SUPABASE_URL') && process.env.SUPABASE_SECRET_KEY
   ? createClient(env('SUPABASE_URL'), process.env.SUPABASE_SECRET_KEY, { auth: { persistSession: false, autoRefreshToken: false } })
   : null);
 
-async function readPhotoId() {
-  if (photoId) return photoId;
+async function readVideoId() {
+  if (videoId) return videoId;
   try {
     const c = db(); if (!c) return '';
-    const { data } = await c.from('bot_settings').select('value').eq('key', PHOTO_KEY).maybeSingle();
-    photoId = (data && data.value) || '';
+    const { data } = await c.from('bot_settings').select('value').eq('key', VIDEO_KEY).maybeSingle();
+    videoId = (data && data.value) || '';
   } catch (_) { /* таблицы нет — отправим по ссылке */ }
-  return photoId;
+  return videoId;
 }
 
-async function savePhotoId(id) {
-  photoId = id;
-  try { const c = db(); if (c) await c.from('bot_settings').upsert({ key: PHOTO_KEY, value: id, updated_at: new Date().toISOString() }); } catch (_) { /* не страшно */ }
+async function saveVideoId(id) {
+  videoId = id;
+  try { const c = db(); if (c) await c.from('bot_settings').upsert({ key: VIDEO_KEY, value: id, updated_at: new Date().toISOString() }); } catch (_) { /* не страшно */ }
 }
 
 /** Секрет вебхука — из токена бота, отдельная переменная не нужна */
@@ -103,15 +105,18 @@ export default async function handler(req, res) {
     if (msg && msg.chat && /^\/start(\s|@|$)/.test(text)) {
       const app = origin(req);
       const keyboard = { inline_keyboard: [[{ text: START_BUTTON, web_app: { url: miniAppUrl(req) } }]] };
-      const send = (photo) => tg(token, 'sendPhoto', { chat_id: msg.chat.id, photo, caption: WELCOME, parse_mode: 'HTML', reply_markup: keyboard });
-      const cached = await readPhotoId();
-      let result = cached ? await send(cached) : { ok: false };
+      const message = { chat_id: msg.chat.id, caption: WELCOME, parse_mode: 'HTML', reply_markup: keyboard };
+      const sendVideo = (animation) => tg(token, 'sendAnimation', { ...message, animation, width: 1280, height: 720, duration: 12 });
+      const cached = await readVideoId();
+      let result = cached ? await sendVideo(cached) : { ok: false };
       if (!result.ok) {
-        result = await send(app + WELCOME_PHOTO);
-        const sizes = result.ok && result.result && result.result.photo;
-        if (sizes && sizes.length) await savePhotoId(sizes[sizes.length - 1].file_id);
+        result = await sendVideo(app + WELCOME_VIDEO);
+        const video = result.ok && result.result && result.result.animation;
+        if (video && video.file_id) await saveVideoId(video.file_id);
       }
-      // картинка не загрузилась — шлём хотя бы текст с кнопкой
+      // видео не отправилось — шлём картинку
+      if (!result.ok) result = await tg(token, 'sendPhoto', { ...message, photo: app + WELCOME_PHOTO });
+      // и она не загрузилась — шлём хотя бы текст с кнопкой
       if (!result.ok) {
         await tg(token, 'sendMessage', {
           chat_id: msg.chat.id,
