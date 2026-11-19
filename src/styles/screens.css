@@ -507,7 +507,7 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
 .onb-extra .chips .chip { min-height: 36px; font-size: 14px; }
 
 /* ---------- первый экран: приветствие (шаг «consent» онбординга) ----------
-   Обложка сверху на брендовом фоне Lavender (логотип — на самих таблетках), снизу во всю ширину — шторка
+   Обложка сверху — фото (живот, фиолетовые леггинсы, зелень; пупок держим в кадре), снизу во всю ширину — шторка
    с градиентом как у сиреневых блоков (.g-lav). Кнопка лаймовая, одно согласие. */
 .shell:has(.welcome) .onb-footer { position: relative; z-index: 2; }
 .welcome { position: relative; flex-grow: 1; display: flex; flex-direction: column; min-height: 0; }
@@ -515,7 +515,7 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
   background: radial-gradient(55% 45% at 50% 40%, #8A68DC 0%, rgba(138, 104, 220, 0) 100%), radial-gradient(70% 40% at 100% 70%, rgba(237, 229, 255, .3) 0%, rgba(237, 229, 255, 0) 70%), linear-gradient(160deg, #A68CF6 0%, #9B7FF2 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45); }
 .welcome-photo { position: absolute; z-index: 0; left: -16px; right: -16px; top: calc(-28px - var(--safe-top)); height: calc(70% + 28px + var(--safe-top));
-  background: #EDE5FF url(/brand/welcome-cover.webp) 50% 0 / cover no-repeat; }
+  background: #3B2A4E url(/brand/welcome-body.webp) 55% 30% / cover no-repeat; }
 /* текст в потоке у низа экрана: шторка (::before) начинается над заголовком и растёт вверх, если текст длинный — ничего не наезжает на согласие */
 .welcome-text { position: relative; z-index: 2; margin-top: auto; min-height: 36%; padding-top: 26px; box-sizing: border-box; }
 .welcome-title { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 34px; line-height: 1.05; letter-spacing: -.03em; color: #FFFFFF;
@@ -533,7 +533,7 @@ button.onb-back { background: var(--btn-glass); border: 1px solid var(--line-2);
 .shell:has(.welcome) .checkbox.on { background: #FFFFFF; border-color: #FFFFFF; color: #3A1F5C; }
 /* невысокие телефоны: фото короче, заголовок меньше — чтобы текст не наезжал на согласие */
 @media (max-height: 760px) {
-  .welcome-photo { height: calc(58% + 28px + var(--safe-top)); background-position: 50% 20%; }
+  .welcome-photo { height: calc(58% + 28px + var(--safe-top)); background-position: 55% 30%; }
   .welcome-text { min-height: 48%; padding-top: 20px; }
   .welcome-title { font-size: 30px; }
 }
